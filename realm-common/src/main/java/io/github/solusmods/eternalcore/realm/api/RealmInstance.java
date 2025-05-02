@@ -2,6 +2,7 @@ package io.github.solusmods.eternalcore.realm.api;
 
 import com.mojang.datafixers.util.Pair;
 import dev.architectury.registry.registries.RegistrySupplier;
+import io.github.solusmods.eternalcore.stage.api.Stage;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -265,6 +266,16 @@ public class RealmInstance implements Cloneable {
     @Nullable
     public Realm getDefaultBreakthrough(LivingEntity living) {
         return this.getRealm().getDefaultBreakthrough(this, living);
+    }
+
+    /**
+     * Returns a {@link List} of all {@link Stage}s for this {@link Realm}.
+     * </p>
+     *
+     * @param living Affected {@link LivingEntity} being this spiritual_root.
+     */
+    public List<Stage> getRealmStages(LivingEntity living) {
+        return this.getRealm().getRealmStages(this, living);
     }
 
     /**

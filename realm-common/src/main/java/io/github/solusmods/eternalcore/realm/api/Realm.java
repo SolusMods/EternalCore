@@ -2,6 +2,7 @@ package io.github.solusmods.eternalcore.realm.api;
 
 import com.mojang.datafixers.util.Pair;
 import io.github.solusmods.eternalcore.realm.ModuleConstants;
+import io.github.solusmods.eternalcore.stage.api.Stage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -133,9 +133,7 @@ public abstract class Realm {
      *
      * @see RealmInstance#getNextBreakthroughs(LivingEntity)
      */
-    public List<Realm> getNextBreakthroughs(RealmInstance instance, LivingEntity living) {
-        return new ArrayList();
-    }
+    public abstract List<Realm> getNextBreakthroughs(RealmInstance instance, LivingEntity living);
 
     /**
      * Returns a list of all {@link Realm} that break through into this Realm.
@@ -152,9 +150,15 @@ public abstract class Realm {
      * @see RealmInstance#getDefaultBreakthrough(LivingEntity)
      */
     @Nullable
-    public Realm getDefaultBreakthrough(RealmInstance instance, LivingEntity living) {
-        return null;
-    }
+    public abstract Realm getDefaultBreakthrough(RealmInstance instance, LivingEntity living);
+
+    /**
+     * Returns a {@link List} of all {@link Stage}s for this {@link Realm}.
+     * </p>
+     *
+     * @see RealmInstance#getRealmStages(LivingEntity)
+     */
+    public abstract List<Stage> getRealmStages(RealmInstance instance, LivingEntity living);
 
     /**
      * Returns the dimension that {@link LivingEntity} respawns at as this Realm.
@@ -173,17 +177,6 @@ public abstract class Realm {
     public boolean canFly() {
         return false;
     }
-
-    public List<Component> getRequirementsForRendering(Player player) {
-        List<Component> list = new ArrayList();
-        list.add(Component.translatable("%s.realm_menu.qi_requirement".formatted(ModuleConstants.MOD_ID)));
-        return list;
-    }
-
-//    public double getBreakPercentage(Player player) {
-//        double minimalQi = this.getMaxBaseQi();
-//        return EntityRealmStorage.getBaseQI(player) * (double)100.0F / minimalQi;
-//    }
 
     /**
      * Used to get the {@link ResourceLocation} id of this realm.
