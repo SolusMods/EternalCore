@@ -33,13 +33,13 @@ public class RealmAPI {
      * Can be used to load the {@link RealmStorage} from an {@link LivingEntity}.
      */
     public static Realms getRealmFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(RealmStorage.getKey());
+        return entity.eternalCore$getStorage(RealmStorage.getKey());
     }
 
     /**
      * Can be used to load the {@link RealmStorage} from an {@link LivingEntity}.
      */
     public static IReachedRealms getReachedRealmsFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(RealmStorage.getKey());
+        return entity.eternalCore$getStorage(RealmStorage.getKey());
     }
 }

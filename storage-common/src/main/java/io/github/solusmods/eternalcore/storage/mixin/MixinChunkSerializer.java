@@ -22,19 +22,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MixinChunkSerializer {
     @Unique
-    private static final String eternalCraft_STORAGE = "eternalCraftStorage";
+    private static final String STORAGE_TAG = "eternalCoreStorage";
 
     @Inject(method = "read", at = @At("RETURN"))
     private static void onChunkRead(ServerLevel level, PoiManager poiManager, RegionStorageInfo regionStorageInfo, ChunkPos pos, CompoundTag tag, CallbackInfoReturnable<ProtoChunk> cir) {
         if (!(cir.getReturnValue() instanceof ImposterProtoChunk protoChunk)) return;
         // Apply loaded data to initial storage
-        protoChunk.getWrapped().eternalCraft$getCombinedStorage().handleUpdatePacket(tag.getCompound(eternalCraft_STORAGE));
+        protoChunk.getWrapped().eternalCore$getCombinedStorage().handleUpdatePacket(tag.getCompound(STORAGE_TAG));
     }
 
     @Inject(method = "write", at = @At("RETURN"))
     private static void onChunkWrite(ServerLevel level, ChunkAccess chunk, CallbackInfoReturnable<CompoundTag> cir) {
         if (!(chunk instanceof LevelChunk levelChunk)) return;
         CompoundTag tag = cir.getReturnValue();
-        tag.put(eternalCraft_STORAGE, levelChunk.eternalCraft$getCombinedStorage().toNBT());
+        tag.put(STORAGE_TAG, levelChunk.eternalCore$getCombinedStorage().toNBT());
     }
 }

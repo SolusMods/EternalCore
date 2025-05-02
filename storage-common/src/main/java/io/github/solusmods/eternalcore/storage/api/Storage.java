@@ -1,6 +1,5 @@
 package io.github.solusmods.eternalcore.storage.api;
 
-import io.github.solusmods.eternalcore.network.ModuleConstants;
 import io.github.solusmods.eternalcore.storage.EternalCoreStorage;
 import io.github.solusmods.eternalcore.storage.impl.StorageManager;
 import lombok.Getter;

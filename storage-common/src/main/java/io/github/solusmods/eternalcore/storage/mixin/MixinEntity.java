@@ -25,45 +25,45 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public class MixinEntity implements StorageHolder {
-    private static final String ETERNAL_CRAFT_STORAGE = "eternalCraftStorage";
+    private static final String STORAGE_TAG_KEY = "eternalCoreStorage";
     @Shadow
     private Level level;
     @Unique
     private CombinedStorage storage;
 
     @Override
-    public @NotNull CompoundTag eternalCraft$getStorage() {
+    public @NotNull CompoundTag eternalCore$getStorage() {
         return this.storage.toNBT();
     }
 
     @Nullable
     @Override
-    public <T extends Storage> T eternalCraft$getStorage(StorageKey<T> storageKey) {
+    public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
         return (T) this.storage.get(storageKey.id());
     }
 
     @Override
-    public void eternalCraft$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+    public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
         this.storage.add(id, storage);
     }
 
     @Override
-    public @NotNull StorageType eternalCraft$getStorageType() {
+    public @NotNull StorageType eternalCore$getStorageType() {
         return StorageType.ENTITY;
     }
 
     @Override
-    public @NotNull CombinedStorage eternalCraft$getCombinedStorage() {
+    public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
         return this.storage;
     }
 
     @Override
-    public void eternalCraft$setCombinedStorage(@NotNull CombinedStorage storage) {
+    public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
         this.storage = storage;
     }
 
     @Override
-    public Iterable<ServerPlayer> eternalCraft$getTrackingPlayers() {
+    public Iterable<ServerPlayer> eternalCore$getTrackingPlayers() {
         return PlayerLookup.trackingAndSelf((Entity) (Object) this);
     }
 
@@ -77,13 +77,13 @@ public class MixinEntity implements StorageHolder {
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER), cancellable = true)
     void saveStorage(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        compound.put(ETERNAL_CRAFT_STORAGE, this.storage.toNBT());
+        compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
         cir.setReturnValue(compound);
     }
 
     @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER))
     void loadStorage(CompoundTag compound, CallbackInfo ci) {
-        this.storage.load(compound.getCompound(ETERNAL_CRAFT_STORAGE));
+        this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
     }
 
     @Inject(method = "tick", at = @At("RETURN"))

@@ -1,6 +1,7 @@
 package io.github.solusmods.eternalcore.spiritual_root.api;
 
 import dev.architectury.registry.registries.RegistrySupplier;
+import io.github.solusmods.eternalcore.element.api.Element;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.nbt.CompoundTag;
@@ -177,6 +178,10 @@ public class SpiritualRootInstance implements Cloneable {
     public RootType getType() {
         return this.getSpiritualRoot().getType();
     }
+
+    public @Nullable Element getElement(LivingEntity entity){
+        return this.getSpiritualRoot().getElement(this, entity);
+    };
 
     public void addExperience(LivingEntity living, float experience) {
         this.getSpiritualRoot().addExperience(this, living, experience);

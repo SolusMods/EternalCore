@@ -1,0 +1,8 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "gradle.env": {
+        "CLOUDSMITH_LOGIN": "skillfi",
+        "CLOUDSMITH_API": "2b95bc275979eb40ff0272a414150deac71ceee9"
+  }
+}

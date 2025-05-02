@@ -33,13 +33,13 @@ public class ElementAPI {
      * Can be used to load the {@link ElementsStorage} from an {@link LivingEntity}.
      */
     public static Elements getDominantElementFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(ElementsStorage.getKey());
+        return entity.eternalCore$getStorage(ElementsStorage.getKey());
     }
 
     /**
      * Can be used to load the {@link ElementsStorage} from an {@link LivingEntity}.
      */
     public static Elements getElementsFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(ElementsStorage.getKey());
+        return entity.eternalCore$getStorage(ElementsStorage.getKey());
     }
 }

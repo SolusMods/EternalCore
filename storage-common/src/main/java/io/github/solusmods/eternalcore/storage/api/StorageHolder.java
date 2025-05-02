@@ -12,18 +12,18 @@ import java.util.Optional;
 
 public interface StorageHolder {
     @NotNull
-    default CompoundTag eternalCraft$getStorage() {
+    default CompoundTag eternalCore$getStorage() {
         throw new AssertionError();
     }
 
     @Nullable
-    default <T extends Storage> T eternalCraft$getStorage(StorageKey<T> storageKey) {
+    default <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
         throw new AssertionError();
     }
 
     @NotNull
     default <T extends Storage> Optional<T> eternalCraft$getStorageOptional(StorageKey<T> storageKey) {
-        return Optional.ofNullable(this.eternalCraft$getStorage(storageKey));
+        return Optional.ofNullable(this.eternalCore$getStorage(storageKey));
     }
 
     default void eternalCraft$sync(boolean update) {
@@ -38,25 +38,25 @@ public interface StorageHolder {
         StorageManager.syncTarget(this, target);
     }
 
-    default void eternalCraft$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+    default void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
         throw new AssertionError();
     }
 
     @NotNull
-    default StorageType eternalCraft$getStorageType() {
+    default StorageType eternalCore$getStorageType() {
         throw new AssertionError();
     }
 
     @NotNull
-    default CombinedStorage eternalCraft$getCombinedStorage() {
+    default CombinedStorage eternalCore$getCombinedStorage() {
         throw new AssertionError();
     }
 
-    default void eternalCraft$setCombinedStorage(@NotNull CombinedStorage storage) {
+    default void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
         throw new AssertionError();
     }
 
-    default Iterable<ServerPlayer> eternalCraft$getTrackingPlayers() {
+    default Iterable<ServerPlayer> eternalCore$getTrackingPlayers() {
         throw new AssertionError();
     }
 }

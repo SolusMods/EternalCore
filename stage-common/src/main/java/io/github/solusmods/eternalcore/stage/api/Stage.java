@@ -58,18 +58,14 @@ public abstract class Stage {
      *
      * @see StageInstance#getNextBreakthroughs(LivingEntity)
      */
-    public List<Stage> getNextBreakthroughs(StageInstance instance, LivingEntity living) {
-        return new ArrayList<>();
-    }
+    public abstract List<Stage> getNextBreakthroughs(StageInstance instance, LivingEntity living);
 
     /**
      * Returns a list of all {@link Stage} that break through into this Stage.
      *
      * @see StageInstance#getPreviousBreakthroughs(LivingEntity)
      */
-    public List<Stage> getPreviousBreakthroughs(StageInstance instance, LivingEntity living) {
-        return new ArrayList<>();
-    }
+    public abstract List<Stage> getPreviousBreakthroughs(StageInstance instance, LivingEntity living);
 
     public List<MutableComponent> getInfo(StageInstance instance, LivingEntity entity) {
         List<MutableComponent> info = new ArrayList<>();
@@ -82,9 +78,7 @@ public abstract class Stage {
      * @see StageInstance#getDefaultBreakthrough(LivingEntity)
      */
     @Nullable
-    public Stage getDefaultBreakthrough(StageInstance instance, LivingEntity living) {
-        return null;
-    }
+    public abstract Stage getDefaultBreakthrough(StageInstance instance, LivingEntity living);
 
     /**
      * Used to get the {@link ResourceLocation} id of this stage.

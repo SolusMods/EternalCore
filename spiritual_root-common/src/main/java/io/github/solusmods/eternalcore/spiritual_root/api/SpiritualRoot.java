@@ -1,5 +1,6 @@
 package io.github.solusmods.eternalcore.spiritual_root.api;
 
+import io.github.solusmods.eternalcore.element.api.Element;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,6 @@ import java.util.Map;
 public abstract class SpiritualRoot {
     public final RootType type;
     protected final Map<Holder<Attribute>, AttributeTemplate> attributeModifiers = new Object2ObjectOpenHashMap<>();
-
-
 
     public SpiritualRootInstance createDefaultInstance() {
         return new SpiritualRootInstance(this);
@@ -128,9 +127,9 @@ public abstract class SpiritualRoot {
      * @see SpiritualRootInstance#getAdvanced(LivingEntity)
      */
     @Nullable
-    public SpiritualRoot getAdvanced(SpiritualRootInstance instance, LivingEntity living) {
-        return null;
-    }
+    public abstract SpiritualRoot getAdvanced(SpiritualRootInstance instance, LivingEntity living);
+
+    public abstract @Nullable Element getElement(SpiritualRootInstance instance, LivingEntity entity);
 
     /**
      * Called when the {@link LivingEntity} mastered this {@link SpiritualRoot}.

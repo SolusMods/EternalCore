@@ -1,8 +1,9 @@
-package io.github.solusmods.eternalcore.storage.impl.network.s2c;
+package io.github.solusmods.eternalcore.storage.impl.network.c2s;
 
 
 import io.github.solusmods.eternalcore.storage.api.StorageHolder;
 import io.github.solusmods.eternalcore.storage.impl.CombinedStorage;
+import io.github.solusmods.eternalcore.storage.impl.network.s2c.StorageSyncPayload;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
@@ -10,11 +11,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClientAccess {
+public class ServerAccess {
 
 
-    static void handle(SyncEntityStoragePayload packet) {
+    static void handle(SyncEntityStorageC2SPayload packet) {
         Entity entity = getEntityFromId(packet.entityId());
         if (entity == null) return;
         handleUpdatePacket(entity, packet);
@@ -31,14 +33,14 @@ public class ClientAccess {
         return level.getEntity(id);
     }
 
-    static void handle(SyncChunkStoragePayload packet) {
+    static void handle(SyncChunkStorageC2SPayload packet) {
         Level level = Minecraft.getInstance().level;
         if (level == null) return;
         LevelChunk chunk = level.getChunk(packet.chunkPos().x, packet.chunkPos().z);
         handleUpdatePacket(chunk, packet);
     }
 
-    static void handle(SyncWorldStoragePayload packet) {
+    static void handle(SyncWorldStorageCTSPayload packet) {
         Level level = Minecraft.getInstance().level;
         if (level == null) return;
         handleUpdatePacket(level, packet);

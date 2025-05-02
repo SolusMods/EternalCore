@@ -33,13 +33,13 @@ public class StageAPI {
      * Can be used to load the {@link StageStorage} from an {@link LivingEntity}.
      */
     public static Stages getStageFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(StageStorage.getKey());
+        return entity.eternalCore$getStorage(StageStorage.getKey());
     }
 
     /**
      * Can be used to load the {@link StageStorage} from an {@link LivingEntity}.
      */
     public static IReachedStages getReachedStagesFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(StageStorage.getKey());
+        return entity.eternalCore$getStorage(StageStorage.getKey());
     }
 }

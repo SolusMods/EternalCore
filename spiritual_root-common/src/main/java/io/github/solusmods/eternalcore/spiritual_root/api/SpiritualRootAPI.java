@@ -33,6 +33,6 @@ public class SpiritualRootAPI {
      * Can be used to load the {@link SpiritualRootStorage} from an {@link LivingEntity}.
      */
     public static SpiritualRoots getSpiritualRootFrom(@NonNull LivingEntity entity) {
-        return entity.eternalCraft$getStorage(SpiritualRootStorage.getKey());
+        return entity.eternalCore$getStorage(SpiritualRootStorage.getKey());
     }
 }

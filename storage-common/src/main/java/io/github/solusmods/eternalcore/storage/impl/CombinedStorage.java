@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CombinedStorage {
-    private static final String STORAGE_LIST_KEY = "eternalCraft_registry_storage";
-    private static final String STORAGE_ID_KEY = "eternalCraft_registry_storage_id";
+    private static final String STORAGE_LIST_KEY = "eternalCore_registry_storage";
+    private static final String STORAGE_ID_KEY = "eternalCore_registry_storage_id";
     private final Map<ResourceLocation, Storage> storages = new HashMap<>();
     private final StorageHolder holder;
 
@@ -46,7 +46,7 @@ public class CombinedStorage {
             // Get storage id
             ResourceLocation id = ResourceLocation.parse(entryTag.getString(STORAGE_ID_KEY));
             // Construct storage
-            Storage storage = StorageManager.constructStorageFor(this.holder.eternalCraft$getStorageType(), id, holder);
+            Storage storage = StorageManager.constructStorageFor(this.holder.eternalCore$getStorageType(), id, holder);
             if (storage == null) {
                 EternalCoreStorage.LOG.warn("Failed to construct storage for id {}. All information about this storage will be dropped!", id);
                 return;

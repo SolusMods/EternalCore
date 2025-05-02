@@ -4,6 +4,9 @@ import com.mojang.datafixers.util.Pair;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
 import io.github.solusmods.eternalcore.storage.api.*;
+import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncChunkStorageC2SPayload;
+import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncEntityStorageC2SPayload;
+import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncWorldStorageCTSPayload;
 import io.github.solusmods.eternalcore.storage.impl.network.s2c.StorageSyncPayload;
 import io.github.solusmods.eternalcore.storage.impl.network.s2c.SyncChunkStoragePayload;
 import io.github.solusmods.eternalcore.storage.impl.network.s2c.SyncEntityStoragePayload;
@@ -54,13 +57,13 @@ public final class StorageManager {
         // Copy storage from old player to new player
         PlayerEvent.PLAYER_CLONE.register((oldPlayer, newPlayer, wonGame) -> {
             CombinedStorage newStorage = new CombinedStorage(newPlayer);
-            newStorage.load(oldPlayer.eternalCraft$getCombinedStorage().toNBT());
-            newPlayer.eternalCraft$setCombinedStorage(newStorage);
+            newStorage.load(oldPlayer.eternalCore$getCombinedStorage().toNBT());
+            newPlayer.eternalCore$setCombinedStorage(newStorage);
         });
     }
 
     public static void initialStorageFilling(StorageHolder holder) {
-        switch (holder.eternalCraft$getStorageType()) {
+        switch (holder.eternalCore$getStorageType()) {
             case ENTITY -> ENTITY_STORAGE_REGISTRY.attach((Entity) holder);
             case CHUNK -> CHUNK_STORAGE_REGISTRY.attach((LevelChunk) holder);
             case WORLD -> LEVEL_STORAGE_REGISTRY.attach((Level) holder);
@@ -72,7 +75,7 @@ public final class StorageManager {
     }
 
     public static void syncTracking(StorageHolder source, boolean update) {
-        NetworkManager.sendToPlayers(source.eternalCraft$getTrackingPlayers(), createSyncPacket(source, update));
+        NetworkManager.sendToPlayers(source.eternalCore$getTrackingPlayers(), createSyncPacket(source, update));
     }
 
     public static void syncTarget(StorageHolder source, ServerPlayer target) {
@@ -80,18 +83,18 @@ public final class StorageManager {
     }
 
     public static void toServer(StorageHolder storageHolder){
-        NetworkManager.sendToServer(createSyncPacket(storageHolder, true));
+        NetworkManager.sendToServer(createSyncToServerPacket(storageHolder, false));
     }
 
     public static StorageSyncPayload createSyncPacket(StorageHolder source, boolean update) {
-        return switch (source.eternalCraft$getStorageType()) {
+        return switch (source.eternalCore$getStorageType()) {
             case ENTITY -> {
                 Entity sourceEntity = (Entity) source;
                 yield new SyncEntityStoragePayload(
                         update,
                         sourceEntity.getId(),
-                        update ? sourceEntity.eternalCraft$getCombinedStorage().createUpdatePacket(true)
-                                : sourceEntity.eternalCraft$getCombinedStorage().toNBT()
+                        update ? sourceEntity.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                                : sourceEntity.eternalCore$getCombinedStorage().toNBT()
                 );
             }
             case CHUNK -> {
@@ -99,14 +102,42 @@ public final class StorageManager {
                 yield new SyncChunkStoragePayload(
                         update,
                         sourceChunk.getPos(),
-                        update ? sourceChunk.eternalCraft$getCombinedStorage().createUpdatePacket(true)
-                                : sourceChunk.eternalCraft$getCombinedStorage().toNBT()
+                        update ? sourceChunk.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                                : sourceChunk.eternalCore$getCombinedStorage().toNBT()
                 );
             }
             case WORLD -> new SyncWorldStoragePayload(
                     update,
-                    update ? source.eternalCraft$getCombinedStorage().createUpdatePacket(true)
-                            : source.eternalCraft$getCombinedStorage().toNBT()
+                    update ? source.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                            : source.eternalCore$getCombinedStorage().toNBT()
+            );
+        };
+    }
+
+    public static StorageSyncPayload createSyncToServerPacket(StorageHolder source, boolean update) {
+        return switch (source.eternalCore$getStorageType()) {
+            case ENTITY -> {
+                Entity sourceEntity = (Entity) source;
+                yield new SyncEntityStorageC2SPayload(
+                        update,
+                        sourceEntity.getId(),
+                        update ? sourceEntity.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                                : sourceEntity.eternalCore$getCombinedStorage().toNBT()
+                );
+            }
+            case CHUNK -> {
+                LevelChunk sourceChunk = (LevelChunk) source;
+                yield new SyncChunkStorageC2SPayload(
+                        update,
+                        sourceChunk.getPos(),
+                        update ? sourceChunk.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                                : sourceChunk.eternalCore$getCombinedStorage().toNBT()
+                );
+            }
+            case WORLD -> new SyncWorldStorageCTSPayload(
+                    update,
+                    update ? source.eternalCore$getCombinedStorage().createUpdatePacket(true)
+                            : source.eternalCore$getCombinedStorage().toNBT()
             );
         };
     }
@@ -122,7 +153,7 @@ public final class StorageManager {
 
     @Nullable
     public static <T extends Storage> T getStorage(StorageHolder holder, StorageKey<T> storageKey) {
-        return holder.eternalCraft$getStorage(storageKey);
+        return holder.eternalCore$getStorage(storageKey);
     }
 
     private static class StorageRegistryImpl<T extends StorageHolder> implements StorageEvents.StorageRegistry<T> {
@@ -138,7 +169,7 @@ public final class StorageManager {
             this.registry.forEach((id, checkAndFactory) -> {
                 if (!checkAndFactory.getFirst().test(target)) return;
                 Storage storage = checkAndFactory.getSecond().create(target);
-                target.eternalCraft$attachStorage(id, storage);
+                target.eternalCore$attachStorage(id, storage);
             });
         }
     }
