@@ -1,0 +1,4 @@
+loom {
+    accessWidenerPath = file("src/main/resources/${archives_name}_network.accesswidener")
+}
+

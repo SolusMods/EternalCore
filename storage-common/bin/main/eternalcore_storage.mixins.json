@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "io.github.solusmods.eternalcore.storage.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+  ],
+  "mixins": [
+    "MixinChunkSerializer",
+    "MixinDataFixTypes",
+    "MixinEntity",
+    "MixinLevel",
+    "MixinLevelChunk"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

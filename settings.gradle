@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
+        maven { url "https://files.minecraftforge.net/maven/" }
+        maven {
+            name = "Parchment"
+            url = "https://maven.parchmentmc.org"
+            content {
+                includeGroupAndSubgroups("org.parchmentmc")
+            }
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'eternalcore'
+
+["config", "network", "realm", "storage", "testing", "stage", "spiritual_root", "element"].forEach { module ->
+    include ":$module-common"
+    include ":$module-fabric"
+    include ":$module-neoforge"
+}

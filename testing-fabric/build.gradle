@@ -1,0 +1,20 @@
+loom {
+    mods {
+        project(":testing-common").includedProjects.forEach {
+            def moduleProject = project("$it-fabric")
+            register(moduleProject.name) {
+                sourceSet("main", moduleProject)
+            }
+        }
+    }
+}
+
+
+dependencies {
+    project(":testing-common").includedProjects.forEach {
+        common(project(path: "$it-common", configuration: 'namedElements'))
+        implementation(project(path: "$it-fabric", configuration: 'namedElements'))
+    }
+    modImplementation("com.electronwill.night-config:toml:3.8.1")
+    modImplementation("com.electronwill.night-config:core:3.8.1")
+}

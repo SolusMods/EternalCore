@@ -1,0 +1,56 @@
+package io.github.solusmods.eternalcore.spiritual_root.api;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+// Enum для типів коренів
+@Getter
+@RequiredArgsConstructor
+public enum RootType {
+    METAL("metal", 0xC0C0C0), // Срібний колір
+    WOOD("wood", 0x228B22),  // Лісовий зелений
+    WATER("water", 0x1E90FF), // Синій
+    FIRE("fire", 0xFF4500),  // Червоно-оранжевий
+    EARTH("earth", 0x8B4513), // Коричневий
+    AIR("air", 0xF0FFFF),    // Світло-блакитний
+    YIN("yin", 0x483D8B),    // Темно-синій
+    THUNDER("thunder", 0xFFD700), // Золотий
+    DARKNESS("darkness", 0x2F4F4F), // Темно-сірий
+    LIGHT("light", 0xFFFFE0), // Світло-жовтий
+    SPACE("space", 0x9932CC), // Фіолетовий
+    CHAOS("chaos", 0xFF00FF), // Пурпурний
+    DEMONIC("demonic", 0x800000), // Темно-червоний
+    BUDDHIST("buddhist", 0xDAA520), // Золотисто-коричневий
+    DIVINE("divine", 0xFFFFFF); // Білий
+
+    private final String name;
+    private final int color;
+
+
+    // Отримати протилежний тип
+    public RootType getOpposite() {
+        switch (this) {
+            case METAL:
+                return WOOD;
+            case WOOD:
+                return METAL;
+            case WATER:
+                return FIRE;
+            case FIRE:
+                return WATER;
+            case EARTH:
+                return AIR;
+            case AIR:
+                return EARTH;
+            case YIN:
+                return LIGHT;
+            case LIGHT:
+                return YIN;
+            case DARKNESS:
+                return LIGHT;
+            default:
+                return null; // Деякі типи не мають прямих протилежностей
+        }
+    }
+
+}

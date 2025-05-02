@@ -1,0 +1,32 @@
+loom {
+    mods {
+        project(":testing-common").includedProjects.forEach {
+            def moduleProject = project("$it-neoforge")
+            register(moduleProject.name) {
+                sourceSet("main", moduleProject)
+            }
+        }
+    }
+    runs {
+        client {
+            client()
+            configName = "NeoForge Client"
+            ideConfigGenerated = true
+            runDir = "run"
+        }
+        server {
+            server()
+            configName = "NeoForge Server"
+            ideConfigGenerated = true
+            runDir = "run"
+        }
+    }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
+    project(":testing-common").includedProjects.forEach {
+        common(project(path: "$it-common", configuration: 'namedElements'))
+        implementation(project(path: "$it-neoforge", configuration: 'namedElements'))
+    }
+}

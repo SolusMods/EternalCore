@@ -1,0 +1,7 @@
+loom {
+    accessWidenerPath = project(":config-common").loom.accessWidenerPath
+}
+
+dependencies {
+    implementation project(path: ":network-common", configuration: 'transformProductionNeoForge')
+}

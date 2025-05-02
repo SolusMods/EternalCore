@@ -1,0 +1,5 @@
+accessWidener v2 named
+
+transitive-accessible field net/minecraft/server/level/ChunkMap entityMap Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+transitive-accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
+transitive-accessible field net/minecraft/server/level/ChunkMap$TrackedEntity seenBy Ljava/util/Set;
