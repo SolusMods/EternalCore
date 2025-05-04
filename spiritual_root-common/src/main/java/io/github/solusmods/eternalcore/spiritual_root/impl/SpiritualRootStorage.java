@@ -68,7 +68,14 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         Changeable<MutableComponent> rootMessage = Changeable.of(component);
         Changeable<Boolean> notifyPlayer = Changeable.of(notify);
         EventResult result = SpiritualRootEvents.ADD.invoker().add(instance, getOwner(), advance, notifyPlayer, rootMessage);
-        return !result.isFalse();
+        if (result.isFalse()) return false;
+        LivingEntity owner = getOwner();
+        if (rootMessage.isPresent()) getOwner().sendSystemMessage(rootMessage.get());
+        instance.markDirty();
+        instance.onAdd(owner);
+        spiritualRoots.add(instance);
+        markDirty();
+        return true;
     }
 
     @Override
