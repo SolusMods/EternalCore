@@ -112,13 +112,8 @@ public class StageStorage extends Storage implements Stages, IReachedStages {
 
     @Override
     public void load(CompoundTag data) {
-        loadSingleInstances(data);
+        stageInstance = StageInstance.fromNBT(data.getCompound(STAGE_KEY));
         loadCollections(data);
-    }
-
-    private void loadSingleInstances(CompoundTag data) {
-        if (data.contains(STAGE_KEY))
-            stageInstance = StageInstance.fromNBT(data.getCompound(STAGE_KEY));
     }
 
     private void loadCollections(CompoundTag data) {

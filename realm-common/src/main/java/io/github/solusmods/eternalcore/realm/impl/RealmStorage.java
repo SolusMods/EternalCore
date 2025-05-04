@@ -97,7 +97,7 @@ public class RealmStorage extends Storage implements Realms, IReachedRealms {
 
     @Override
     public void load(CompoundTag data) {
-        loadSingleInstances(data);
+        realm = RealmInstance.fromNBT(data.getCompound(REALM_KEY));
         loadCollections(data);
     }
 

@@ -79,6 +79,7 @@ public abstract class Storage {
 
     public  <T> void loadInstanceCollection(CompoundTag data, String collectionKey, Collection<T> collection,
                                             NBTDeserializer<T> deserializer) {
+        if (collection == null) return;
         collection.clear();
         if (data.contains(collectionKey, Tag.TAG_COMPOUND)) {
             CompoundTag collectionTag = data.getCompound(collectionKey);
@@ -100,6 +101,7 @@ public abstract class Storage {
                                                  NBTDeserializer<I> deserializer,
                                                  BiFunction<CompoundTag, String, V> valueExtractor,
                                                  GetResourceLocation<I> location) {
+        if (map == null) return;
         map.clear();
         if (data.contains(collectionKey, Tag.TAG_COMPOUND)) {
             CompoundTag collectionTag = data.getCompound(collectionKey);

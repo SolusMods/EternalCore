@@ -22,19 +22,19 @@ public interface StorageHolder {
     }
 
     @NotNull
-    default <T extends Storage> Optional<T> eternalCraft$getStorageOptional(StorageKey<T> storageKey) {
+    default <T extends Storage> Optional<T> eternalCore$getStorageOptional(StorageKey<T> storageKey) {
         return Optional.ofNullable(this.eternalCore$getStorage(storageKey));
     }
 
-    default void eternalCraft$sync(boolean update) {
+    default void eternalCore$sync(boolean update) {
         StorageManager.syncTracking(this, update);
     }
 
-    default void eternalCraft$sync() {
-        this.eternalCraft$sync(false);
+    default void eternalCore$sync() {
+        this.eternalCore$sync(false);
     }
 
-    default void eternalCraft$sync(@NotNull ServerPlayer target) {
+    default void eternalCore$sync(@NotNull ServerPlayer target) {
         StorageManager.syncTarget(this, target);
     }
 

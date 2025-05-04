@@ -46,13 +46,8 @@ public class ElementsStorage extends Storage implements Elements {
 
     @Override
     public void load(CompoundTag data) {
-        loadSingleInstances(data);
+        element = ElementInstance.fromNBT(data.getCompound(DOMINANT_ELEMENT_KEY));
         loadCollections(data);
-    }
-
-    private void loadSingleInstances(CompoundTag data) {
-        if (data.contains(DOMINANT_ELEMENT_KEY))
-            element = ElementInstance.fromNBT(data.getCompound(DOMINANT_ELEMENT_KEY));
     }
 
     private void loadCollections(CompoundTag data) {

@@ -89,7 +89,7 @@ public class MixinEntity implements StorageHolder {
     @Inject(method = "tick", at = @At("RETURN"))
     void onTickSyncCheck(CallbackInfo ci) {
         if (this.level.isClientSide()) return;
-        this.level.getProfiler().push("eternalCraftSyncCheck");
+        this.level.getProfiler().push("eternalCoreSyncCheck");
         if (this.storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
         this.level.getProfiler().pop();
     }

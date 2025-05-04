@@ -3,6 +3,7 @@
   "package": "io.github.solusmods.eternalcore.stage.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
+  "refmap": "eternalcore_stage.refmap.json",
   "client": [
   ],
   "mixins": [

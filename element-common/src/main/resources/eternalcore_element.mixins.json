@@ -3,6 +3,7 @@
   "package": "io.github.solusmods.eternalcore.element.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
+  "refmap": "eternalcore_element.refmap.json",
   "client": [
   ],
   "mixins": [

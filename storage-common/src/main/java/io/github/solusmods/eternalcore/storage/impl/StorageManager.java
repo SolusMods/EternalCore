@@ -38,20 +38,20 @@ public final class StorageManager {
         StorageEvents.REGISTER_ENTITY_STORAGE.invoker().register(ENTITY_STORAGE_REGISTRY);
         // Initial client synchronization
         PlayerEvent.PLAYER_JOIN.register(player -> {
-            player.eternalCraft$sync(player);
+            player.eternalCore$sync(player);
             ServerLevel level = player.serverLevel();
-            level.eternalCraft$sync(player);
+            level.eternalCore$sync(player);
         });
         // Synchronization on respawn and dimension change
         PlayerEvent.PLAYER_RESPAWN.register((player, b, removalReason) -> {
-            player.eternalCraft$sync(player);
+            player.eternalCore$sync(player);
             ServerLevel level = player.serverLevel();
-            level.eternalCraft$sync(player);
+            level.eternalCore$sync(player);
         });
         PlayerEvent.CHANGE_DIMENSION.register((player, resourceKey, resourceKey1) -> {
-            player.eternalCraft$sync(player);
+            player.eternalCore$sync(player);
             ServerLevel level = player.serverLevel();
-            level.eternalCraft$sync(player);
+            level.eternalCore$sync(player);
         });
 
         // Copy storage from old player to new player
@@ -83,7 +83,7 @@ public final class StorageManager {
     }
 
     public static void toServer(StorageHolder storageHolder){
-        NetworkManager.sendToServer(createSyncToServerPacket(storageHolder, false));
+        NetworkManager.sendToServer(createSyncToServerPacket(storageHolder, true));
     }
 
     public static StorageSyncPayload createSyncPacket(StorageHolder source, boolean update) {
