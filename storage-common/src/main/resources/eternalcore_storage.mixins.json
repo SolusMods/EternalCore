@@ -10,7 +10,8 @@
     "MixinDataFixTypes",
     "MixinEntity",
     "MixinLevel",
-    "MixinLevelChunk"
+    "MixinLevelChunk",
+    "MixinServerLevel"
   ],
   "injectors": {
     "defaultRequire": 1

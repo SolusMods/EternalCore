@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "io.github.solusmods.eternalcore.realm.mixin",
+  "package": "io.github.solusmods.eternalcore.spiritual_root.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [

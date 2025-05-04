@@ -2,12 +2,12 @@ plugins {
     id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
-    id "io.freefair.lombok" version "8.10" apply false
-    id "com.github.gmazzo.buildconfig" version "5.4.0" apply false
-    id "idea"
+    id 'io.freefair.lombok' version '8.10' apply false
+    id 'com.github.gmazzo.buildconfig' version '5.4.0' apply false
+    id 'idea'
+    id 'java'
     id 'org.jreleaser' version '1.13.1' apply false
-    // Required for NeoGradle
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.7'
 }
 
 architectury {
@@ -19,13 +19,10 @@ allprojects {
     version = rootProject.mod_version
 }
 
-
 subprojects {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
-    apply {
-        plugin("io.freefair.lombok")
-    }
+    apply plugin: 'io.freefair.lombok'
 
     if (!project.name.startsWith("testing")) {
         apply plugin: 'org.jreleaser'
@@ -71,10 +68,8 @@ subprojects {
 
     loom {
         enableTransitiveAccessWideners = true
-        silentMojangMappingsLicense()
 
         runs {
-            // This runs block adds Parchment to all IDE run configurations
             configureEach {
                 ideConfigGenerated(true)
                 vmArg("-Dmixin.env.remapRefMap=true")
@@ -99,23 +94,22 @@ subprojects {
         }
     }
 
-
     base {
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
-    if (project.name.endsWith("common")){
+    if (project.name.endsWith("common")) {
         configurations {
             named
         }
-        // Реєстрація задачі namedJar
-        task namedJar(type: Jar) {
-            archiveClassifier.set('core')
+
+        task apiJar(type: Jar) {
+            archiveClassifier.set('api')
             from sourceSets.main.output
         }
 
         artifacts {
-            named namedJar
+            named apiJar
         }
     }
 
@@ -136,16 +130,15 @@ subprojects {
                 developmentNeoForge.extendsFrom common
             }
 
-
             shadowBundle {
                 canBeResolved = true
                 canBeConsumed = false
             }
         }
-
     }
 
     repositories {
+        // NeoForged repository only added when needed
         if (project.name.endsWith("neoforge")) {
             maven {
                 name = 'NeoForged'
@@ -153,10 +146,7 @@ subprojects {
             }
         }
 
-        maven {
-            name = 'ParchmentMC'
-            url = 'https://maven.parchmentmc.org'
-        }
+        // Using official mappings instead of Parchment
 
         exclusiveContent {
             forRepository {
@@ -165,21 +155,19 @@ subprojects {
                     url = "https://api.modrinth.com/maven"
                 }
             }
-            //forRepositories(fg.repository)
             filter {
                 includeGroup "maven.modrinth"
             }
         }
+
+        mavenCentral()
     }
 
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        mappings loom.layered {
-            it.officialMojangMappings {
-                setNameSyntheticMembers(false)
-            }
-            it.parchment("org.parchmentmc.data:parchment-${parchment_version}")
-        }
+
+        // Using official Mojang mappings only
+        mappings loom.officialMojangMappings()
 
         if (project.name.endsWith("common")) {
             modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
@@ -207,15 +195,100 @@ subprojects {
     java {
         withSourcesJar()
         withJavadocJar()
-
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = 21
+        options.encoding = 'UTF-8'
+        options.release = 21
+        options.incremental = true
+        options.fork = true
+    }
+
+    if (!project.name.endsWith("common")) {
+        processResources {
+            if (project.name.endsWith("neoforge")) {
+                def placeholders = [
+                        version: project.version,
+                        mod_id: project.mod_id,
+                        mod_name: "$mod_display_name - ${project.module_name.capitalize()}",
+                        architectury_version: architectury_api_version,
+                        minecraft_version: minecraft_version,
+                        license: "GPLv3"
+                ]
+
+                inputs.properties(placeholders)
+
+                filesMatching('META-INF/neoforge.mods.toml') {
+                    expand placeholders
+                }
+            } else if (project.name.endsWith("fabric")) {
+                def placeholders = [
+                        version: project.version,
+                        mod_id: project.mod_id,
+                        mod_name: "$mod_display_name - ${project.module_name.capitalize()}",
+                        architectury_version: architectury_api_version,
+                        minecraft_version: minecraft_version,
+                        fabric_loader_version: fabric_loader_version,
+                        license: "GPLv3"
+                ]
+
+                inputs.properties(placeholders)
+
+                filesMatching('fabric.mod.json') {
+                    expand placeholders
+
+                    if (!project.name.startsWith("testing")) {
+                        filter { String line ->
+                            if (line.contains('"mixins":')) {
+                                var modifiedLine = "  \"accessWidener\": \"${project.mod_id}.accesswidener\",\n" + line
+                                return modifiedLine
+                            }
+                            return line
+                        }
+                    }
+                }
+            }
+        }
+
+        shadowJar {
+            configurations = [project.configurations.shadowBundle]
+            archiveClassifier = 'dev-shadow'
+        }
+
+        remapJar {
+            input.set shadowJar.archiveFile
+            dependsOn shadowJar
+        }
+
+        configurations {
+            named
+        }
+    }
+
+    if (project.name.endsWith("common")) {
+        buildConfig {
+            className("ModuleConstants")
+            packageName(project.group + ".${rootProject.name}.$project.module_name")
+            useJavaOutput()
+            buildConfigField(String, "MOD_ID", "$project.mod_id")
+        }
+    }
+
+    if (!project.name.endsWith("common")) {
+        task copyJar(type: Copy) {
+            from remapJar
+            into "${rootProject.projectDir}/build/${module_type}"
+            dependsOn remapJar
+        }
+
+        build.dependsOn copyJar
     }
 
     if (!project.name.startsWith("testing")) {
@@ -226,6 +299,7 @@ subprojects {
                 active = 'ALWAYS'
                 armored = true
             }
+
             deploy {
                 maven {
                     mavenCentral {
@@ -238,22 +312,19 @@ subprojects {
                 }
             }
         }
+
         publishing {
             publications {
                 mavenJava(MavenPublication) {
-                    artifactId = base.archivesName.get()
-
-                    if (project.tasks.findByName("namedJar")) {
-                        // Не використовуємо from components.java
-                        artifact(namedJar) {
-                            classifier = null // Без classifier, щоб став основним .jar
-                        }
+                    artifactId base.archivesName.get()
+                    from components.java
+                    if (project.tasks.findByName("apiJar")) {
+                        artifact apiJar
                     }
 
                     pom {
                         name = "$mod_display_name - ${project.module_name.capitalize()}"
                         description = "An Open Source Minecraft Modding Library"
-
 
                         licenses {
                             license {
@@ -275,14 +346,14 @@ subprojects {
             repositories {
                 maven {
                     name = "cloudsmith"
-                    url = "https://maven.cloudsmith.io/solusmods/eternalcore/"
                     def releasesRepoUrl = "https://maven.cloudsmith.io/solusmods/eternalcore/"
                     def snapshotsRepoUrl = "https://maven.cloudsmith.io/solusmods/eternalcore/"
                     url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                     credentials {
-                        username = System.getenv().getOrDefault("CLOUDSMITH_LOGIN", "login")
-                        password = System.getenv().getOrDefault("CLOUDSMITH_API", "token")
+                        username = System.getenv().getOrDefault("CLOUDSMITH_LOGIN", "skillfi")
+                        password = System.getenv().getOrDefault("CLOUDSMITH_API", "2b95bc275979eb40ff0272a414150deac71ceee9")
                     }
+                }
             }
         }
 
@@ -291,114 +362,7 @@ subprojects {
             dir.mkdirs()
         }
     }
-    }
 
-    if (!project.name.endsWith("common")) {
-        processResources {
-            if (project.name.endsWith("neoforge")) {
-                def placeholders = [
-                        version              : project.version,
-                        mod_id               : project.mod_id,
-                        mod_name             : "$mod_display_name - ${project.module_name.capitalize()}",
-                        architectury_version : architectury_api_version,
-                        minecraft_version    : minecraft_version,
-                        license              : "GPLv3"
-                ]
-
-                placeholders.forEach { key, value ->
-                    inputs.property key, value
-                }
-
-                filesMatching('META-INF/neoforge.mods.toml') {
-                    expand placeholders
-                }
-            } else if (project.name.endsWith("fabric")) {
-                def placeholders = [
-                        version              : project.version,
-                        mod_id               : project.mod_id,
-                        mod_name             : "$mod_display_name - ${project.module_name.capitalize()}",
-                        architectury_version : architectury_api_version,
-                        minecraft_version    : minecraft_version,
-                        fabric_loader_version: fabric_loader_version,
-                        license              : "GPLv3"
-                ]
-
-                placeholders.forEach { key, value ->
-                    inputs.property key, value
-                }
-
-                filesMatching('fabric.mod.json') {
-                    expand placeholders
-
-                    if (!project.name.startsWith("testing")) {
-                        filter { String line ->
-                            if (line.contains('"mixins":')) {
-                                var modifiedLine = "  \"accessWidener\": \"${project.mod_id}.accesswidener\",\n" + line
-
-                                return modifiedLine
-                            }
-                            return line
-                        }
-                    }
-                }
-            }
-        }
-
-        shadowJar {
-            configurations = [project.configurations.shadowBundle]
-            archiveClassifier = 'dev-shadow'
-        }
-
-        remapJar {
-            input.set shadowJar.archiveFile
-        }
-    }
-
-    if (project.name.endsWith("common")) {
-        buildConfig {
-            className("ModuleConstants")
-            packageName(project.group + ".${rootProject.name}.$project.module_name")
-            useJavaOutput()
-            buildConfigField(String, "MOD_ID", "$project.mod_id")
-        }
-    }
-
-    if (!project.name.endsWith("common")) {
-        task copyJar(type: Copy) {
-            from remapJar
-            into "${rootProject.projectDir}/build/${module_type}"
-        }
-        build.dependsOn copyJar
-    }
-
-    if (project.name.endsWith("neoforge")){
-        shadowJar {
-            exclude "fabric.mod.json"
-            exclude "architectury.common.json"
-
-            configurations = [project.configurations.shadowBundle]
-            archiveClassifier = "dev-shadow"
-        }
-
-        remapJar {
-            input.set shadowJar.archiveFile
-            dependsOn shadowJar
-            archiveClassifier = "neoforge"
-            atAccessWideners.add("${project.mod_id}.accesswidener") // this is a path inside the mod jar
-        }
-    }
-
-    if (project.name.endsWith("common")){
-        components {
-            java {
-                withVariantsFromConfiguration(configurations.runtimeElements) {
-                    skip()
-                }
-            }
-        }
-    }
-
-    // Task to refresh IDE configuration - helps with mapping issues
     task refreshIdea(type: Delete) {
         delete project.file('.idea')
         delete project.file('*.iml')

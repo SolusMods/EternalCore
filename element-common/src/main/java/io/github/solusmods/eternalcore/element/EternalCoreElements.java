@@ -16,7 +16,7 @@ public class EternalCoreElements {
     }
 
     public static void init(){
-        ElementsStorage.init();
         ElementRegistry.init();
+        ElementsStorage.init();
     }
 }

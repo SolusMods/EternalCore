@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import static io.github.solusmods.eternalcore.network.ModuleConstants.MOD_ID;
 
 public record SyncEntityStorageC2SPayload(boolean isUpdate, int entityId, CompoundTag storageTag) implements StorageSyncPayload {
-    public static final Type<SyncEntityStorageC2SPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_storage"));
+    public static final Type<SyncEntityStorageC2SPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_entity_c2s_storage"));
     public static final StreamCodec<FriendlyByteBuf, SyncEntityStorageC2SPayload> STREAM_CODEC = CustomPacketPayload.codec(SyncEntityStorageC2SPayload::encode, SyncEntityStorageC2SPayload::new);
 
     public SyncEntityStorageC2SPayload(FriendlyByteBuf buf){

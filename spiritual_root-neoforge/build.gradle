@@ -6,3 +6,7 @@ dependencies {
     implementation project(path: ":network-common", configuration: 'transformProductionNeoForge')
     implementation project(path: ":storage-common", configuration: 'transformProductionNeoForge')
 }
+
+remapJar {
+    atAccessWideners.add("${project.mod_id}.accesswidener")
+}

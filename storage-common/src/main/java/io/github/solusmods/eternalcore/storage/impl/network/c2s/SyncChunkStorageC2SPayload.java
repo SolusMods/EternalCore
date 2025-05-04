@@ -18,7 +18,7 @@ public record SyncChunkStorageC2SPayload(
         ChunkPos chunkPos,
         CompoundTag storageTag
 ) implements StorageSyncPayload {
-    public static final Type<SyncChunkStorageC2SPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_chunk_storage"));
+    public static final Type<SyncChunkStorageC2SPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_chunk_c2s_storage"));
     public static final StreamCodec<FriendlyByteBuf, SyncChunkStorageC2SPayload> STREAM_CODEC = CustomPacketPayload.codec(SyncChunkStorageC2SPayload::encode, SyncChunkStorageC2SPayload::new);
 
     public SyncChunkStorageC2SPayload(FriendlyByteBuf buf) {

@@ -1,5 +1,7 @@
 package io.github.solusmods.eternalcore.realm;
 
+import io.github.solusmods.eternalcore.realm.impl.RealmRegistry;
+import io.github.solusmods.eternalcore.realm.impl.RealmStorage;
 import io.github.solusmods.eternalcore.realm.impl.network.RealmNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,8 @@ public class EternalCoreRealm {
     }
 
     public static void init(){
+        RealmStorage.init();
+        RealmRegistry.init();
         RealmNetwork.init();
     }
 }

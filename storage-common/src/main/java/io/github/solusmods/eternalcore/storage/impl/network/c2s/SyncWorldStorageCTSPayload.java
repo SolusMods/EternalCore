@@ -16,7 +16,7 @@ public record SyncWorldStorageCTSPayload(
         boolean isUpdate,
         CompoundTag storageTag
 ) implements StorageSyncPayload {
-    public static final Type<SyncWorldStorageCTSPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_world_storage"));
+    public static final Type<SyncWorldStorageCTSPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_world_c2s_storage"));
     public static final StreamCodec<FriendlyByteBuf, SyncWorldStorageCTSPayload> STREAM_CODEC = CustomPacketPayload.codec(SyncWorldStorageCTSPayload::encode, SyncWorldStorageCTSPayload::new);
 
     public SyncWorldStorageCTSPayload(FriendlyByteBuf buf) {
