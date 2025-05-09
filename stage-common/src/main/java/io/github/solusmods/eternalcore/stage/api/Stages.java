@@ -37,4 +37,6 @@ public interface Stages {
     boolean setStage(StageInstance instance, boolean advancement, boolean notify, @Nullable MutableComponent component);
 
     void markDirty();
+
+    void sync();
 }

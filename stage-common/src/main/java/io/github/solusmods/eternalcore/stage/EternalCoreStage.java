@@ -1,6 +1,8 @@
 package io.github.solusmods.eternalcore.stage;
 
+import io.github.solusmods.eternalcore.stage.impl.StageRegistry;
 import io.github.solusmods.eternalcore.stage.impl.StageStorage;
+import io.github.solusmods.eternalcore.stage.impl.network.StagesNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +21,8 @@ public class EternalCoreStage {
 
     public static void init(){
         StageStorage.init();
+        StagesNetwork.init();
+        StageRegistry.init();
     }
 
 }

@@ -1,0 +1,47 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+    withJavadocJar()
+}
+
+
+
+
+dependencies {
+    implementation 'org.jetbrains:annotations:24.1.0'
+}
+
+publishing {
+
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = base.archivesName.get()
+            artifact jar
+            artifact sourcesJar
+            artifact apiJar
+        }
+    }
+
+    repositories {
+        maven {
+            name = "cloudsmith"
+            url = "https://maven.cloudsmith.io/solusmods/eternalcore/"
+            def releasesRepoUrl = "https://maven.cloudsmith.io/solusmods/eternalcore/"
+            def snapshotsRepoUrl = "https://maven.cloudsmith.io/solusmods/eternalcore/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = System.getenv().getOrDefault("CLOUDSMITH_LOGIN", "skillfi")
+                password = System.getenv().getOrDefault("CLOUDSMITH_API", "2b95bc275979eb40ff0272a414150deac71ceee9")
+            }
+        }
+    }
+
+}
+
+
+

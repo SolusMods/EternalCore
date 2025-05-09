@@ -37,4 +37,6 @@ public interface IReachedStages {
     boolean addStage(StageInstance instance, boolean breakthrough, boolean teleportToSpawn, @Nullable MutableComponent component);
 
     void markDirty();
+
+    void sync();
 }

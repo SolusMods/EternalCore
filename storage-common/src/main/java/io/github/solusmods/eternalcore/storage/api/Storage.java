@@ -67,7 +67,6 @@ public abstract class Storage {
      */
     public void markDirty() {
         this.dirty = true;
-        sync();
     }
 
     /**
@@ -161,12 +160,6 @@ public abstract class Storage {
     public <T> void saveInstance(CompoundTag data, String instanceKey, T instance, NBTSerializer<T> serializer){
         if (instance != null)
             data.put(instanceKey, serializer.toNBT(instance));
-    }
-
-    public void sync(){
-        CompoundTag tag = new CompoundTag();
-        this.save(tag);
-        StorageManager.toServer(holder);
     }
 
 }

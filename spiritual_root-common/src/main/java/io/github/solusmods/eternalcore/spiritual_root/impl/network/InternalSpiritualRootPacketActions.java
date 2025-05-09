@@ -3,9 +3,11 @@ package io.github.solusmods.eternalcore.spiritual_root.impl.network;
 import dev.architectury.networking.NetworkManager;
 
 import io.github.solusmods.eternalcore.spiritual_root.impl.network.c2s.RequestSpiritualRootAdvancePacket;
+import io.github.solusmods.eternalcore.spiritual_root.impl.network.c2s.SyncSpiritualRootStoragePayload;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -21,5 +23,12 @@ public class InternalSpiritualRootPacketActions {
         Player player = minecraft.player;
         if (player == null) return;
         NetworkManager.sendToServer(new RequestSpiritualRootAdvancePacket(realm));
+    }
+
+    public static void sendSyncStoragePayload(CompoundTag data) {
+        var minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null) return;
+        NetworkManager.sendToServer(new SyncSpiritualRootStoragePayload(data));
     }
 }

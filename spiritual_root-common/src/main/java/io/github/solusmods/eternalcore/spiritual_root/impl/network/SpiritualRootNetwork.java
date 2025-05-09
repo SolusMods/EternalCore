@@ -2,6 +2,7 @@ package io.github.solusmods.eternalcore.spiritual_root.impl.network;
 
 import io.github.solusmods.eternalcore.network.api.util.NetworkUtils;
 import io.github.solusmods.eternalcore.spiritual_root.impl.network.c2s.RequestSpiritualRootAdvancePacket;
+import io.github.solusmods.eternalcore.spiritual_root.impl.network.c2s.SyncSpiritualRootStoragePayload;
 
 public class SpiritualRootNetwork {
 
@@ -11,6 +12,7 @@ public class SpiritualRootNetwork {
     public static void init() {
         NetworkUtils.registerC2SPayload(RequestSpiritualRootAdvancePacket.TYPE,
                 RequestSpiritualRootAdvancePacket.STREAM_CODEC, RequestSpiritualRootAdvancePacket::handle);
+        NetworkUtils.registerC2SPayload(SyncSpiritualRootStoragePayload.TYPE, SyncSpiritualRootStoragePayload.STREAM_CODEC, SyncSpiritualRootStoragePayload::handle);
     }
 
 

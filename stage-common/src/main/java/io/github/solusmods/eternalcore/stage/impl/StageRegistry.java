@@ -5,11 +5,13 @@ import dev.architectury.registry.registries.RegistrarManager;
 import io.github.solusmods.eternalcore.stage.EternalCoreStage;
 import io.github.solusmods.eternalcore.stage.ModuleConstants;
 import io.github.solusmods.eternalcore.stage.api.Stage;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StageRegistry {
 
     private static final ResourceLocation registryId = EternalCoreStage.create("stages");
@@ -20,6 +22,6 @@ public class StageRegistry {
 
 
 
-    private StageRegistry() {
-    }
+
+    public static void init() {}
 }

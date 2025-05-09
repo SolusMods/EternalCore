@@ -42,7 +42,7 @@ public class RealmInstance implements Cloneable {
     public static RealmInstance fromNBT(CompoundTag tag) throws NullPointerException {
         ResourceLocation location = ResourceLocation.tryParse(tag.getString(REALM_KEY));
         Realm realm = RealmAPI.getRealmRegistry().get(location);
-        if (realm == null) throw new NullPointerException("No spiritual_root found for location: " + location);
+        if (realm == null) throw new NullPointerException("No realm found for location: " + location);
         RealmInstance instance = realm.createDefaultInstance();
         instance.deserialize(tag);
         return instance;

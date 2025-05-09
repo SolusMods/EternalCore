@@ -1,6 +1,7 @@
 package io.github.solusmods.eternalcore.storage.impl.network.c2s;
 
 
+import io.github.solusmods.eternalcore.storage.api.Storage;
 import io.github.solusmods.eternalcore.storage.api.StorageHolder;
 import io.github.solusmods.eternalcore.storage.impl.CombinedStorage;
 import io.github.solusmods.eternalcore.storage.impl.network.s2c.StorageSyncPayload;
@@ -47,13 +48,15 @@ public class ServerAccess {
     }
 
 
-    static void handleUpdatePacket(StorageHolder holder, StorageSyncPayload packet) {
+    static void handleUpdatePacket(StorageHolder holder, StoragesSyncPayload packet) {
         if (packet.isUpdate()) {
-            holder.eternalCore$getCombinedStorage().handleUpdatePacket(packet.storageTag());
+            Storage storage = holder.eternalCore$getStorage(packet.key());
+            storage.load(packet.storageTag());
         } else {
             CombinedStorage updatedStorage = new CombinedStorage(holder);
             updatedStorage.load(packet.storageTag());
             holder.eternalCore$setCombinedStorage(updatedStorage);
+            updatedStorage.toNBT();
         }
     }
 }

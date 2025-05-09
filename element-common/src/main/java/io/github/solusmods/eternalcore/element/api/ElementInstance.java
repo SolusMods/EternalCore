@@ -12,57 +12,124 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
+/**
+ * Представляє екземпляр елемента, який може бути застосований до сутностей.
+ * <p>
+ * Класс ElementInstance інкапсулює конкретний елемент з додатковими даними, такими як кількість елемента
+ * та будь-які інші специфічні дані, які зберігаються в NBT тезі. Цей клас також забезпечує
+ * можливість серіалізації/десеріалізації в NBT формат для збереження та синхронізації.
+ * </p>
+ */
 public class ElementInstance implements Cloneable{
+    /** Ключ для ідентифікатора елемента в NBT даних */
     public static final String ELEMENT_KEY = "element";
+    
+    /** Ключ для кількості елемента в NBT даних */
     public static final String AMOUNT_KEY = "amount";
+    
+    /** Постачальник зареєстрованого елемента */
     protected final RegistrySupplier<Element> elementRegistrySupplier;
+    
+    /** Додаткові дані елемента, збережені у форматі NBT */
     @Nullable
     private CompoundTag tag = null;
+    
+    /** Прапорець, що вказує, чи було змінено стан екземпляра після останньої синхронізації */
     @Getter
     private boolean dirty = false;
+    
+    /** Кількість елемента */
     @Getter
     private float amount;
 
+    /**
+     * Створює новий екземпляр елемента.
+     *
+     * @param element Тип елемента
+     */
     protected ElementInstance(Element element) {
         this.elementRegistrySupplier = ElementAPI.getElementRegistry().delegate(ElementAPI.getElementRegistry().getId(element));
     }
 
     /**
-     * Can be used to load a {@link ElementInstance} from a {@link CompoundTag}.
+     * Може бути використаний для завантаження {@link ElementInstance} з {@link CompoundTag}.
      * <p>
-     * The {@link CompoundTag} has to be created though {@link ElementInstance#toNBT()}
+     * {@link CompoundTag} повинен бути створений через {@link ElementInstance#toNBT()}
+     * </p>
+     *
+     * @param tag NBT тег, що містить дані елемента
+     * @return Новий екземпляр елемента, завантажений з NBT
      */
-    public static ElementInstance fromNBT(CompoundTag tag) throws NullPointerException {
+    public static ElementInstance fromNBT(CompoundTag tag) {
         ResourceLocation location = ResourceLocation.tryParse(tag.getString(ELEMENT_KEY));
-        Element element = ElementAPI.getElementRegistry().get(location);
-        if (element == null) throw new NullPointerException("No spiritual_root found for location: " + location);
-        ElementInstance instance = element.createDefaultInstance();
-        instance.deserialize(tag);
-        return instance;
+        if (!location.getNamespace().equals("minecraft")){
+            Element element = ElementAPI.getElementRegistry().get(location);
+            ElementInstance instance = element.createDefaultInstance();
+            instance.deserialize(tag);
+            return instance;
+        } else {
+            Element element = new Element(ElementType.NEUTRAL) {
+                @Override
+                public ElementType getType() {
+                    return super.getType();
+                }
+            };
+            return element.createDefaultInstance();
+        }
     }
 
     /**
-     * Used to get the {@link Element} type of this Instance.
+     * Викликається, коли цей екземпляр елемента додається до сутності.
+     * Делегує виклик до відповідного елемента.
+     *
+     * @param entity Сутність, до якої додається елемент
+     */
+    public void onAdd(LivingEntity entity) {
+        this.getElement().onAdd(this, entity);
+    }
+
+    /**
+     * Використовується для отримання типу {@link Element} цього екземпляра.
+     *
+     * @return Елемент, пов'язаний з цим екземпляром
      */
     public Element getElement() {
         return elementRegistrySupplier.get();
     }
 
+    /**
+     * Отримує ідентифікатор елемента.
+     *
+     * @return ResourceLocation ідентифікатор елемента
+     */
     public ResourceLocation getElementId() {
         return this.elementRegistrySupplier.getId();
     }
 
+    /**
+     * Встановлює кількість елемента та позначає екземпляр як змінений.
+     *
+     * @param amount Нова кількість елемента
+     */
     public void setAmount(float amount) {
         this.amount = amount;
         markDirty();
     }
 
+    /**
+     * Отримує протилежний елемент для цього екземпляра.
+     *
+     * @param entity Сутність, до якої застосовано елемент
+     * @return Протилежний елемент або null, якщо протилежного елемента немає
+     */
     public @Nullable Element getOpposite(LivingEntity entity){
         return getElement().getOpposite(this, entity);
     }
 
     /**
-     * Used to create an exact copy of the current instance.
+     * Використовується для створення точної копії поточного екземпляра.
+     *
+     * @return Копія цього екземпляра
      */
     public ElementInstance copy() {
         ElementInstance clone = new ElementInstance(getElement());
@@ -73,9 +140,12 @@ public class ElementInstance implements Cloneable{
     }
 
     /**
-     * This method is used to ensure that all required information are stored.
+     * Цей метод використовується для забезпечення того, що вся необхідна інформація збережена.
      * <p>
-     * Override {@link ElementInstance#serialize(CompoundTag)} to store your custom Data.
+     * Перевизначте {@link ElementInstance#serialize(CompoundTag)} для збереження власних даних.
+     * </p>
+     *
+     * @return CompoundTag з усіма даними екземпляра
      */
     public final CompoundTag toNBT() {
         CompoundTag nbt = new CompoundTag();
@@ -85,9 +155,10 @@ public class ElementInstance implements Cloneable{
     }
 
     /**
-     * Can be used to save custom data.
+     * Може бути використаний для збереження користувацьких даних.
      *
-     * @param nbt Tag with data from {@link ElementInstance#fromNBT(CompoundTag)}
+     * @param nbt Тег, в який будуть збережені дані
+     * @return Тег з серіалізованими даними
      */
     public CompoundTag serialize(CompoundTag nbt) {
         if (this.tag != null) nbt.put("tag", this.tag.copy());
@@ -96,7 +167,9 @@ public class ElementInstance implements Cloneable{
     }
 
     /**
-     * Can be used to load custom data.
+     * Може бути використаний для завантаження користувацьких даних.
+     *
+     * @param tag Тег, з якого будуть завантажені дані
      */
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
@@ -104,22 +177,29 @@ public class ElementInstance implements Cloneable{
     }
 
     /**
-     * Marks the current instance as dirty.
+     * Позначає поточний екземпляр як змінений.
      */
     public void markDirty() {
         this.dirty = true;
     }
 
     /**
-     * This Method is invoked to indicate that a {@link ElementInstance} has been synced with the clients.
+     * Цей метод викликається для позначення, що {@link ElementInstance} був синхронізований з клієнтами.
      * <p>
-     * Do <strong>NOT</strong> use that method on our own!
+     * <strong>НЕ</strong> використовуйте цей метод самостійно!
+     * </p>
      */
     @ApiStatus.Internal
     public void resetDirty() {
         this.dirty = false;
     }
 
+    /**
+     * Порівнює цей екземпляр з іншим об'єктом.
+     *
+     * @param o Об'єкт для порівняння
+     * @return true, якщо об'єкти рівні, false - інакше
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,22 +209,40 @@ public class ElementInstance implements Cloneable{
                 elementRegistrySupplier.getRegistryKey().equals(instance.elementRegistrySupplier.getRegistryKey());
     }
 
+    /**
+     * Обчислює хеш-код для цього екземпляра.
+     *
+     * @return Хеш-код
+     */
     @Override
     public int hashCode() {
         return Objects.hash(this.getElementId(), elementRegistrySupplier.getRegistryKey());
     }
 
+    /**
+     * Перевіряє, чи належить елемент до вказаного тегу.
+     *
+     * @param tag Тег для перевірки
+     * @return true, якщо елемент належить до тегу, false - інакше
+     */
     public boolean is(TagKey<Element> tag) {
         return this.elementRegistrySupplier.is(tag);
     }
 
     /**
-     * Used to get the {@link MutableComponent} name of this spiritual_root for translation.
+     * Використовується для отримання {@link MutableComponent} імені цього духовного кореня для перекладу.
+     *
+     * @return Компонент для відображення імені
      */
     public MutableComponent getDisplayName() {
         return this.getElement().getName();
     }
 
+    /**
+     * Створює клон цього екземпляра.
+     *
+     * @return Клон цього екземпляра
+     */
     @Override
     public ElementInstance clone() {
         try {

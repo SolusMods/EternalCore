@@ -1,9 +1,9 @@
 package io.github.solusmods.eternalcore.storage.impl.network.c2s;
 
-
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.utils.Env;
-import io.github.solusmods.eternalcore.storage.impl.network.s2c.StorageSyncPayload;
+import io.github.solusmods.eternalcore.storage.api.Storage;
+import io.github.solusmods.eternalcore.storage.api.StorageKey;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,19 +16,26 @@ import static io.github.solusmods.eternalcore.network.ModuleConstants.MOD_ID;
 public record SyncChunkStorageC2SPayload(
         boolean isUpdate,
         ChunkPos chunkPos,
-        CompoundTag storageTag
-) implements StorageSyncPayload {
+        CompoundTag storageTag,
+        StorageKey<? extends Storage> storageKey
+) implements StoragesSyncPayload {
     public static final Type<SyncChunkStorageC2SPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync_chunk_c2s_storage"));
     public static final StreamCodec<FriendlyByteBuf, SyncChunkStorageC2SPayload> STREAM_CODEC = CustomPacketPayload.codec(SyncChunkStorageC2SPayload::encode, SyncChunkStorageC2SPayload::new);
 
     public SyncChunkStorageC2SPayload(FriendlyByteBuf buf) {
-        this(buf.readBoolean(), buf.readChunkPos(), buf.readNbt());
+        this(
+                buf.readBoolean(),
+                buf.readChunkPos(),
+                buf.readNbt(),
+                new StorageKey<>(buf.readResourceLocation(), Storage.class)
+        );
     }
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeBoolean(isUpdate);
         buf.writeChunkPos(chunkPos);
         buf.writeNbt(storageTag);
+        buf.writeResourceLocation(storageKey.id());
     }
 
     public void handle(NetworkManager.PacketContext context) {
@@ -37,7 +44,12 @@ public record SyncChunkStorageC2SPayload(
     }
 
     @Override
-    public Type<SyncChunkStorageC2SPayload> type() {
+    public Type<? extends CustomPacketPayload> type() {
         return TYPE;
+    }
+
+    @Override
+    public StorageKey<?> key() {
+        return storageKey;
     }
 }

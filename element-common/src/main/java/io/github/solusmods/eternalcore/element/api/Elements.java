@@ -63,4 +63,6 @@ public interface Elements {
     boolean addElement(ElementInstance instance, boolean breakthrough, boolean teleportToSpawn, @Nullable MutableComponent component);
     
     void markDirty();
+
+    void sync();
 }

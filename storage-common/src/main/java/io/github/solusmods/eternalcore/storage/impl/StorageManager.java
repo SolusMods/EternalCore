@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
 import io.github.solusmods.eternalcore.storage.api.*;
+import io.github.solusmods.eternalcore.storage.impl.network.c2s.StoragesSyncPayload;
 import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncChunkStorageC2SPayload;
 import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncEntityStorageC2SPayload;
 import io.github.solusmods.eternalcore.storage.impl.network.c2s.SyncWorldStorageCTSPayload;
@@ -23,15 +24,52 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+/**
+ * Центральний менеджер сховищ для мода EternalCore.
+ * <p>
+ * Цей клас відповідає за реєстрацію, ініціалізацію, управління та синхронізацію сховищ
+ * для різних типів об'єктів гри (сутності, чанки, світи). Він реалізує систему збереження та
+ * відновлення даних між клієнтом та сервером, а також керує життєвим циклом сховищ.
+ * </p>
+ * <p>
+ * StorageManager забезпечує наступну функціональність:
+ * <ul>
+ *   <li>Реєстрація сховищ для різних типів об'єктів</li>
+ *   <li>Створення та приєднання сховищ до відповідних власників</li>
+ *   <li>Синхронізація даних сховищ між клієнтом та сервером</li>
+ *   <li>Обробка подій життєвого циклу гравця для підтримки цілісності даних</li>
+ * </ul>
+ * </p>
+ */
 public final class StorageManager {
 
+    /** Реєстр сховищ для сутностей */
     private static final StorageRegistryImpl<Entity> ENTITY_STORAGE_REGISTRY = new StorageRegistryImpl<>();
+    
+    /** Реєстр сховищ для чанків */
     private static final StorageRegistryImpl<LevelChunk> CHUNK_STORAGE_REGISTRY = new StorageRegistryImpl<>();
+    
+    /** Реєстр сховищ для світів */
     private static final StorageRegistryImpl<Level> LEVEL_STORAGE_REGISTRY = new StorageRegistryImpl<>();
 
+    /**
+     * Приватний конструктор для запобігання створенню екземплярів.
+     * Цей клас призначений для використання лише через статичні методи.
+     */
     private StorageManager() {
     }
 
+    /**
+     * Ініціалізує систему сховищ.
+     * <p>
+     * Цей метод реєструє всі події, необхідні для правильної роботи системи сховищ,
+     * включаючи обробники для подій приєднання гравця, респауну та зміни вимірів.
+     * Також налаштовується копіювання сховища при клонуванні гравця.
+     * </p>
+     * <p>
+     * Повинен бути викликаний один раз під час ініціалізації мода.
+     * </p>
+     */
     public static void init() {
         StorageEvents.REGISTER_WORLD_STORAGE.invoker().register(LEVEL_STORAGE_REGISTRY);
         StorageEvents.REGISTER_CHUNK_STORAGE.invoker().register(CHUNK_STORAGE_REGISTRY);
@@ -62,6 +100,15 @@ public final class StorageManager {
         });
     }
 
+    /**
+     * Заповнює власника сховища всіма зареєстрованими сховищами відповідного типу.
+     * <p>
+     * Цей метод викликається під час ініціалізації об'єкта, що реалізує інтерфейс {@link StorageHolder},
+     * щоб створити та приєднати всі необхідні сховища відповідно до його типу.
+     * </p>
+     *
+     * @param holder Власник сховища, для якого створюються сховища
+     */
     public static void initialStorageFilling(StorageHolder holder) {
         switch (holder.eternalCore$getStorageType()) {
             case ENTITY -> ENTITY_STORAGE_REGISTRY.attach((Entity) holder);
@@ -70,22 +117,55 @@ public final class StorageManager {
         }
     }
 
+    /**
+     * Синхронізує дані сховища з усіма гравцями, що відстежують джерело.
+     * <p>
+     * Використовує значення false для параметра update за замовчуванням.
+     * </p>
+     *
+     * @param source Джерело даних для синхронізації
+     */
     public static void syncTracking(StorageHolder source) {
         syncTracking(source, false);
     }
 
+    /**
+     * Синхронізує дані сховища з усіма гравцями, що відстежують джерело.
+     * <p>
+     * Якщо параметр update встановлено в true, буде відправлено тільки оновлені дані,
+     * в іншому випадку - весь стан сховища.
+     * </p>
+     *
+     * @param source Джерело даних для синхронізації
+     * @param update Флаг, що вказує, чи надсилати лише оновлення
+     */
     public static void syncTracking(StorageHolder source, boolean update) {
         NetworkManager.sendToPlayers(source.eternalCore$getTrackingPlayers(), createSyncPacket(source, update));
     }
 
+    /**
+     * Синхронізує дані сховища з конкретним цільовим гравцем.
+     * <p>
+     * Використовується для відправки повного стану сховища одному гравцю.
+     * </p>
+     *
+     * @param source Джерело даних для синхронізації
+     * @param target Гравець, якому надсилаються дані
+     */
     public static void syncTarget(StorageHolder source, ServerPlayer target) {
         NetworkManager.sendToPlayer(target, createSyncPacket(source, false));
     }
 
-    public static void toServer(StorageHolder storageHolder){
-        NetworkManager.sendToServer(createSyncToServerPacket(storageHolder, true));
-    }
-
+    /**
+     * Створює пакет синхронізації для відправки з сервера на клієнт.
+     * <p>
+     * Пакет залежить від типу власника сховища (сутність, чанк або світ).
+     * </p>
+     *
+     * @param source Джерело даних для синхронізації
+     * @param update Флаг, що вказує, чи надсилати лише оновлення
+     * @return Пакет синхронізації відповідного типу
+     */
     public static StorageSyncPayload createSyncPacket(StorageHolder source, boolean update) {
         return switch (source.eternalCore$getStorageType()) {
             case ENTITY -> {
@@ -114,34 +194,17 @@ public final class StorageManager {
         };
     }
 
-    public static StorageSyncPayload createSyncToServerPacket(StorageHolder source, boolean update) {
-        return switch (source.eternalCore$getStorageType()) {
-            case ENTITY -> {
-                Entity sourceEntity = (Entity) source;
-                yield new SyncEntityStorageC2SPayload(
-                        update,
-                        sourceEntity.getId(),
-                        update ? sourceEntity.eternalCore$getCombinedStorage().createUpdatePacket(true)
-                                : sourceEntity.eternalCore$getCombinedStorage().toNBT()
-                );
-            }
-            case CHUNK -> {
-                LevelChunk sourceChunk = (LevelChunk) source;
-                yield new SyncChunkStorageC2SPayload(
-                        update,
-                        sourceChunk.getPos(),
-                        update ? sourceChunk.eternalCore$getCombinedStorage().createUpdatePacket(true)
-                                : sourceChunk.eternalCore$getCombinedStorage().toNBT()
-                );
-            }
-            case WORLD -> new SyncWorldStorageCTSPayload(
-                    update,
-                    update ? source.eternalCore$getCombinedStorage().createUpdatePacket(true)
-                            : source.eternalCore$getCombinedStorage().toNBT()
-            );
-        };
-    }
-
+    /**
+     * Створює нове сховище для вказаного власника та ідентифікатора.
+     * <p>
+     * Цей метод використовується для динамічного створення сховищ за потреби.
+     * </p>
+     *
+     * @param type Тип сховища (сутність, чанк або світ)
+     * @param id Ідентифікатор сховища
+     * @param holder Власник сховища
+     * @return Створене сховище або null, якщо створення неможливе
+     */
     @Nullable
     public static Storage constructStorageFor(StorageType type, ResourceLocation id, StorageHolder holder) {
         return switch (type) {
@@ -151,20 +214,60 @@ public final class StorageManager {
         };
     }
 
+    /**
+     * Отримує сховище вказаного типу від власника.
+     * <p>
+     * Це зручний метод для доступу до сховища через ключ.
+     * </p>
+     *
+     * @param holder Власник сховища
+     * @param storageKey Ключ сховища
+     * @param <T> Тип сховища
+     * @return Сховище вказаного типу або null, якщо сховище не знайдено
+     */
     @Nullable
     public static <T extends Storage> T getStorage(StorageHolder holder, StorageKey<T> storageKey) {
         return holder.eternalCore$getStorage(storageKey);
     }
 
+    /**
+     * Внутрішня реалізація реєстру сховищ для певного типу власника.
+     * <p>
+     * Ця приватна внутрішня реалізація керує реєстрацією та приєднанням сховищ
+     * для конкретного типу власника (сутність, чанк або світ).
+     * </p>
+     *
+     * @param <T> Тип власника сховища
+     */
     private static class StorageRegistryImpl<T extends StorageHolder> implements StorageEvents.StorageRegistry<T> {
+        /** Мапа, що зберігає зареєстровані фабрики сховищ з предикатами перевірки */
         private final Map<ResourceLocation, Pair<Predicate<T>, StorageEvents.StorageFactory<T, ?>>> registry = new HashMap<>();
 
+        /**
+         * Реєструє новий тип сховища для власників даного типу.
+         *
+         * @param id Ідентифікатор сховища
+         * @param storageClass Клас сховища
+         * @param attachCheck Предикат, що перевіряє, чи потрібно приєднувати сховище
+         * @param factory Фабрика для створення екземплярів сховища
+         * @param <S> Тип сховища
+         * @return Ключ для доступу до зареєстрованого сховища
+         */
         @Override
         public <S extends Storage> StorageKey<S> register(ResourceLocation id, Class<S> storageClass, Predicate<T> attachCheck, StorageEvents.StorageFactory<T, S> factory) {
             this.registry.put(id, Pair.of(attachCheck, factory));
             return new StorageKey<>(id, storageClass);
         }
 
+        /**
+         * Приєднує всі необхідні сховища до цільового власника.
+         * <p>
+         * Перевіряє кожне зареєстроване сховище і, якщо предикат повертає true,
+         * створює та приєднує відповідне сховище до власника.
+         * </p>
+         *
+         * @param target Власник, до якого приєднуються сховища
+         */
         public void attach(T target) {
             this.registry.forEach((id, checkAndFactory) -> {
                 if (!checkAndFactory.getFirst().test(target)) return;

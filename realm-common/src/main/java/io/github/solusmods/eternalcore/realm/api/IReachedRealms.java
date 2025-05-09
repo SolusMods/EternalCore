@@ -37,4 +37,6 @@ public interface IReachedRealms {
     boolean addRealm(RealmInstance instance, boolean breakthrough, boolean teleportToSpawn, @Nullable MutableComponent component);
 
     void markDirty();
+
+    void sync();
 }

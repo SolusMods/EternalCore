@@ -37,4 +37,6 @@ public interface Realms {
     boolean setRealm(RealmInstance instance, boolean breakthrough, boolean notify, @Nullable MutableComponent component);
 
     void markDirty();
+
+    void sync();
 }

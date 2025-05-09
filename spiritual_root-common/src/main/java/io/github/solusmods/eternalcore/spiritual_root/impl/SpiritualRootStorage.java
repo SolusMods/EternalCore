@@ -4,6 +4,7 @@ import dev.architectury.event.EventResult;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
 import io.github.solusmods.eternalcore.spiritual_root.EternalCoreSpiritualRoot;
 import io.github.solusmods.eternalcore.spiritual_root.api.*;
+import io.github.solusmods.eternalcore.spiritual_root.impl.network.InternalSpiritualRootPacketActions;
 import io.github.solusmods.eternalcore.storage.api.Storage;
 import io.github.solusmods.eternalcore.storage.api.StorageEvents;
 import io.github.solusmods.eternalcore.storage.api.StorageHolder;
@@ -12,12 +13,16 @@ import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * Клас для зберігання та управління духовними коренями сутності.
+ * Реалізує інтерфейс {@link SpiritualRoots} та розширює {@link Storage}.
+ */
 public class SpiritualRootStorage extends Storage implements SpiritualRoots {
     private static final String SPIRITUAL_ROOTS_KEY = "spiritual_roots_key";
     public static final ResourceLocation ID = EternalCoreSpiritualRoot.create("spiritual_root_storage");
@@ -28,18 +33,32 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         super(holder);
     }
 
+    /**
+     * Ініціалізує систему зберігання духовних коренів.
+     * Реєструє сховище для гравців.
+     */
     public static void init() {
         StorageEvents.REGISTER_ENTITY_STORAGE.register(registry ->
                 key = registry.register(ID,
-                        SpiritualRootStorage.class, Player.class::isInstance,
+                        SpiritualRootStorage.class, Entity.class::isInstance,
                         SpiritualRootStorage::new));
     }
 
+    /**
+     * Зберігає стан духовних коренів у NBT.
+     *
+     * @param data CompoundTag для збереження даних
+     */
     @Override
     public void save(CompoundTag data) {
         saveInstanceCollection(data, SPIRITUAL_ROOTS_KEY, spiritualRoots, SpiritualRootInstance::toNBT, SpiritualRootInstance::getSpiritualRootId);
     }
 
+    /**
+     * Завантажує стан духовних коренів з NBT.
+     *
+     * @param data CompoundTag з даними для завантаження
+     */
     @Override
     public void load(CompoundTag data) {
         loadCollections(data);
@@ -49,20 +68,44 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         loadInstanceCollection(data, SPIRITUAL_ROOTS_KEY, spiritualRoots, SpiritualRootInstance::fromNBT);
     }
 
+    /**
+     * Отримує власника цього сховища.
+     *
+     * @return Жива сутність-власник сховища
+     */
     protected LivingEntity getOwner() {
         return (LivingEntity) this.holder;
     }
 
+    /**
+     * Повертає колекцію всіх духовних коренів сутності.
+     *
+     * @return Незмінна колекція екземплярів духовних коренів
+     */
     @Override
     public Collection<SpiritualRootInstance> getSpiritualRoots() {
         return spiritualRoots;
     }
 
+    /**
+     * Встановлює нову колекцію духовних коренів.
+     *
+     * @param roots Нова колекція духовних коренів
+     */
     public void setSpiritualRoots(Collection<SpiritualRootInstance> roots) {
         this.spiritualRoots = roots;
         markDirty();
     }
 
+    /**
+     * Додає новий духовний корінь до сутності.
+     *
+     * @param instance Екземпляр духовного кореня для додавання
+     * @param advance Чи потрібно застосовувати просунуті ефекти
+     * @param notify Чи потрібно сповіщати гравця
+     * @param component Компонент повідомлення для сповіщення (може бути null)
+     * @return true якщо корінь успішно додано, false якщо додавання скасовано
+     */
     @Override
     public boolean addSpiritualRoot(SpiritualRootInstance instance, boolean advance, boolean notify, @Nullable MutableComponent component) {
         Changeable<MutableComponent> rootMessage = Changeable.of(component);
@@ -78,6 +121,12 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         return true;
     }
 
+    /**
+     * Розраховує ефективність культивації для конкретного духовного кореня.
+     *
+     * @param rootInstance Екземпляр духовного кореня для розрахунку
+     * @return Значення ефективності від 0.1 до 1.0
+     */
     @Override
     public float getCultivationEfficiency(SpiritualRootInstance rootInstance) {
         float efficiency = 0.2f; // Базова ефективність навіть без відповідного кореня
@@ -95,7 +144,11 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         return Math.max(0.1f, efficiency);
     }
 
-    // Розрахунок множника для швидкості культивації
+    /**
+     * Розраховує множник швидкості культивації на основі кількості коренів.
+     *
+     * @return Множник швидкості культивації
+     */
     public float getCultivationSpeedMultiplier() {
         // Чим менше коренів, тим більший загальний множник швидкості
         return switch (spiritualRoots.size()) {
@@ -108,6 +161,12 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         };
     }
 
+    /**
+     * Генерує випадкові духовні корені для сутності.
+     * Корені генеруються тільки якщо сутність ще не має коренів.
+     *
+     * @param roots Список доступних типів духовних коренів
+     */
     public void generateRandomRoots(List<SpiritualRoot> roots) {
         if (!getSpiritualRoots().isEmpty()) return;
 
@@ -135,26 +194,23 @@ public class SpiritualRootStorage extends Storage implements SpiritualRoots {
         }
     }
 
-    // Отримати домінуючий тип кореня (найсильніший)
-    public RootType getDominantRootType() {
+    /**
+     * Визначає домінуючий тип духовного кореня на основі сили.
+     *
+     * @return Тип найсильнішого кореня або null якщо коренів немає
+     */
+    public @Nullable SpiritualRootInstance getDominantRoot() {
         if (spiritualRoots.isEmpty()) {
             return null;
         }
 
-        SpiritualRootInstance strongest = Collections.max(spiritualRoots,
+        return Collections.max(spiritualRoots,
                 Comparator.comparing(SpiritualRootInstance::getStrength));
-        return strongest.getType();
     }
 
-//    @Override
-//    public void markDirty() {
-//        super.markDirty();
-//        sync();
-//    }
-//
-//    public void sync() {
-//        CompoundTag tag = new CompoundTag();
-//        this.save(tag);
-//        InternalPlayerStorageActions.sendPlayerUpdatePacket(tag);
-//    }
+    public void sync(){
+        CompoundTag data = new CompoundTag();
+        saveOutdated(data);
+        InternalSpiritualRootPacketActions.sendSyncStoragePayload(data);
+    }
 }
