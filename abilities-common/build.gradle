@@ -1,0 +1,9 @@
+loom {
+    accessWidenerPath = file("src/main/resources/${archives_name}_abilities.accesswidener")
+}
+
+dependencies {
+    implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
+    implementation(project(path: ":storage-common", configuration: 'namedElements')) { transitive false }
+    implementation(project(path: ":stage-common", configuration: 'namedElements')) { transitive false }
+}

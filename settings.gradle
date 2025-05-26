@@ -9,7 +9,7 @@ pluginManagement {
 
 rootProject.name = 'eternalcore'
 
-["config", "network", "realm", "storage", "testing", "stage", "spiritual_root", "element"].forEach { module ->
+["config", "network", "realm", "storage", "testing", "stage", "spiritual_root", "element", "abilities"].forEach { module ->
     include ":$module-common"
     include ":$module-fabric"
     include ":$module-neoforge"

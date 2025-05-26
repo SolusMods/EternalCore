@@ -35,6 +35,3 @@ side = "BOTH"
 
 [[mixins]]
 config = "${mod_id}.mixins.json"
-
-[[mixins]]
-config = "eternalcore_stage-neoforge.mixins.json"

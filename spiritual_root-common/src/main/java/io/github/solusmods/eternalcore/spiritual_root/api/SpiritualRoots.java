@@ -1,6 +1,5 @@
 package io.github.solusmods.eternalcore.spiritual_root.api;
 
-import io.github.solusmods.eternalcore.element.api.ElementInstance;
 import io.github.solusmods.eternalcore.spiritual_root.impl.SpiritualRootStorage;
 import lombok.NonNull;
 import net.minecraft.network.chat.MutableComponent;

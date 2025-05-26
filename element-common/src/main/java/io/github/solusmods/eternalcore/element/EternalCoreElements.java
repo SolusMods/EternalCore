@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 
-import static io.github.solusmods.eternalcore.element.ModuleConstants.MOD_ID;
+import static io.github.solusmods.eternalcore.element.neoforge.ModuleConstants.MOD_ID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EternalCoreElements {

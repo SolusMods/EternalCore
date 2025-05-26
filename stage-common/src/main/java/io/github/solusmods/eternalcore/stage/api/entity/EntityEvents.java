@@ -22,12 +22,7 @@ public interface EntityEvents {
     Event<ProjectileHitEvent> PROJECTILE_HIT = EventFactory.createLoop();
 
 
-    enum ProjectiveHitResult {
-        DEFAULT, // Hit, damage + possibly continue
-        HIT, // Hit + damage
-        HIT_NO_DAMAGE, // Hit
-        PASS // Pass through
-    }
+
 
     @FunctionalInterface
     interface LivingTickEvent {
@@ -56,6 +51,6 @@ public interface EntityEvents {
 
     @FunctionalInterface
     interface ProjectileHitEvent {
-        void hit(HitResult hitResult, Projectile projectile, Changeable<ProjectileDeflection> deflection, Changeable<ProjectiveHitResult> result);
+        void hit(HitResult hitResult, Projectile projectile, Changeable<ProjectileDeflection> deflection, Changeable<ProjectileHitResult> result);
     }
 }

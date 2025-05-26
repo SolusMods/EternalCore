@@ -14,14 +14,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.solusmods.eternalcore.stage.fabric.EternalCoreStageFabric"
+      "io.github.solusmods.eternalcore.abilities.fabric.EternalCoreAbilitiesFabric"
     ],
     "client": []
   },
-  "mixins": [
-    "${mod_id}.mixins.json",
-    "${mod_id}-fabric.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "minecraft": "~${minecraft_version}",
