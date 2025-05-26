@@ -451,8 +451,8 @@ subprojects {
                     url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                     // Облікові дані автентифікації з змінних середовища
                     credentials {
-                        username = System.getenv().getOrDefault("CLOUDSMITH_LOGIN", "##")
-                        password = System.getenv().getOrDefault("CLOUDSMITH_API", "##")
+                        username = System.getenv().getOrDefault("CLOUDSMITH_LOGIN", "££££")
+                        password = System.getenv().getOrDefault("CLOUDSMITH_API", "££££")
                     }
                 }
             }

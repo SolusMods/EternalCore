@@ -33,7 +33,7 @@ public class RealmRegistry {
 
             RealmInstance instance = optional.get();
             if (!conqueredEnd) {
-                instance.addAttributeModifiers(newPlayer);
+                instance.addAttributeModifiers(newPlayer, 0);
             }
         });
     }

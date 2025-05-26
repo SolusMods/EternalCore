@@ -1,7 +1,6 @@
 package io.github.solusmods.eternalcore.storage.api;
 
 import io.github.solusmods.eternalcore.storage.EternalCoreStorage;
-import io.github.solusmods.eternalcore.storage.impl.StorageManager;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;

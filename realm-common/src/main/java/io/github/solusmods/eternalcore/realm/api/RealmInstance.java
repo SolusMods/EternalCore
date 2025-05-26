@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
@@ -62,7 +63,7 @@ public class RealmInstance implements Cloneable {
     /**
      * Used to get the type of this {@link RealmInstance}.
      */
-    public MutableComponent getType() {
+    public Type getType() {
         return this.getRealm().getType();
     }
 
@@ -319,8 +320,8 @@ public class RealmInstance implements Cloneable {
      *
      * @param entity Affected {@link LivingEntity} being thisrealm.
      */
-    public void addAttributeModifiers(LivingEntity entity) {
-        this.getRealm().addAttributeModifiers(this, entity);
+    public void addAttributeModifiers(LivingEntity entity, int i) {
+        this.getRealm().addAttributeModifiers(this, entity, i);
     }
 
     /**
@@ -330,6 +331,16 @@ public class RealmInstance implements Cloneable {
      */
     public void removeAttributeModifiers(LivingEntity entity) {
         this.getRealm().removeAttributeModifiers(this, entity);
+    }
+
+    public void createModifiers(LivingEntity entity){
+        this.getRealm().
+                createModifiers(this, 0, ((attributeHolder, attributeModifier) -> {
+                    AttributeInstance instance = entity.getAttribute(attributeHolder);
+                    if (instance != null) {
+                        instance.addOrReplacePermanentModifier(attributeModifier);
+                    }
+                }));
     }
 
     /**
@@ -344,11 +355,11 @@ public class RealmInstance implements Cloneable {
     }
 
     public boolean passivelyFriendlyWith(LivingEntity entity) {
-        return false;
+        return this.getRealm().passivelyFriendlyWith(this, entity);
     }
 
-    public boolean canFly() {
-        return false;
+    public boolean canFly(LivingEntity entity) {
+        return this.getRealm().canFly(this, entity);
     }
 
     /**

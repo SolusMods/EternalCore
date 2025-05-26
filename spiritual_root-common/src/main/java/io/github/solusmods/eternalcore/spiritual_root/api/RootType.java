@@ -27,30 +27,4 @@ public enum RootType {
     private final int color;
 
 
-    // Отримати протилежний тип
-    public RootType getOpposite() {
-        switch (this) {
-            case METAL:
-                return WOOD;
-            case WOOD:
-                return METAL;
-            case WATER:
-                return FIRE;
-            case FIRE:
-                return WATER;
-            case EARTH:
-                return AIR;
-            case AIR:
-                return EARTH;
-            case YIN:
-                return LIGHT;
-            case LIGHT:
-                return YIN;
-            case DARKNESS:
-                return LIGHT;
-            default:
-                return null; // Деякі типи не мають прямих протилежностей
-        }
-    }
-
 }

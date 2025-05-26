@@ -1,5 +1,6 @@
 package io.github.solusmods.eternalcore.element.api;
 
+import io.github.solusmods.eternalcore.element.impl.ElementsStorage;
 import lombok.NonNull;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -7,36 +8,47 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Optional;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 public interface Elements {
 
-    Optional<ElementInstance> getElement();
-    Collection<ElementInstance> getElements();
+    Map<ResourceLocation, ElementInstance> getElements();
 
-    default boolean setElement(@NotNull ResourceLocation elementId, boolean notify) {
-        return setElement(elementId, notify, null);
+    Collection<ElementInstance> getObtainedElements();
+
+    /**
+     * Updates a element instance and optionally synchronizes the change across the network.
+     * <p>
+     * @param updatedInstance The instance to update
+     * @param sync If true, synchronizes the change to all clients/server
+     */
+    void updateElement(ElementInstance updatedInstance, boolean sync);
+
+    void forEachElement(BiConsumer<ElementsStorage, ElementInstance> skillInstanceConsumer);
+
+    void forgetElement(@NotNull ResourceLocation skillId, @Nullable MutableComponent component);
+
+    default void forgetElement(@NotNull ResourceLocation skillId) {
+        forgetElement(skillId, null);
     }
 
-    default boolean setElement(@NotNull ResourceLocation elementId, boolean notify, @Nullable MutableComponent component) {
-        Element element = ElementAPI.getElementRegistry().get(elementId);
-        if (element == null) return false;
-        return setElement(element.createDefaultInstance(), false, notify, component);
+    default void forgetElement(@NonNull Element element, @Nullable MutableComponent component) {
+        forgetElement(element.getRegistryName(), component);
     }
 
-    default boolean setElement(@NonNull Element element, boolean notify) {
-        return setElement(element, notify, null);
+    default void forgetElement(@NonNull Element element) {
+        forgetElement(element.getRegistryName());
     }
 
-    default boolean setElement(@NonNull Element element, boolean notify, @Nullable MutableComponent component) {
-        return setElement(element.createDefaultInstance(), false, notify, component);
+    default void forgetElement(@NonNull ElementInstance instance, @Nullable MutableComponent component) {
+        forgetElement(instance.getElementId(), component);
     }
 
-    default boolean setElement(ElementInstance instance, boolean breakthrough, boolean notify) {
-        return setElement(instance, breakthrough, notify, null);
+    default void forgetElement(@NonNull ElementInstance instance) {
+        forgetElement(instance.getElementId());
     }
 
-    boolean setElement(ElementInstance instance, boolean breakthrough, boolean notify, @Nullable MutableComponent component);
 
     default boolean addElement(@NotNull ResourceLocation elementId, boolean teleportToSpawn) {
         return addElement(elementId, teleportToSpawn, null);

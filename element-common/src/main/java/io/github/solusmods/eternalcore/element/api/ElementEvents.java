@@ -12,10 +12,11 @@ public interface ElementEvents {
     Event<ElementTickEvent> ELEMENT_PRE_TICK = EventFactory.createLoop();
     Event<ElementTickEvent> ELEMENT_POST_TICK = EventFactory.createLoop();
     Event<AddElementEvent> ADD_ELEMENT = EventFactory.createEventResult();
+    Event<ForgetElementEvent> FORGET_ELEMENT = EventFactory.createEventResult();
 
     @FunctionalInterface
     interface SetElementEvent {
-        EventResult set(ElementInstance instance, LivingEntity owner, ElementInstance newInstance, boolean breakthrough, Changeable<Boolean> notify, Changeable<MutableComponent> realmMessage);
+        EventResult set(ElementInstance instance, LivingEntity owner, ElementInstance newInstance, boolean breakthrough, Changeable<Boolean> notify, Changeable<MutableComponent> elementMessage);
     }
 
     @FunctionalInterface
@@ -25,6 +26,11 @@ public interface ElementEvents {
 
     @FunctionalInterface
     interface AddElementEvent {
-        EventResult add(ElementInstance instance, LivingEntity owner, boolean advancement, Changeable<Boolean> notifyPlayer, Changeable<MutableComponent> realmMessage);
+        EventResult add(ElementInstance instance, LivingEntity owner, boolean advancement, Changeable<Boolean> notifyPlayer, Changeable<MutableComponent> elementMessage);
+    }
+    
+    @FunctionalInterface
+    interface ForgetElementEvent {
+        EventResult forget(ElementInstance instance, LivingEntity owner, Changeable<MutableComponent> elementMessage);
     }
 }

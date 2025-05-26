@@ -70,20 +70,25 @@ public class MixinEntity implements StorageHolder {
     @Inject(method = "<init>", at = @At("RETURN"))
     void initStorage(EntityType entityType, Level level, CallbackInfo ci) {
         // Create empty storage
-        this.storage = new CombinedStorage(this);
+        eternalCore$setCombinedStorage(new CombinedStorage(this));
         // Fill storage with data
         StorageManager.initialStorageFilling(this);
     }
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER), cancellable = true)
     void saveStorage(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
+        if (this.storage != null) {
+            compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
+        }
         cir.setReturnValue(compound);
     }
 
     @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER))
     void loadStorage(CompoundTag compound, CallbackInfo ci) {
-        this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
+        if (this.storage != null) {
+            this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
+        }
+
     }
 
     @Inject(method = "tick", at = @At("RETURN"))

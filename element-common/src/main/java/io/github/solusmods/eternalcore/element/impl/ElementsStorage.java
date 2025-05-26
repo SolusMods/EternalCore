@@ -1,7 +1,6 @@
 package io.github.solusmods.eternalcore.element.impl;
 
 import dev.architectury.event.EventResult;
-import dev.architectury.networking.NetworkManager;
 import io.github.solusmods.eternalcore.element.EternalCoreElements;
 import io.github.solusmods.eternalcore.element.api.ElementEvents;
 import io.github.solusmods.eternalcore.element.api.ElementInstance;
@@ -9,18 +8,21 @@ import io.github.solusmods.eternalcore.element.api.Elements;
 import io.github.solusmods.eternalcore.element.impl.network.InternalStorageActions;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
 import io.github.solusmods.eternalcore.network.api.util.StorageType;
+import io.github.solusmods.eternalcore.storage.EternalCoreStorage;
 import io.github.solusmods.eternalcore.storage.api.*;
-import io.github.solusmods.eternalcore.storage.impl.StorageManager;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * Сховище для управління елементами гравця в системі EternalCore.
@@ -38,9 +40,6 @@ public class ElementsStorage extends Storage implements Elements {
     /** Ключ для зберігання колекції елементів у NBT */
     private static final String ELEMENTS_KEY = "elements_key";
     
-    /** Ключ для зберігання домінуючого елемента у NBT */
-    private static final String DOMINANT_ELEMENT_KEY = "dominant_element_key";
-    
     /** Унікальний ідентифікатор цього типу сховища */
     public static final ResourceLocation ID = EternalCoreElements.create("elements_storage");
     
@@ -49,10 +48,8 @@ public class ElementsStorage extends Storage implements Elements {
     private static StorageKey<ElementsStorage> key = null;
     
     /** Колекція елементів, якими володіє гравець */
-    private Collection<ElementInstance> elements = new ArrayList<>();
-    
-    /** Поточний домінуючий елемент гравця */
-    private ElementInstance element;
+    @Getter
+    private final Map<ResourceLocation, ElementInstance> elements = new HashMap<>();
     
     /**
      * Створює нове сховище елементів для вказаного власника.
@@ -62,6 +59,12 @@ public class ElementsStorage extends Storage implements Elements {
     protected ElementsStorage(StorageHolder holder) {
         super(holder);
     }
+
+    public Collection<ElementInstance> getObtainedElements() {
+        return this.elements.values();
+    }
+
+    private boolean hasRemovedElements = false;
 
     /**
      * Ініціалізує систему сховища елементів, реєструючи його в системі сховищ EternalCore.
@@ -86,38 +89,35 @@ public class ElementsStorage extends Storage implements Elements {
      */
     @Override
     public void save(CompoundTag data) {
-        if (element != null)
-            data.put(DOMINANT_ELEMENT_KEY, this.element.toNBT());
-        saveInstanceCollection(data, ELEMENTS_KEY, elements, ElementInstance::toNBT, ElementInstance::getElementId);
+        ListTag elementsTag = new ListTag();
+        elements.values().forEach(instance -> {
+            elementsTag.add(instance.toNBT());
+            instance.resetDirty();
+        });
+        data.put(ELEMENTS_KEY, elementsTag);
     }
 
     /**
      * Завантажує стан сховища з NBT формату.
      * <p>
-     * Відновлює домінуючий елемент та колекцію елементів гравця.
+     * Відновлює колекцію елементів гравця.
      * </p>
      *
      * @param data Тег, з якого будуть завантажені дані
      */
     @Override
     public void load(CompoundTag data) {
-        if (data.contains(DOMINANT_ELEMENT_KEY, 10)) {
-            element = ElementInstance.fromNBT(data.getCompound(DOMINANT_ELEMENT_KEY));
+        if (data.contains("resetExistingData")) {
+            this.elements.clear();
         }
-        loadCollections(data);
-    }
-
-    /**
-     * Завантажує колекції з NBT даних.
-     * <p>
-     * Допоміжний метод для завантаження колекції елементів.
-     * </p>
-     *
-     * @param data Тег, з якого будуть завантажені колекції
-     */
-    private void loadCollections(CompoundTag data) {
-        elements.clear();
-        loadInstanceCollection(data, ELEMENTS_KEY, elements, ElementInstance::fromNBT);
+        for (Tag tag : data.getList(ELEMENTS_KEY, Tag.TAG_COMPOUND)) {
+            try {
+                ElementInstance instance = ElementInstance.fromNBT((CompoundTag) tag);
+                this.elements.put(instance.getElementId(), instance);
+            } catch (Exception e) {
+                EternalCoreStorage.LOG.error("Failed to load element instance from NBT", e);
+            }
+        }
     }
 
     /**
@@ -130,23 +130,39 @@ public class ElementsStorage extends Storage implements Elements {
     }
 
     /**
-     * Отримує колекцію всіх елементів, якими володіє гравець.
+     * Updates a element instance and optionally synchronizes the change across the network.
+     * <p>
      *
-     * @return Колекція екземплярів елементів
+     * @param updatedInstance The instance to update
+     * @param sync            If true, synchronizes the change to all clients/server
      */
     @Override
-    public Collection<ElementInstance> getElements() {
-        return elements;
+    public void updateElement(ElementInstance updatedInstance, boolean sync) {
+        updatedInstance.markDirty();
+        elements.put(updatedInstance.getElementId(), updatedInstance);
+        if (sync) markDirty();
+    }
+    @Override
+    public void forEachElement(BiConsumer<ElementsStorage, ElementInstance> elementInstanceBiConsumer) {
+        List.copyOf(this.elements.values()).forEach(elementInstance -> elementInstanceBiConsumer.accept(this, elementInstance));
+        markDirty();
     }
 
-    /**
-     * Отримує поточний домінуючий елемент гравця.
-     *
-     * @return Optional, що містить домінуючий елемент, або пустий Optional, якщо елемент не встановлено
-     */
     @Override
-    public Optional<ElementInstance> getElement() {
-        return Optional.ofNullable(element);
+    public void forgetElement(@NotNull ResourceLocation resourceLocation, @Nullable MutableComponent component) {
+        if (!this.elements.containsKey(resourceLocation)) return;
+        ElementInstance instance = this.elements.get(resourceLocation);
+
+        Changeable<MutableComponent> forgetMessage = Changeable.of(component);
+        EventResult result = ElementEvents.FORGET_ELEMENT.invoker().forget(instance, getOwner(), forgetMessage);
+        if (result.isFalse()) return;
+
+        if (forgetMessage.isPresent()) getOwner().sendSystemMessage(forgetMessage.get());
+        instance.markDirty();
+
+        this.getObtainedElements().remove(instance);
+        this.hasRemovedElements = true;
+        markDirty();
     }
 
     /**
@@ -165,49 +181,39 @@ public class ElementsStorage extends Storage implements Elements {
      */
     @Override
     public boolean addElement(ElementInstance elementInstance, boolean breakthrough, boolean notifyPlayer, @Nullable MutableComponent component) {
-        Changeable<MutableComponent> realmMessage = Changeable.of(component);
+        if (elements.containsKey(elementInstance.getElementId())){
+            EternalCoreStorage.LOG.debug("Tried to register a deduplicate of {}.", elementInstance.getElementId());
+            return false;
+        }
+
+        Changeable<MutableComponent> addMessage = Changeable.of(component);
         Changeable<Boolean> notify = Changeable.of(notifyPlayer);
-        EventResult result = ElementEvents.ADD_ELEMENT.invoker().add(elementInstance, getOwner(), breakthrough, notify, realmMessage);
+        EventResult result = ElementEvents.ADD_ELEMENT.invoker().add(elementInstance, getOwner(), breakthrough, notify, addMessage);
         if (result.isFalse()) return false;
 
         LivingEntity owner = getOwner();
-        if (realmMessage.isPresent()) getOwner().sendSystemMessage(realmMessage.get());
         elementInstance.markDirty();
-        elements.add(elementInstance);
+        elements.put(elementInstance.getElementId(), elementInstance);
         markDirty();
+        if (addMessage.isPresent()) getOwner().sendSystemMessage(addMessage.get());
         return true;
     }
 
-    /**
-     * Встановлює домінуючий елемент для гравця.
-     * <p>
-     * Цей метод викликає подію {@link ElementEvents#SET_ELEMENT}, яка може бути скасована
-     * обробниками подій. Якщо елемент успішно встановлено, він позначається як змінений
-     * і стає новим домінуючим елементом гравця.
-     * </p>
-     *
-     * @param elementInstance Екземпляр елемента для встановлення як домінуючий
-     * @param breakthrough Чи є це проривом (breakthrough)
-     * @param notifyPlayer Чи повідомляти гравця про зміну
-     * @param component Компонент повідомлення (може бути null)
-     * @return true, якщо елемент було успішно встановлено, false в іншому випадку
-     */
     @Override
-    public boolean setElement(ElementInstance elementInstance, boolean breakthrough, boolean notifyPlayer, @Nullable MutableComponent component) {
-        ElementInstance instance = this.element;
-        Changeable<MutableComponent> realmMessage = Changeable.of(component);
-        Changeable<Boolean> notify = Changeable.of(notifyPlayer);
-        EventResult result = ElementEvents.SET_ELEMENT.invoker().set(instance, getOwner(), elementInstance, breakthrough, notify, realmMessage);
-        if (result.isFalse()) return false;
-
-        LivingEntity owner = getOwner();
-
-        if (realmMessage.isPresent()) getOwner().sendSystemMessage(realmMessage.get());
-        elementInstance.markDirty();
-//        elementInstance.onSet(owner);
-        this.element = elementInstance;
-        markDirty();
-        return true;
+    public void saveOutdated(CompoundTag data) {
+        if (this.hasRemovedElements) {
+            this.hasRemovedElements = false;
+            data.putBoolean("resetExistingData", true);
+            super.saveOutdated(data);
+        } else {
+            ListTag elementsTag = new ListTag();
+            for (ElementInstance instance : this.elements.values()) {
+                if (!instance.isDirty()) continue;
+                elementsTag.add(instance.toNBT());
+                instance.resetDirty();
+            }
+            data.put(ELEMENTS_KEY, elementsTag);
+        }
     }
 
     public void sync(){

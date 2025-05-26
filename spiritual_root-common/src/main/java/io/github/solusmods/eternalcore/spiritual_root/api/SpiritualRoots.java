@@ -1,5 +1,7 @@
 package io.github.solusmods.eternalcore.spiritual_root.api;
 
+import io.github.solusmods.eternalcore.element.api.ElementInstance;
+import io.github.solusmods.eternalcore.spiritual_root.impl.SpiritualRootStorage;
 import lombok.NonNull;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -7,7 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * Інтерфейс для управління духовними коренями (spiritual roots) сутності.
@@ -19,11 +22,23 @@ import java.util.List;
  */
 public interface SpiritualRoots {
     /**
+     * Позначає стан духовних коренів як змінений.
+     * <p>
+     * Це використовується для синхронізації даних між сервером і клієнтом.
+     * </p>
+     */
+    void markDirty();
+
+    void sync();
+
+    Collection<SpiritualRootInstance> getGainedRoots();
+
+    /**
      * Отримує колекцію всіх духовних коренів, якими володіє сутність.
      *
      * @return Колекція екземплярів духовних коренів
      */
-    Collection<SpiritualRootInstance> getSpiritualRoots();
+    Map<ResourceLocation, SpiritualRootInstance> getSpiritualRoots();
 
     /**
      * Додає духовний корінь до сутності за ідентифікатором.
@@ -86,37 +101,6 @@ public interface SpiritualRoots {
     }
 
     /**
-     * Генерує випадкову кількість духовних коренів для сутності.
-     * <p>
-     * Розподіл ймовірностей:
-     * <ul>
-     *   <li>1 корінь - 10% (найрідкісніший, найсильніший)</li>
-     *   <li>2 корені - 20%</li>
-     *   <li>3 корені - 40% (найпоширеніший)</li>
-     *   <li>4 корені - 20%</li>
-     *   <li>5 коренів - 10% (найслабший, але найбільш гнучкий)</li>
-     * </ul>
-     * </p>
-     *
-     * @return Випадкова кількість духовних коренів
-     */
-    default int getRandomRootCount() {
-        // Зважений випадковий вибір:
-        // 1 корінь - 10% (найрідкісніший, найсильніший)
-        // 2 корені - 20%
-        // 3 корені - 40% (найпоширеніший)
-        // 4 корені - 20%
-        // 5 коренів - 10% (найслабший, але найбільш гнучкий)
-
-        double random = Math.random();
-        if (random < 0.1) return 1;
-        if (random < 0.3) return 2;
-        if (random < 0.7) return 3;
-        if (random < 0.9) return 4;
-        return 5;
-    }
-
-    /**
      * Додає екземпляр духовного кореня до сутності з повними параметрами.
      * <p>
      * Це базовий метод, який викликається всіма іншими перевантаженими методами addSpiritualRoot.
@@ -130,56 +114,37 @@ public interface SpiritualRoots {
      */
     boolean addSpiritualRoot(SpiritualRootInstance instance, boolean advance, boolean notify, @Nullable MutableComponent component);
 
-    /**
-     * Отримує ефективність культивації для конкретного духовного кореня.
-     * <p>
-     * Ефективність культивації визначає, наскільки добре сутність може використовувати
-     * даний духовний корінь для культивації енергії.
-     * </p>
-     *
-     * @param instance Екземпляр духовного кореня
-     * @return Коефіцієнт ефективності культивації
-     */
-    float getCultivationEfficiency(SpiritualRootInstance instance);
 
     /**
-     * Отримує загальний множник швидкості культивації для сутності.
+     * Updates a element instance and optionally synchronizes the change across the network.
      * <p>
-     * Цей множник впливає на швидкість, з якою сутність може культивувати енергію,
-     * незалежно від конкретного духовного кореня.
-     * </p>
-     *
-     * @return Множник швидкості культивації
+     * @param updatedInstance The instance to update
+     * @param sync If true, synchronizes the change to all clients/server
      */
-    float getCultivationSpeedMultiplier();
+    void updateRoot(SpiritualRootInstance updatedInstance, boolean sync);
 
-    /**
-     * Генерує випадковий набір духовних коренів для сутності з доступного списку.
-     * <p>
-     * Кількість генерованих коренів визначається методом {@link #getRandomRootCount()}.
-     * </p>
-     *
-     * @param roots Список доступних духовних коренів для вибору
-     */
-    void generateRandomRoots(List<SpiritualRoot> roots);
+    void forEachRoot(BiConsumer<SpiritualRootStorage, SpiritualRootInstance> biConsumer);
 
-    /**
-     * Отримує домінуючий духовний корінь сутності.
-     * <p>
-     * Домінуючий корінь має найбільший вплив на здібності та культивацію сутності.
-     * </p>
-     *
-     * @return Домінуючий духовний корінь або null, якщо сутність не має духовних коренів
-     */
-    @Nullable SpiritualRootInstance getDominantRoot();
+    void forgetRoot(@NotNull ResourceLocation skillId, @Nullable MutableComponent component);
 
-    /**
-     * Позначає стан духовних коренів як змінений.
-     * <p>
-     * Це використовується для синхронізації даних між сервером і клієнтом.
-     * </p>
-     */
-    void markDirty();
+    default void forgetRoot(@NotNull ResourceLocation skillId) {
+        forgetRoot(skillId, null);
+    }
 
-    void sync();
+    default void forgetRoot(@NonNull SpiritualRoot spiritualRoot, @Nullable MutableComponent component) {
+        forgetRoot(spiritualRoot.getRegistryName(), component);
+    }
+
+    default void forgetRoot(@NonNull SpiritualRoot spiritualRoot) {
+        forgetRoot(spiritualRoot.getRegistryName());
+    }
+
+    default void forgetRoot(@NonNull SpiritualRootInstance spiritualRootInstance, @Nullable MutableComponent component) {
+        forgetRoot(spiritualRootInstance.getSpiritualRootId(), component);
+    }
+
+    default void forgetRoot(@NonNull SpiritualRootInstance spiritualRootInstance) {
+        forgetRoot(spiritualRootInstance.getSpiritualRootId());
+    }
+
 }
