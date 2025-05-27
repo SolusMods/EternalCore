@@ -1,14 +1,18 @@
 package io.github.solusmods.eternalcore.realm.api;
 
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.Registrar;
+import dev.architectury.utils.Env;
 import io.github.solusmods.eternalcore.realm.impl.RealmRegistry;
 import io.github.solusmods.eternalcore.realm.impl.RealmStorage;
+import io.github.solusmods.eternalcore.realm.impl.network.InternalRealmPacketActions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -41,5 +45,17 @@ public class RealmAPI {
      */
     public static IReachedRealms getReachedRealmsFrom(@NonNull LivingEntity entity) {
         return entity.eternalCore$getStorage(RealmStorage.getKey());
+    }
+
+    /**
+     * Send {@link InternalRealmPacketActions#sendRealmBreakthroughPacket} with a DistExecutor on client side.
+     * Used when player break into a stage.
+     *
+     * @see InternalRealmPacketActions#sendRealmBreakthroughPacket(ResourceLocation)
+     */
+    public static void realmBreakthroughPacket(ResourceLocation location) {
+        if (Platform.getEnvironment() == Env.CLIENT) {
+            InternalRealmPacketActions.sendRealmBreakthroughPacket(location);
+        }
     }
 }

@@ -6,7 +6,10 @@ ext {
             ":storage",
             ":element",
             ":stage",
-            ":spiritual_root"
+            ":spiritual_root",
+            ":keybind",
+            ":entity",
+            ":abilities"
     ]
 }
 

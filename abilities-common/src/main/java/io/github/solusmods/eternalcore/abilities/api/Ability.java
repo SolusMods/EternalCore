@@ -3,6 +3,7 @@ package io.github.solusmods.eternalcore.abilities.api;
 
 import dev.architectury.event.Event;
 import io.github.solusmods.eternalcore.abilities.impl.AbilityStorage;
+import io.github.solusmods.eternalcore.entity.api.ProjectileHitResult;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
@@ -449,7 +450,7 @@ public abstract class Ability {
     /**
      * Called when the {@link LivingEntity} is hit by a projectile.
      */
-    public void onProjectileHit(AbilityInstance instance, LivingEntity living, EntityHitResult hitResult, Projectile projectile, Changeable<ProjectileDeflection> deflection, Changeable<EntityEvents.ProjectileHitResult> result) {
+    public void onProjectileHit(AbilityInstance instance, LivingEntity living, EntityHitResult hitResult, Projectile projectile, Changeable<ProjectileDeflection> deflection, Changeable<ProjectileHitResult> result) {
         // Override this method to add your own logic
     }
 

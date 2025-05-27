@@ -11,7 +11,7 @@ import io.github.solusmods.eternalcore.abilities.api.Ability;
 import io.github.solusmods.eternalcore.abilities.api.AbilityAPI;
 import io.github.solusmods.eternalcore.abilities.api.AbilityEvents;
 import io.github.solusmods.eternalcore.abilities.api.AbilityInstance;
-import io.github.solusmods.eternalcore.stage.api.entity.EntityEvents;
+import io.github.solusmods.eternalcore.entity.api.EntityEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

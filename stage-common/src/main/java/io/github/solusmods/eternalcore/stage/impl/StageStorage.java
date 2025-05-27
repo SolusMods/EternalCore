@@ -1,11 +1,11 @@
 package io.github.solusmods.eternalcore.stage.impl;
 
 import dev.architectury.event.EventResult;
+import io.github.solusmods.eternalcore.entity.api.EntityEvents;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
 import io.github.solusmods.eternalcore.stage.EternalCoreStage;
 import io.github.solusmods.eternalcore.stage.api.*;
-import io.github.solusmods.eternalcore.stage.api.entity.EntityEvents;
-import io.github.solusmods.eternalcore.stage.impl.network.InternalStorageActions;
+import io.github.solusmods.eternalcore.stage.impl.network.InternalStagePacketActions;
 import io.github.solusmods.eternalcore.storage.api.Storage;
 import io.github.solusmods.eternalcore.storage.api.StorageEvents;
 import io.github.solusmods.eternalcore.storage.api.StorageHolder;
@@ -227,6 +227,6 @@ public class StageStorage extends Storage implements Stages, IReachedStages {
     public void sync(){
         CompoundTag data = new CompoundTag();
         saveOutdated(data);
-        InternalStorageActions.sendSyncStoragePayload(data);
+        InternalStagePacketActions.sendSyncStoragePayload(data);
     }
 }

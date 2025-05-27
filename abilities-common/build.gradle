@@ -5,5 +5,5 @@ loom {
 dependencies {
     implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
     implementation(project(path: ":storage-common", configuration: 'namedElements')) { transitive false }
-    implementation(project(path: ":stage-common", configuration: 'namedElements')) { transitive false }
+    implementation(project(path: ":entity-common", configuration: 'namedElements')) { transitive false }
 }

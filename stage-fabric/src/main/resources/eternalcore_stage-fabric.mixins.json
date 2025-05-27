@@ -6,16 +6,16 @@
   "client": [
   ],
   "mixins": [
-    "MixinAbstractArrow",
-    "MixinAbstractHurtingProjectile",
-    "MixinFireworkRocketEntity",
-    "MixinFishingHook",
-    "MixinLivingEntity",
-    "MixinLlamaSpit",
-    "MixinMob",
-    "MixinPlayer",
-    "MixinShulkerBullet",
-    "MixinThrowableProjectile"
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinAbstractArrow",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinAbstractHurtingProjectile",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinFireworkRocketEntity",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinFishingHook",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinLivingEntity",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinLlamaSpit",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinMob",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinPlayer",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinShulkerBullet",
+    "io.github.solusmods.eternalcore.entity.fabric.mixin.MixinThrowableProjectile"
   ],
   "injectors": {
     "defaultRequire": 1

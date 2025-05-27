@@ -55,7 +55,7 @@ import java.util.Map;
 @AllArgsConstructor
 public abstract class SpiritualRoot {
 
-    // ==================== ПОЛЯ ====================
+    // region ПОЛЯ
 
     /**
      * Тип кореня, що визначає його категорію та рідкісність.
@@ -79,8 +79,9 @@ public abstract class SpiritualRoot {
      * </p>
      */
     private final Map<Holder<Attribute>, AttributeTemplate> attributeModifiers = new Object2ObjectOpenHashMap<>();
+    // endregion
 
-    // ==================== КОНСТРУКТОРИ ТА СТВОРЕННЯ ЕКЗЕМПЛЯРІВ ====================
+    // region КОНСТРУКТОРИ ТА СТВОРЕННЯ ЕКЗЕМПЛЯРІВ
 
     /**
      * Створює новий екземпляр Духовного Кореня з базовими налаштуваннями.
@@ -96,7 +97,9 @@ public abstract class SpiritualRoot {
         return new SpiritualRootInstance(this);
     }
 
-    // ==================== ІНФОРМАЦІЙНІ МЕТОДИ ====================
+    //endregion
+
+    // region ІНФОРМАЦІЙНІ МЕТОДИ
 
     /**
      * Отримує ідентифікатор цього Духовного Кореня з реєстру EternalCore.
@@ -144,7 +147,9 @@ public abstract class SpiritualRoot {
         return RootLevels.X;
     }
 
-    // ==================== МЕТОДИ УПРАВЛІННЯ АТРИБУТАМИ ====================
+    // endregion
+
+    // region МЕТОДИ УПРАВЛІННЯ АТРИБУТАМИ
 
     /**
      * Додає модифікатор атрибуту до цього Духовного Кореня.
@@ -216,8 +221,9 @@ public abstract class SpiritualRoot {
             player.connection.send(packet);
         }
     }
+    // endregion
 
-    // ==================== МЕТОДИ РОЗВИТКУ ТА ПРОГРЕСІЇ ====================
+    // region МЕТОДИ РОЗВИТКУ ТА ПРОГРЕСІЇ
 
     /**
      * Збільшує силу (чистоту) Духовного Кореня на вказану величину.
@@ -230,6 +236,7 @@ public abstract class SpiritualRoot {
      * @param instance Екземпляр Духовного Кореня, що підлягає покращенню
      * @param living   Сутність, чия сила кореня збільшується
      * @param amount   Величина збільшення сили (від 0.0 до 1.0)
+     * @see SpiritualRootInstance#increaseStrength(LivingEntity, float)
      */
     public void increaseStrength(SpiritualRootInstance instance, LivingEntity living, float amount) {
         instance.setStrength(Math.min(1.0f, instance.getStrength() + amount));
@@ -249,13 +256,15 @@ public abstract class SpiritualRoot {
      *
      * @param spiritualRootInstance Екземпляр Духовного Кореня для перевірки
      * @param entity               Сутність, що бажає просунутися
+     * @see SpiritualRootInstance#canAdvance(LivingEntity)
      * @return {@code true} якщо просування можливе, {@code false} в іншому випадку
      */
     public boolean canAdvance(SpiritualRootInstance spiritualRootInstance, LivingEntity entity) {
         return false;
     }
+    // endregion
 
-    // ==================== АБСТРАКТНІ МЕТОДИ ЕЛЕМЕНТІВ ТА ПРОГРЕСІЇ ====================
+    // region АБСТРАКТНІ МЕТОДИ ЕЛЕМЕНТІВ ТА ПРОГРЕСІЇ
 
     /**
      * Повертає елемент, пов'язаний з цим Духовним Коренем.
@@ -272,6 +281,7 @@ public abstract class SpiritualRoot {
      *
      * @param instance Екземпляр Духовного Кореня
      * @param entity   Сутність, для якої визначається елемент
+     * @see SpiritualRootInstance#getElement(LivingEntity)
      * @return {@link Element} пов'язаний з коренем, або {@code null} якщо елемент не визначено
      */
     public abstract @Nullable Element getElement(SpiritualRootInstance instance, LivingEntity entity);
@@ -312,6 +322,7 @@ public abstract class SpiritualRoot {
         return null;
     }
 
+
     /**
      * Повертає протилежний Духовний Корінь для поточного.
      * <p>
@@ -330,13 +341,22 @@ public abstract class SpiritualRoot {
      *
      * @param instance Екземпляр Духовного Кореня
      * @param entity   Сутність, для якої визначається протилежний Корінь
+     * @see SpiritualRootInstance#getOpposite(LivingEntity)
      * @return Протилежний Духовний Корінь або {@code null} якщо протилежності немає
      */
     public @Nullable SpiritualRoot getOpposite(SpiritualRootInstance instance, LivingEntity entity) {
         return null;
     }
 
-    // ==================== МЕТОДИ ПОДІЙ ====================
+
+    /**
+     *
+     * @see SpiritualRootInstance#getPreviousDegree(LivingEntity)
+     */
+    public abstract @Nullable SpiritualRoot getPreviousDegree(SpiritualRootInstance spiritualRootInstance, LivingEntity living);
+    // endregion
+
+    // region МЕТОДИ ПОДІЙ
 
     /**
      * Викликається при першому отриманні цього Духовного Кореня сутністю.
@@ -376,6 +396,7 @@ public abstract class SpiritualRoot {
      *
      * @param instance Екземпляр Духовного Кореня, що просувається
      * @param living   Сутність, яка досягла наступного рівня
+     * @see SpiritualRootInstance#onAdvance(LivingEntity)
      */
     public void onAdvance(SpiritualRootInstance instance, LivingEntity living) {
         SpiritualRootEvents.ADVANCE.invoker().advance(instance, living, false, Changeable.of(false), null);
@@ -399,8 +420,11 @@ public abstract class SpiritualRoot {
      *
      * @param spiritualRootInstance Екземпляр Духовного Кореня, що отримує досвід
      * @param entity               Сутність, яка культивує корінь
+     * @see SpiritualRootInstance#onAddExperience(LivingEntity, float)
      */
-    public void onAddExperience(SpiritualRootInstance spiritualRootInstance, LivingEntity entity) {
-        SpiritualRootEvents.EXPERIENCE_GAIN.invoker().gainExperience(spiritualRootInstance, entity, 0.0F);
+    public void onAddExperience(SpiritualRootInstance spiritualRootInstance, LivingEntity entity, float amount) {
+        SpiritualRootEvents.EXPERIENCE_GAIN.invoker().gainExperience(spiritualRootInstance, entity, amount);
     }
+
+    //endregion
 }

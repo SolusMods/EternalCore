@@ -1,8 +1,8 @@
 package io.github.solusmods.eternalcore.abilities.api;
 
 import dev.architectury.registry.registries.RegistrySupplier;
+import io.github.solusmods.eternalcore.entity.api.ProjectileHitResult;
 import io.github.solusmods.eternalcore.network.api.util.Changeable;
-import io.github.solusmods.eternalcore.stage.api.entity.*;
 import lombok.Getter;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;

@@ -1,0 +1,1 @@
+package io.github.solusmods.eternalcore.keybind.fabric;

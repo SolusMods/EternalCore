@@ -146,4 +146,30 @@ public interface SpiritualRoots {
         forgetRoot(spiritualRootInstance.getSpiritualRootId());
     }
 
+    default boolean advanceSpiritualRoot(@NotNull ResourceLocation spiritualRootId) {
+        return advanceSpiritualRoot(spiritualRootId, null);
+    }
+
+    default boolean advanceSpiritualRoot(@NotNull ResourceLocation spiritualRootId, @Nullable MutableComponent component) {
+        SpiritualRoot spiritualRoot = SpiritualRootAPI.getSpiritualRootRegistry().get(spiritualRootId);
+        if (spiritualRoot == null) return false;
+        return addSpiritualRoot(spiritualRoot.createDefaultInstance(), true, false);
+    }
+
+    default boolean advanceSpiritualRoot(@NonNull SpiritualRoot spiritualRoot) {
+        return this.advanceSpiritualRoot(spiritualRoot, null);
+    }
+
+    default boolean advanceSpiritualRoot(@NonNull SpiritualRoot spiritualRoot, @Nullable MutableComponent component) {
+        return addSpiritualRoot(spiritualRoot.createDefaultInstance(), true, false, component);
+    }
+
+    default boolean advanceSpiritualRoot(SpiritualRootInstance advance) {
+        return advanceSpiritualRoot(advance, null);
+    }
+
+    default boolean advanceSpiritualRoot(SpiritualRootInstance advance, @Nullable MutableComponent component) {
+        return addSpiritualRoot(advance, true, false, component);
+    }
+
 }

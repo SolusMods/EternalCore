@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "io.github.solusmods.eternalcore.entity.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "refmap": "eternalcore_entity.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+    "MixinLivingEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -10,7 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-import static io.github.solusmods.eternalcore.element.neoforge.ModuleConstants.MOD_ID;
+import static io.github.solusmods.eternalcore.element.ModuleConstants.MOD_ID;
 
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

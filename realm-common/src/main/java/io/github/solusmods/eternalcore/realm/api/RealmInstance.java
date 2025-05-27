@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class RealmInstance implements Cloneable {
-    public static final String REALM_KEY = "realm";
+    public static final String REALM_KEY = "stage";
     protected final RegistrySupplier<Realm> realmRegistrySupplier;
     @Nullable
     private CompoundTag tag = null;
@@ -43,7 +43,7 @@ public class RealmInstance implements Cloneable {
     public static RealmInstance fromNBT(CompoundTag tag) throws NullPointerException {
         ResourceLocation location = ResourceLocation.tryParse(tag.getString(REALM_KEY));
         Realm realm = RealmAPI.getRealmRegistry().get(location);
-        if (realm == null) throw new NullPointerException("No realm found for location: " + location);
+        if (realm == null) throw new NullPointerException("No stage found for location: " + location);
         RealmInstance instance = realm.createDefaultInstance();
         instance.deserialize(tag);
         return instance;

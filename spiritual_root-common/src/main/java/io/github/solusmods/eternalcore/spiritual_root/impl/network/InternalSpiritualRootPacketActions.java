@@ -15,14 +15,14 @@ import net.minecraft.world.entity.player.Player;
 public class InternalSpiritualRootPacketActions {
 
     /**
-     * This Method sends packet for the realm Break.
+     * This Method sends packet for the spiritualRoot Advance.
      * Only executes on client using the dist executor.
      */
-    public static void sendSpiritualRootMasteringPacket(ResourceLocation realm) {
+    public static void sendSpiritualRootAdvancePacket(ResourceLocation spiritualRoot) {
         var minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null) return;
-        NetworkManager.sendToServer(new RequestSpiritualRootAdvancePacket(realm));
+        NetworkManager.sendToServer(new RequestSpiritualRootAdvancePacket(spiritualRoot));
     }
 
     public static void sendSyncStoragePayload(CompoundTag data) {
