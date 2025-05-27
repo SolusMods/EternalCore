@@ -1,0 +1,7 @@
+loom {
+    accessWidenerPath = project(":attributes-common").loom.accessWidenerPath
+}
+
+dependencies {
+    implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
+}

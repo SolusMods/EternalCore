@@ -1,12 +1,13 @@
 {
   "required": true,
-  "package": "io.github.solusmods.eternalcore.realm.mixin",
+  "package": "io.github.solusmods.eternalcore.attributes.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
-  "refmap": "eternalcore_realm.refmap.json",
   "client": [
+    "MixinLocalPlayer"
   ],
   "mixins": [
+    "MixinLivingEntity"
   ],
   "injectors": {
     "defaultRequire": 1

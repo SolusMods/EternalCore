@@ -136,17 +136,6 @@ subprojects {
         }
     }
 
-    // Налаштування можливостей Maven після оцінки проекту
-    afterEvaluate {
-        elements.forEach { variant ->
-            configurations."$variant".outgoing {
-                // Додавання можливостей для вирішення залежностей
-                capability("$maven_group:$archives_name-$project.name:$mod_version")
-                capability("$maven_group:$archives_name-$project.module_name:$mod_version")
-            }
-        }
-    }
-
     // Налаштування імен архівів для всіх виходів
     base {
         archivesName = "$rootProject.archives_name-$project.name"
@@ -403,12 +392,6 @@ subprojects {
         // Налаштування параметрів публікації Maven
         publishing {
             publications {
-                configureEach {
-                    elements.forEach {variant->
-                        suppressPomMetadataWarningsFor(variant)
-                    }
-                }
-
                 // Основна публікація Maven
                 mavenJava(MavenPublication) {
                     artifactId base.archivesName.get()

@@ -5,7 +5,3 @@ loom {
 dependencies {
     implementation project(path: ":network-common", configuration: 'transformProductionFabric')
 }
-
-remapJar {
-    atAccessWideners.add("${project.mod_id}.accesswidener")
-}

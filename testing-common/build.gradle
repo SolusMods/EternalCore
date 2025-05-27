@@ -9,7 +9,8 @@ ext {
             ":spiritual_root",
             ":keybind",
             ":entity",
-            ":abilities"
+            ":abilities",
+            ":attributes"
     ]
 }
 

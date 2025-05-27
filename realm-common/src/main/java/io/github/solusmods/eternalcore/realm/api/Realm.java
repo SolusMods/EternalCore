@@ -311,7 +311,7 @@ public abstract class Realm {
     @Nullable
     public MutableComponent getName() {
         ResourceLocation id = this.getRegistryName();
-        return id == null ? null : Component.translatable(String.format("%s.stage.%s", id.getNamespace(), id.getPath().replace('/', '.'))).withStyle(type.getName().getStyle());
+        return id == null ? null : Component.translatable(String.format("%s.realm.%s", id.getNamespace(), id.getPath().replace('/', '.'))).withStyle(type.getName().getStyle());
     }
 
     /**
@@ -325,8 +325,8 @@ public abstract class Realm {
     @Nullable
     public MutableComponent getTrackedName() {
         ResourceLocation id = this.getRegistryName();
-        MutableComponent name = Component.translatable(String.format("%s.stage.%s", id.getNamespace(), id.getPath().replace('/', '.')));
-        MutableComponent track = Component.translatable("%s.rank_menu.track".formatted(ModuleConstants.MOD_ID)).withStyle(ChatFormatting.YELLOW);
+        MutableComponent name = Component.translatable(String.format("%s.realm.%s", id.getNamespace(), id.getPath().replace('/', '.')));
+        MutableComponent track = Component.translatable("%s.realm_menu.track".formatted(ModuleConstants.MOD_ID)).withStyle(ChatFormatting.YELLOW);
         return name.append(track);
     }
 

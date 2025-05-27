@@ -24,27 +24,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
+@SuppressWarnings("unchecked")
 public class MixinEntity implements StorageHolder {
+    @Unique
     private static final String STORAGE_TAG_KEY = "eternalCoreStorage";
     @Shadow
     private Level level;
     @Unique
-    private CombinedStorage storage;
+    private CombinedStorage eternalcore$storage;
 
     @Override
     public @NotNull CompoundTag eternalCore$getStorage() {
-        return this.storage.toNBT();
+        return this.eternalcore$storage.toNBT();
     }
 
     @Nullable
     @Override
     public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
-        return (T) this.storage.get(storageKey.id());
+        return (T) this.eternalcore$storage.get(storageKey.id());
     }
 
     @Override
     public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
-        this.storage.add(id, storage);
+        this.eternalcore$storage.add(id, storage);
     }
 
     @Override
@@ -54,12 +56,12 @@ public class MixinEntity implements StorageHolder {
 
     @Override
     public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
-        return this.storage;
+        return this.eternalcore$storage;
     }
 
     @Override
     public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
-        this.storage = storage;
+        this.eternalcore$storage = storage;
     }
 
     @Override
@@ -68,7 +70,7 @@ public class MixinEntity implements StorageHolder {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    void initStorage(EntityType entityType, Level level, CallbackInfo ci) {
+    void initStorage(EntityType<?> entityType, Level level, CallbackInfo ci) {
         // Create empty storage
         eternalCore$setCombinedStorage(new CombinedStorage(this));
         // Fill storage with data
@@ -77,16 +79,16 @@ public class MixinEntity implements StorageHolder {
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER), cancellable = true)
     void saveStorage(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        if (this.storage != null) {
-            compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
+        if (this.eternalcore$storage != null) {
+            compound.put(STORAGE_TAG_KEY, this.eternalcore$storage.toNBT());
         }
         cir.setReturnValue(compound);
     }
 
     @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER))
     void loadStorage(CompoundTag compound, CallbackInfo ci) {
-        if (this.storage != null) {
-            this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
+        if (this.eternalcore$storage != null) {
+            this.eternalcore$storage.load(compound.getCompound(STORAGE_TAG_KEY));
         }
 
     }
@@ -95,7 +97,7 @@ public class MixinEntity implements StorageHolder {
     void onTickSyncCheck(CallbackInfo ci) {
         if (this.level.isClientSide) return;
         this.level.getProfiler().push("eternalCoreSyncCheck");
-        if (this.storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
+        if (this.eternalcore$storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
         this.level.getProfiler().pop();
     }
 }
