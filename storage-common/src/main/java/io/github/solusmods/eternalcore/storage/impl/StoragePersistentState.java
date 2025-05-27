@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
+import org.jetbrains.annotations.NotNull;
 
 public class StoragePersistentState extends SavedData {
     public static final ThreadLocal<Boolean> LOADING = ThreadLocal.withInitial(() -> false);
@@ -33,7 +34,7 @@ public class StoragePersistentState extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compoundTag, HolderLookup.Provider provider) {
+    public @NotNull CompoundTag save(CompoundTag compoundTag, HolderLookup.Provider provider) {
         return this.storage.toNBT();
     }
 }

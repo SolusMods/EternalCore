@@ -1417,7 +1417,7 @@ public class SpiritualRootInstance implements Cloneable {
      * @throws IllegalStateException якщо корінь не готовий до просування
      *
      * @see #onAdd(LivingEntity)
-     * @see #onAddExperience(LivingEntity)
+     * @see #onAddExperience(LivingEntity, float)
      * @see #getLevel()
      * @see SpiritualRoot#onAdvance(SpiritualRootInstance, LivingEntity)
      */

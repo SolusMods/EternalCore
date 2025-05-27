@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unchecked")
 public class SpiritualRootRegistry {
     private static final ResourceLocation registryId = EternalCoreSpiritualRoot.create("spiritual_roots");
     public static final Registrar<SpiritualRoot> SPIRITUAL_ROOTS = RegistrarManager.get(ModuleConstants.MOD_ID).<SpiritualRoot>builder(registryId)

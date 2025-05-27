@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unchecked")
 public class StageRegistry {
 
     private static final ResourceLocation registryId = EternalCoreStage.create("stages");

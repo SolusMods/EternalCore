@@ -12,12 +12,16 @@ import io.github.solusmods.eternalcore.abilities.api.AbilityAPI;
 import io.github.solusmods.eternalcore.abilities.api.AbilityEvents;
 import io.github.solusmods.eternalcore.abilities.api.AbilityInstance;
 import io.github.solusmods.eternalcore.entity.api.EntityEvents;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.EntityHitResult;
 
+@SuppressWarnings("unchecked")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AbilityRegistry {
     private static final ResourceLocation registryId = EternalCoreAbilities.create("abilities");
     public static final Registrar<Ability> ABILITIES = RegistrarManager.get(ModuleConstants.MOD_ID).<Ability>builder(registryId)

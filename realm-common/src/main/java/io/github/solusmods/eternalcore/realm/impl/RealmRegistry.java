@@ -18,6 +18,7 @@ import java.util.Optional;
 
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unchecked")
 public class RealmRegistry {
 
     private static final ResourceLocation registryId = EternalCoreRealm.create("realms");
