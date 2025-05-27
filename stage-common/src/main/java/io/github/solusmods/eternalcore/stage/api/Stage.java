@@ -94,7 +94,7 @@ public abstract class Stage {
     @Nullable
     public MutableComponent getName() {
         ResourceLocation id = this.getRegistryName();
-        return id == null ? null : Component.translatable(String.format("%s.spiritual_root.stage.%s", id.getNamespace(), id.getPath().replace('/', '.')));
+        return id == null ? null : Component.translatable(String.format("%s.realm.stage.%s", id.getNamespace(), id.getPath().replace('/', '.')));
     }
 
     public String getNameTranslationKey() {
