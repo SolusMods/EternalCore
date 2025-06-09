@@ -1,7 +1,0 @@
-loom {
-    accessWidenerPath = file("src/main/resources/${archives_name}_attributes.accesswidener")
-}
-
-dependencies {
-    implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
-}

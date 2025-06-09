@@ -32,33 +32,33 @@ public abstract class MixinLevel implements StorageHolder, LevelAccessor {
 
 
     @Override
-    public @NotNull CompoundTag eternalCore$getStorage() {
+    public @NotNull CompoundTag getStorageData() {
         return this.storage.toNBT();
     }
 
     @Nullable
     @Override
-    public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
-        return (T) this.storage.get(storageKey.id());
+    public <T extends Storage> T getStorage(StorageKey<T> storageKey) {
+        return (T) this.storage.get(storageKey.id);
     }
 
     @Override
-    public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+    public void attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
         this.storage.add(id, storage);
     }
 
     @Override
-    public @NotNull StorageType eternalCore$getStorageType() {
+    public @NotNull StorageType getStorageType() {
         return StorageType.WORLD;
     }
 
     @Override
-    public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
+    public @NotNull CombinedStorage getCombinedStorage() {
         return this.storage;
     }
 
     @Override
-    public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
+    public void setCombinedStorage(@NotNull CombinedStorage storage) {
         this.storage = storage;
     }
 

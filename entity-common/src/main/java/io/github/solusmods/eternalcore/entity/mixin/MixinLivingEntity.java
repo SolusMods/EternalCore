@@ -13,22 +13,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
+
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity {
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V", shift = At.Shift.BEFORE))
     void onPreTick(CallbackInfo ci) {
-        EntityEvents.LIVING_PRE_TICK.invoker().tick((LivingEntity) (Object) this);
+        Objects.requireNonNull(EntityEvents.LIVING_PRE_TICK.invoker()).tick((LivingEntity) (Object) this);
     }
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;refreshDirtyAttributes()V", shift = At.Shift.AFTER))
     void onPostTick(CallbackInfo ci) {
-        EntityEvents.LIVING_POST_TICK.invoker().tick((LivingEntity) (Object) this);
+        Objects.requireNonNull(EntityEvents.LIVING_POST_TICK.invoker()).tick((LivingEntity) (Object) this);
     }
 
     @Inject(method = "addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z", at = @At(value = "HEAD"), cancellable = true)
     void onEffectAdded(MobEffectInstance mobEffectInstance, Entity entity, CallbackInfoReturnable<Boolean> cir, @Local(argsOnly = true) LocalRef<MobEffectInstance> instance) {
-        Changeable<MobEffectInstance> instanceChangeable = Changeable.of(mobEffectInstance);
-        if (EntityEvents.LIVING_EFFECT_ADDED.invoker().effectAdd((LivingEntity) (Object) this, entity, instanceChangeable).isFalse()) {
+        Changeable<MobEffectInstance> instanceChangeable = Changeable.Companion.of(mobEffectInstance);
+        if (Objects.requireNonNull(EntityEvents.LIVING_EFFECT_ADDED.invoker()).effectAdd((LivingEntity) (Object) this, entity, instanceChangeable).isFalse()) {
             cir.setReturnValue(false);
             cir.cancel();
         } else instance.set(instanceChangeable.get());

@@ -1,7 +1,0 @@
-loom {
-    accessWidenerPath = project(":storage-common").loom.accessWidenerPath
-}
-
-dependencies {
-    implementation project(path: ":network-common", configuration: 'transformProductionFabric')
-}

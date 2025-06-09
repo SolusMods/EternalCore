@@ -29,6 +29,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Optional;
+
 @Mixin(LevelChunk.class)
 public abstract class MixinLevelChunk extends ChunkAccess implements StorageHolder {
     @Unique
@@ -39,38 +41,38 @@ public abstract class MixinLevelChunk extends ChunkAccess implements StorageHold
     }
 
     @Override
-    public @NotNull CompoundTag eternalCore$getStorage() {
+    public @NotNull CompoundTag getStorageData() {
         return this.storage.toNBT();
     }
 
     @Nullable
     @Override
-    public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
-        return (T) this.storage.get(storageKey.id());
+    public <T extends Storage> T getStorage(StorageKey<T> storageKey) {
+        return (T) this.storage.get(storageKey.id);
     }
 
     @Override
-    public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+    public void attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
         this.storage.add(id, storage);
     }
 
     @Override
-    public @NotNull StorageType eternalCore$getStorageType() {
+    public @NotNull StorageType getStorageType() {
         return StorageType.CHUNK;
     }
 
     @Override
-    public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
+    public @NotNull CombinedStorage getCombinedStorage() {
         return this.storage;
     }
 
     @Override
-    public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
+    public void setCombinedStorage(@NotNull CombinedStorage storage) {
         this.storage = storage;
     }
 
     @Override
-    public Iterable<ServerPlayer> eternalCore$getTrackingPlayers() {
+    public Iterable<ServerPlayer> getTrackingPlayers() {
         return PlayerLookup.tracking((LevelChunk) (Object) this);
     }
 
@@ -80,5 +82,21 @@ public abstract class MixinLevelChunk extends ChunkAccess implements StorageHold
             this.storage = new CombinedStorage(this);
             StorageManager.initialStorageFilling(this);
         }
+    }
+
+    @Override
+    public void sync(ServerPlayer target) {
+        StorageManager.INSTANCE.syncTarget(this, target);
+    }
+
+
+    @Override
+    public void sync(boolean update) {
+        StorageManager.INSTANCE.syncTracking(this, update);
+    }
+
+    @Override
+    public @NotNull <T extends Storage> Optional<@Nullable T> getStorageOptional(@Nullable StorageKey<@Nullable T> storageKey) {
+        return Optional.ofNullable(getStorage(storageKey));
     }
 }

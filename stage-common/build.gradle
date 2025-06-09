@@ -1,3 +1,6 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
 loom {
     accessWidenerPath = file("src/main/resources/${archives_name}_stage.accesswidener")
 }
@@ -6,4 +9,11 @@ dependencies {
     implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
     implementation(project(path: ":storage-common", configuration: 'namedElements')) { transitive false }
     implementation(project(path: ":entity-common", configuration: 'namedElements')) { transitive false }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+repositories {
+    mavenCentral()
+}
+kotlin {
+    jvmToolchain(21)
 }

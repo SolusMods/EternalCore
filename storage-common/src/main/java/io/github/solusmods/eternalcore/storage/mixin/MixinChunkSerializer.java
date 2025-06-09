@@ -1,5 +1,6 @@
 package io.github.solusmods.eternalcore.storage.mixin;
 
+import io.github.solusmods.eternalcore.storage.api.StorageHolder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
@@ -28,13 +29,13 @@ public class MixinChunkSerializer {
     private static void onChunkRead(ServerLevel level, PoiManager poiManager, RegionStorageInfo regionStorageInfo, ChunkPos pos, CompoundTag tag, CallbackInfoReturnable<ProtoChunk> cir) {
         if (!(cir.getReturnValue() instanceof ImposterProtoChunk protoChunk)) return;
         // Apply loaded data to initial storage
-        protoChunk.getWrapped().eternalCore$getCombinedStorage().handleUpdatePacket(tag.getCompound(STORAGE_TAG));
+        ((StorageHolder)protoChunk.getWrapped()).getCombinedStorage().handleUpdatePacket(tag.getCompound(STORAGE_TAG));
     }
 
     @Inject(method = "write", at = @At("RETURN"))
     private static void onChunkWrite(ServerLevel level, ChunkAccess chunk, CallbackInfoReturnable<CompoundTag> cir) {
         if (!(chunk instanceof LevelChunk levelChunk)) return;
         CompoundTag tag = cir.getReturnValue();
-        tag.put(STORAGE_TAG, levelChunk.eternalCore$getCombinedStorage().toNBT());
+        tag.put(STORAGE_TAG, ((StorageHolder) levelChunk).getCombinedStorage().toNBT());
     }
 }

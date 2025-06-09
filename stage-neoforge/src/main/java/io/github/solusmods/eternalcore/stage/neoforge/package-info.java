@@ -1,1 +1,0 @@
-package io.github.solusmods.eternalcore.stage.neoforge;

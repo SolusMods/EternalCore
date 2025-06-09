@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@SuppressWarnings("unchecked_cast")
 public class EternalCoreAttributeRegisterImpl {
     public static final List<Holder<Attribute>> GENERIC_REGISTRY = new CopyOnWriteArrayList<>();
     public static final List<Holder<Attribute>> PLAYER_REGISTRY = new CopyOnWriteArrayList<>();
@@ -50,6 +51,7 @@ public class EternalCoreAttributeRegisterImpl {
         return builder;
     }
 
+    @SuppressWarnings("unchecked_cast")
     public static void init() {
         LifecycleEvent.SETUP.register(() -> {
             BuiltInRegistries.ENTITY_TYPE.stream().filter(DefaultAttributes::hasSupplier)

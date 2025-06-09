@@ -1,8 +1,10 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
+    "kotlin.languageServer.enabled": true,
     "gradle.env": {
         "CLOUDSMITH_LOGIN": "skillfi",
         "CLOUDSMITH_API": "2b95bc275979eb40ff0272a414150deac71ceee9"
-  }
+  },
+  "java.format.settings.url": ".vscode/java-formatter.xml"
 }

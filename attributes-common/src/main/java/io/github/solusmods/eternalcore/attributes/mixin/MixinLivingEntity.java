@@ -19,6 +19,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
+import java.util.Objects;
+
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity extends Entity {
     public MixinLivingEntity(EntityType<?> entityType, Level level) {
@@ -29,8 +31,8 @@ public abstract class MixinLivingEntity extends Entity {
             target = "net/minecraft/world/entity/LivingEntity.setSharedFlag(IZ)V"))
     private boolean updateFallFlying(boolean value) {
         LivingEntity glider = (LivingEntity) (Object) this;
-        Changeable<Boolean> glide = Changeable.of(EternalCoreAttributeUtils.canElytraGlide(glider, this.getSharedFlag(7)));
-        if (AttributeEvents.CONTINUE_GLIDE_EVENT.invoker().glide(glider, glide).isFalse()) return false;
+        Changeable<Boolean> glide = Changeable.Companion.of(EternalCoreAttributeUtils.canElytraGlide(glider, this.getSharedFlag(7)));
+        if (Objects.requireNonNull(AttributeEvents.CONTINUE_GLIDE_EVENT.invoker()).glide(glider, glide).isFalse()) return false;
         return glide.get();
     }
 

@@ -21,7 +21,7 @@ public abstract class MixinPlayer extends LivingEntity {
     @Inject(method = "actuallyHurt", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isInvulnerableTo(Lnet/minecraft/world/damagesource/DamageSource;)Z", shift = At.Shift.AFTER), cancellable = true)
     void onHurt(DamageSource source, float amount, CallbackInfo ci) {
-        Changeable<Float> changeable = Changeable.of(amount);
+        Changeable<Float> changeable = Changeable.Companion.of(amount);
         if (EntityEvents.LIVING_HURT.invoker().hurt((Player) (Object) this, source, changeable).isFalse()) ci.cancel();
         else damageContainers.peek().setNewDamage(changeable.get());
     }

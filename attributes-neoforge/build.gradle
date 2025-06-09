@@ -1,11 +1,8 @@
-loom {
-    accessWidenerPath = project(":attributes-common").loom.accessWidenerPath
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 dependencies {
     implementation project(path: ":network-common", configuration: 'transformProductionNeoForge')
-}
-
-remapJar {
-    atAccessWideners.add("${project.mod_id}.accesswidener")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }

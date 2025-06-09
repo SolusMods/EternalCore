@@ -1,7 +1,0 @@
-loom {
-    accessWidenerPath = project(":keybind-common").loom.accessWidenerPath
-}
-
-remapJar {
-    atAccessWideners.add("${project.mod_id}.accesswidener")
-}

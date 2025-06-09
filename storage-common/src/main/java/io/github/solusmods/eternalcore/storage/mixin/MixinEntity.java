@@ -23,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
+
 @Mixin(Entity.class)
 @SuppressWarnings("unchecked")
 public class MixinEntity implements StorageHolder {
@@ -31,64 +33,64 @@ public class MixinEntity implements StorageHolder {
     @Shadow
     private Level level;
     @Unique
-    private CombinedStorage eternalcore$storage;
+    private CombinedStorage storage;
 
     @Override
-    public @NotNull CompoundTag eternalCore$getStorage() {
-        return this.eternalcore$storage.toNBT();
+    public @NotNull CompoundTag getStorageData() {
+        return this.storage.toNBT();
     }
 
     @Nullable
     @Override
-    public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
-        return (T) this.eternalcore$storage.get(storageKey.id());
+    public <T extends Storage> T getStorage(StorageKey<T> storageKey) {
+        return (T) this.storage.get(storageKey.id);
     }
 
     @Override
-    public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
-        this.eternalcore$storage.add(id, storage);
+    public void attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+        this.storage.add(id, storage);
     }
 
     @Override
-    public @NotNull StorageType eternalCore$getStorageType() {
+    public @NotNull StorageType getStorageType() {
         return StorageType.ENTITY;
     }
 
     @Override
-    public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
-        return this.eternalcore$storage;
+    public @NotNull CombinedStorage getCombinedStorage() {
+        return this.storage;
     }
 
     @Override
-    public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
-        this.eternalcore$storage = storage;
+    public void setCombinedStorage(@NotNull CombinedStorage storage) {
+        this.storage = storage;
     }
 
     @Override
-    public Iterable<ServerPlayer> eternalCore$getTrackingPlayers() {
+    public Iterable<ServerPlayer> getTrackingPlayers() {
         return PlayerLookup.trackingAndSelf((Entity) (Object) this);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     void initStorage(EntityType<?> entityType, Level level, CallbackInfo ci) {
         // Create empty storage
-        eternalCore$setCombinedStorage(new CombinedStorage(this));
+        setCombinedStorage(new CombinedStorage(this));
         // Fill storage with data
         StorageManager.initialStorageFilling(this);
     }
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER), cancellable = true)
     void saveStorage(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        if (this.eternalcore$storage != null) {
-            compound.put(STORAGE_TAG_KEY, this.eternalcore$storage.toNBT());
+        if (this.storage != null) {
+            compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
         }
         cir.setReturnValue(compound);
     }
 
     @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER))
     void loadStorage(CompoundTag compound, CallbackInfo ci) {
-        if (this.eternalcore$storage != null) {
-            this.eternalcore$storage.load(compound.getCompound(STORAGE_TAG_KEY));
+        if (this.storage != null) {
+            this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
         }
 
     }
@@ -97,7 +99,23 @@ public class MixinEntity implements StorageHolder {
     void onTickSyncCheck(CallbackInfo ci) {
         if (this.level.isClientSide) return;
         this.level.getProfiler().push("eternalCoreSyncCheck");
-        if (this.eternalcore$storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
+        if (this.storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
         this.level.getProfiler().pop();
+    }
+
+    @Override
+    public void sync(ServerPlayer target) {
+        StorageManager.INSTANCE.syncTarget(this, target);
+    }
+
+
+    @Override
+    public void sync(boolean update) {
+        StorageManager.INSTANCE.syncTracking(this, update);
+    }
+
+    @Override
+    public @NotNull <T extends Storage> Optional<@Nullable T> getStorageOptional(@Nullable StorageKey<@Nullable T> storageKey) {
+        return Optional.ofNullable(getStorage(storageKey));
     }
 }

@@ -19,7 +19,7 @@ public class NeoForgeCommonEventInvoker {
     @SubscribeEvent
     static void onLivingChangeTarget(final LivingChangeTargetEvent e) {
         if (!e.getTargetType().equals(LivingChangeTargetEvent.LivingTargetType.MOB_TARGET)) return;
-        Changeable<LivingEntity> changeableTarget = Changeable.of(e.getNewAboutToBeSetTarget());
+        Changeable<LivingEntity> changeableTarget = Changeable.Companion.of(e.getNewAboutToBeSetTarget());
         if (EntityEvents.LIVING_CHANGE_TARGET.invoker().changeTarget(e.getEntity(), changeableTarget).isFalse()) {
             e.setCanceled(true);
         } else {
@@ -29,7 +29,7 @@ public class NeoForgeCommonEventInvoker {
 
     @SubscribeEvent
     static void onLivingDamage(final LivingDamageEvent.Pre e) {
-        Changeable<Float> changeableDamage = Changeable.of(e.getNewDamage());
+        Changeable<Float> changeableDamage = Changeable.Companion.of(e.getNewDamage());
         if (EntityEvents.LIVING_DAMAGE.invoker().damage(e.getEntity(), e.getSource(), changeableDamage).isFalse()) {
             e.setNewDamage(0);
         } else {
@@ -39,8 +39,8 @@ public class NeoForgeCommonEventInvoker {
 
     @SubscribeEvent
     static void onProjectileHit(final ProjectileImpactEvent e) {
-        Changeable<ProjectileHitResult> result = Changeable.of(ProjectileHitResult.DEFAULT);
-        Changeable<ProjectileDeflection> deflection = Changeable.of(ProjectileDeflection.NONE);
+        Changeable<ProjectileHitResult> result = Changeable.Companion.of(ProjectileHitResult.DEFAULT);
+        Changeable<ProjectileDeflection> deflection = Changeable.Companion.of(ProjectileDeflection.NONE);
         EntityEvents.PROJECTILE_HIT.invoker().hit(e.getRayTraceResult(), e.getProjectile(), deflection, result);
         if (result.get() != ProjectileHitResult.DEFAULT) e.setCanceled(true);
     }

@@ -1,9 +1,0 @@
-loom {
-    accessWidenerPath = file("src/main/resources/${archives_name}_spiritual_root.accesswidener")
-}
-
-dependencies {
-    implementation(project(path: ":network-common", configuration: 'namedElements')) { transitive false }
-    implementation(project(path: ":storage-common", configuration: 'namedElements')) { transitive false }
-    implementation(project(path: ":element-common", configuration: 'namedElements')) { transitive false }
-}
