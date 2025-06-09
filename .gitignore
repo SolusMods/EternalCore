@@ -112,6 +112,8 @@ gradle-app.setting
 
 **/build/
 
+.vscode
+
 # Common working directory
 run/
 runs/
