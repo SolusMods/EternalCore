@@ -23,7 +23,7 @@ import java.util.*
 import java.util.stream.Collectors
 import kotlin.math.max
 
-class AbilityInstance(ability: Ability) {
+open class AbilityInstance(ability: Ability) {
     private var removeTime = -1
     private var masteryPoint = 0.0
     private var toggled = false

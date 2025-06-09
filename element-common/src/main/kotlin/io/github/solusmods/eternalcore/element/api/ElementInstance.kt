@@ -18,7 +18,7 @@ import java.util.*
  * можливість серіалізації/десеріалізації в NBT формат для збереження та синхронізації.
  *
  */
-class ElementInstance(element: Element?) : Cloneable {
+open class ElementInstance(element: Element?) : Cloneable {
     /** Постачальник зареєстрованого елемента  */
     protected val elementRegistrySupplier: RegistrySupplier<Element?> = ElementAPI.elementRegistry.delegate(ElementAPI.elementRegistry.getId(element))
 

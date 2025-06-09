@@ -51,6 +51,7 @@ allprojects {
     // Встановлення ідентифікатора групи та версії з властивостей кореневого проекту
     group = maven_group
     version = mod_version
+
 }
 
 // Налаштування всіх підпроектів (платформенних модулів)
@@ -190,7 +191,7 @@ subprojects {
 
     // Налаштування імен архівів для всіх виходів
     tasks.withType<AbstractArchiveTask>().configureEach {
-        archiveBaseName.set("$archives_name-${project.name}")
+        archiveBaseName.set("$archives_name-${rootProject.name}-${project.name}")
     }
 
     // Налаштування залежностей для платформо-специфічних модулів

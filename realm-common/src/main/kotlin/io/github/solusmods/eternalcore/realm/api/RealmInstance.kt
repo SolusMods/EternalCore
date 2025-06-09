@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 
-class RealmInstance(realm: Realm?) : Cloneable {
+open class RealmInstance(realm: Realm?) : Cloneable {
     protected val realmRegistrySupplier: RegistrySupplier<Realm?> = RealmAPI.realmRegistry!!.delegate(RealmAPI.realmRegistry!!.getId(realm))
     private var tag: CompoundTag? = null
 
