@@ -7,8 +7,6 @@ import io.github.solusmods.eternalcore.realm.EternalCoreRealm
 import io.github.solusmods.eternalcore.realm.ModuleConstants
 import io.github.solusmods.eternalcore.realm.api.Realm
 import io.github.solusmods.eternalcore.realm.api.RealmAPI
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -24,16 +22,16 @@ object RealmRegistry {
 
 
     fun init() {
-        PlayerEvent.PLAYER_RESPAWN.register(PlayerEvent.PlayerRespawn { newPlayer: ServerPlayer?, conqueredEnd: Boolean, removalReason: Entity.RemovalReason? ->
+        PlayerEvent.PLAYER_RESPAWN.register { newPlayer: ServerPlayer, conqueredEnd: Boolean, removalReason: Entity.RemovalReason? ->
             val optional = RealmAPI.getRealmFrom(
-                newPlayer!!
-            )!!.realm
-            if (optional!!.isEmpty) return@PlayerRespawn
+                newPlayer
+            )!!.getRealm()
+            if (optional.isEmpty) return@register
 
             val instance = optional.get()
             if (!conqueredEnd) {
                 instance.addAttributeModifiers(newPlayer, 0)
             }
-        })
+        }
     }
 }

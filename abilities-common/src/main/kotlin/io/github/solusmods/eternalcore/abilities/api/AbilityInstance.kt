@@ -19,9 +19,10 @@ import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.entity.projectile.ProjectileDeflection
 import net.minecraft.world.phys.EntityHitResult
 import org.jetbrains.annotations.ApiStatus
+import java.lang.Integer.max
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.math.max
+import kotlin.jvm.javaClass
 
 open class AbilityInstance(ability: Ability) {
     private var removeTime = -1
@@ -49,7 +50,7 @@ open class AbilityInstance(ability: Ability) {
     /**
      * Used to create an exact copy of the current instance.
      */
-    fun copy(): AbilityInstance {
+    open fun copy(): AbilityInstance {
         val clone = AbilityInstance(this.ability!!)
         clone.dirty = this.dirty
         clone.cooldownList = ArrayList<Int?>(this.cooldownList)
@@ -66,7 +67,7 @@ open class AbilityInstance(ability: Ability) {
      *
      * Override [AbilityInstance.serialize] to store your custom Data.
      */
-    fun toNBT(): CompoundTag {
+    open fun toNBT(): CompoundTag {
         val nbt = CompoundTag()
         nbt.putString("ability", this.abilityId.toString())
         serialize(nbt)
@@ -78,7 +79,7 @@ open class AbilityInstance(ability: Ability) {
      *
      * @param nbt Tag with data from [AbilityInstance.fromNBT]
      */
-    fun serialize(nbt: CompoundTag): CompoundTag {
+    open fun serialize(nbt: CompoundTag): CompoundTag {
         nbt.putInt(REMOVE_TIME_TAG, this.removeTime)
         nbt.putDouble(MASTERY_TAG, this.masteryPoint)
         nbt.putBoolean(TOGGLED_TAG, this.toggled)
@@ -90,7 +91,7 @@ open class AbilityInstance(ability: Ability) {
     /**
      * Can be used to load custom data.
      */
-    fun deserialize(tag: CompoundTag?) {
+    open fun deserialize(tag: CompoundTag?) {
         this.removeTime = tag!!.getInt(REMOVE_TIME_TAG)
         this.masteryPoint = tag.getDouble(MASTERY_TAG)
         this.toggled = tag.getBoolean(TOGGLED_TAG)
@@ -171,7 +172,7 @@ open class AbilityInstance(ability: Ability) {
      * @param entity Affected [LivingEntity] owning this Ability.
      * @return false if this ability cannot tick.
      */
-    fun canTick(entity: LivingEntity?): Boolean {
+    open fun canTick(entity: LivingEntity?): Boolean {
         return this.ability!!.canTick(this, entity)
     }
 

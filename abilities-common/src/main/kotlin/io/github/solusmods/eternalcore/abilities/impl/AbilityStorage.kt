@@ -16,6 +16,7 @@ import io.github.solusmods.eternalcore.network.api.util.Changeable
 import io.github.solusmods.eternalcore.storage.EternalCoreStorage
 import io.github.solusmods.eternalcore.storage.api.Storage
 import io.github.solusmods.eternalcore.storage.api.StorageEvents
+import io.github.solusmods.eternalcore.storage.api.StorageHolder
 import io.github.solusmods.eternalcore.storage.api.StorageKey
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
@@ -34,7 +35,7 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 @Suppress("unchecked_cast")
-open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage(holder), Abilities {
+open class AbilityStorage protected constructor(holder: StorageHolder) : Storage(holder), Abilities {
     private val abilityInstance: MutableMap<ResourceLocation?, AbilityInstance> =
         mutableMapOf()
     private var hasRemovedAbilities = false
@@ -64,7 +65,7 @@ open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage
 
         instance.markDirty()
         this.abilityInstance.put(instance.abilityId, instance)
-        if (unlockMessage.isPresent) this.owner?.sendSystemMessage(unlockMessage.get())
+        if (unlockMessage.isPresent) this.owner.sendSystemMessage(unlockMessage.get())
         instance.onLearnAbility(this.owner)
         markDirty()
         return true
@@ -170,11 +171,11 @@ open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage
         }
     }
 
-    protected val owner: LivingEntity?
-        get() = this.holder as LivingEntity?
+    protected val owner: LivingEntity
+        get() = this.holder as LivingEntity
 
     companion object {
-        var key: StorageKey<AbilityStorage?>? = null
+        var key: StorageKey<AbilityStorage>? = null
         const val INSTANCE_UPDATE: Int = 20
         const val PASSIVE_SKILL: Int = 100
         val tickingAbilities: Multimap<UUID?, TickingAbility> = ArrayListMultimap.create<UUID?, TickingAbility?>() as Multimap<UUID?, TickingAbility>
@@ -182,40 +183,40 @@ open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage
         private val ID: ResourceLocation = EternalCoreAbilities.create("ability_storage")
 
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry: StorageEvents.StorageRegistry<Entity> ->
-                key = registry!!.register(
+            StorageEvents.REGISTER_ENTITY_STORAGE.register { registry: StorageEvents.StorageRegistry<Entity> ->
+                key = registry.register(
                     ID,
                     AbilityStorage::class.java,
-                    { obj: Entity? -> LivingEntity::class.java.isInstance(obj) } as (Entity) -> Boolean,
-                    { target: Entity? -> AbilityStorage(target as LivingEntity?) } as (Entity) -> AbilityStorage? as (Entity) -> AbilityStorage) as StorageKey<AbilityStorage?>?
-            })
+                    { obj: Entity -> LivingEntity::class.java.isInstance(obj) },
+                    { target: Entity -> AbilityStorage(target) })
+            }
 
-            EntityEvents.LIVING_HURT.register(LivingHurtEvent { entity: LivingEntity?, source: DamageSource?, changeable: Changeable<Float?>? ->
+            EntityEvents.LIVING_HURT.register { entity: LivingEntity?, source: DamageSource?, changeable: Changeable<Float?>? ->
                 val skills = AbilityAPI.getAbilitiesFrom(
                     entity!!
                 )
                 if (AbilityEvents.Companion.ABILITY_DAMAGE_PRE_CALCULATION.invoker()
-                        !!.calculate(skills, entity, source, changeable)!!.isFalse
-                ) return@LivingHurtEvent EventResult.interruptFalse()
+                    !!.calculate(skills, entity, source, changeable)!!.isFalse
+                ) return@register EventResult.interruptFalse()
                 if (AbilityEvents.Companion.ABILITY_DAMAGE_CALCULATION.invoker()
-                        !!.calculate(skills, entity, source, changeable)!!.isFalse()
-                ) return@LivingHurtEvent EventResult.interruptFalse()
+                    !!.calculate(skills, entity, source, changeable)!!.isFalse()
+                ) return@register EventResult.interruptFalse()
                 if (AbilityEvents.Companion.ABILITY_DAMAGE_POST_CALCULATION.invoker()
-                        !!.calculate(skills, entity, source, changeable)!!.isFalse
-                ) return@LivingHurtEvent EventResult.interruptFalse()
+                    !!.calculate(skills, entity, source, changeable)!!.isFalse
+                ) return@register EventResult.interruptFalse()
                 EventResult.pass()
-            })
+            }
 
-            EntityEvents.LIVING_POST_TICK.register(LivingTickEvent { entity: LivingEntity? ->
+            EntityEvents.LIVING_POST_TICK.register { entity: LivingEntity? ->
                 val level = entity!!.level()
-                if (level.isClientSide()) return@LivingTickEvent
+                if (level.isClientSide()) return@register
                 val storage = AbilityAPI.getAbilitiesFrom(entity)
                 handleAbilityTick(entity, level, storage!!)
                 if (entity is Player) handleAbilityHeldTick(entity, storage)
                 storage.markDirty()
-            })
+            }
 
-            PlayerEvent.PLAYER_QUIT.register(PlayerEvent.PlayerQuit { player: ServerPlayer? ->
+            PlayerEvent.PLAYER_QUIT.register { player: ServerPlayer? ->
                 val multimap: Multimap<UUID?, TickingAbility> = tickingAbilities
                 if (multimap.containsKey(player!!.getUUID())) {
                     for (skill in multimap.get(player.getUUID())) {
@@ -225,7 +226,7 @@ open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage
                     }
                     multimap.removeAll(player.getUUID())
                 }
-            })
+            }
         }
 
         private fun handleAbilityTick(entity: LivingEntity?, level: Level, storage: Abilities) {
@@ -289,10 +290,10 @@ open class AbilityStorage protected constructor(holder: LivingEntity?) : Storage
 
         private fun handleAbilityHeldTick(player: Player, storage: Abilities) {
             if (!tickingAbilities.containsKey(player.getUUID())) return
-            tickingAbilities.get(player.getUUID()).removeIf { tickingAbility: TickingAbility? ->
-                if (!tickingAbility!!.tick(storage, player)) {
+            tickingAbilities.get(player.getUUID()).removeIf { tickingAbility: TickingAbility ->
+                if (!tickingAbility.tick(storage, player)) {
                     val instance = storage.getAbility(tickingAbility.ability)
-                    if (instance!!.isEmpty()) return@removeIf true
+                    if (instance!!.isEmpty) return@removeIf true
                     tickingAbility.ability
                         .removeAttributeModifiers(instance.get(), player, tickingAbility.mode)
                     return@removeIf true

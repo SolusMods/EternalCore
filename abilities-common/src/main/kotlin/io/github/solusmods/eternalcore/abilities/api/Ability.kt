@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.contents.TranslatableContents
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
@@ -53,7 +54,7 @@ abstract class Ability {
      *
      * Override this Method to use your extended version of [AbilityInstance]
      */
-    fun createDefaultInstance(): AbilityInstance {
+    open fun createDefaultInstance(): AbilityInstance {
         return AbilityInstance(this)
     }
 
@@ -74,9 +75,14 @@ abstract class Ability {
                 String.format(
                     "%s.ability.%s",
                     id.namespace,
-                    id.path.replace('/', '.')
+                    id.path.replace('/', '.'),
                 )
             )
+        }
+
+    val nameTranslationKey: String?
+        get() = name?.let { component ->
+            (component.contents as? TranslatableContents)?.key
         }
 
     fun getChatDisplayName(withDescription: Boolean): MutableComponent {
@@ -116,8 +122,8 @@ abstract class Ability {
             return Component.translatable(
                 String.format(
                     "%s.ability.%s.description",
-                    id.getNamespace(),
-                    id.getPath().replace('/', '.')
+                    id.namespace,
+                    id.path.replace('/', '.')
                 )
             )
         }
@@ -136,7 +142,7 @@ abstract class Ability {
      * @param user   Affected [LivingEntity] owning this Ability.
      * @return false will stop [LivingEntity] from using any feature of the ability.
      */
-    fun canInteractAbility(instance: AbilityInstance?, user: LivingEntity?): Boolean {
+    open fun canInteractAbility(instance: AbilityInstance?, user: LivingEntity?): Boolean {
         return true
     }
 
@@ -144,7 +150,7 @@ abstract class Ability {
      * @return the maximum number of ticks that this ability can be held down with the ability activation button.
      *
      */
-    fun getMaxHeldTime(instance: AbilityInstance?, entity: LivingEntity?): Int {
+    open fun getMaxHeldTime(instance: AbilityInstance?, entity: LivingEntity?): Int {
         return 72000
     }
 
@@ -155,7 +161,7 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @return false if this ability is not toggleable.
      */
-    fun canBeToggled(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
+    open fun canBeToggled(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
         return false
     }
 
@@ -166,7 +172,7 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @return false if this ability cannot ignore cooldown.
      */
-    fun canIgnoreCoolDown(instance: AbilityInstance?, entity: LivingEntity?, mode: Int): Boolean {
+    open fun canIgnoreCoolDown(instance: AbilityInstance?, entity: LivingEntity?, mode: Int): Boolean {
         return false
     }
 
@@ -177,7 +183,7 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @return false if this ability cannot tick.
      */
-    fun canTick(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
+    open fun canTick(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
         return false
     }
 
@@ -188,17 +194,17 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @return false if this ability cannot be scrolled.
      */
-    fun canScroll(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
+    open fun canScroll(instance: AbilityInstance?, entity: LivingEntity?): Boolean {
         return false
     }
 
-    val modes: Int
+    open val modes: Int
         /**
          * @return the number of modes that this ability can have.
          */
         get() = 1
 
-    val maxMastery: Int
+    open val maxMastery: Int
         /**
          * @return the maximum mastery points that this ability can have.
          */
@@ -211,7 +217,7 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @return true to will mark this Ability is mastered, which can be used for increase stats or additional features/modes.
      */
-    fun isMastered(instance: AbilityInstance, entity: LivingEntity?): Boolean {
+    open fun isMastered(instance: AbilityInstance, entity: LivingEntity?): Boolean {
         return instance.mastery >= this.maxMastery
     }
 
@@ -221,7 +227,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun addMasteryPoint(instance: AbilityInstance, entity: LivingEntity?) {
+    open fun addMasteryPoint(instance: AbilityInstance, entity: LivingEntity?) {
         if (isMastered(instance, entity)) return
         instance.mastery = (instance.mastery + 1)
         if (isMastered(instance, entity)) instance.onAbilityMastered(entity)
@@ -232,7 +238,7 @@ abstract class Ability {
      * The attributes are applied to an entity when the ability is held and removed when it stops being held.
      *
      */
-    fun addHeldAttributeModifier(
+    open fun addHeldAttributeModifier(
         holder: Holder<Attribute?>?,
         resourceLocation: ResourceLocation?,
         amount: Double,
@@ -241,7 +247,7 @@ abstract class Ability {
         this.attributeModifiers.put(holder, AttributeTemplate(resourceLocation, amount, operation))
     }
 
-    fun addHeldAttributeModifier(
+    open fun addHeldAttributeModifier(
         holder: Holder<Attribute?>?,
         id: String?,
         amount: Double,
@@ -258,7 +264,7 @@ abstract class Ability {
      * @param holder   Affected [<] that this ability provides.
      * @param template Affected [AttributeTemplate] that this ability provides for an attribute.
      */
-    fun getAttributeModifierAmplifier(
+    open fun getAttributeModifierAmplifier(
         instance: AbilityInstance?,
         entity: LivingEntity?,
         holder: Holder<Attribute?>?,
@@ -274,7 +280,7 @@ abstract class Ability {
      * @param entity   Affected [LivingEntity] owning this Ability.
      * @param instance Affected [AbilityInstance]
      */
-    fun addHeldAttributeModifiers(instance: AbilityInstance, entity: LivingEntity, mode: Int) {
+    open fun addHeldAttributeModifiers(instance: AbilityInstance, entity: LivingEntity, mode: Int) {
         if (this.attributeModifiers.isEmpty()) return
 
         val attributeMap = entity.getAttributes()
@@ -301,7 +307,7 @@ abstract class Ability {
      *
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun removeAttributeModifiers(instance: AbilityInstance?, entity: LivingEntity, mode: Int) {
+    open fun removeAttributeModifiers(instance: AbilityInstance?, entity: LivingEntity, mode: Int) {
         if (this.attributeModifiers.isEmpty()) return
         val map = entity.getAttributes()
         val dirtyInstances: MutableList<AttributeInstance?> = ArrayList<AttributeInstance?>()
@@ -325,7 +331,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun onToggleOn(instance: AbilityInstance?, entity: LivingEntity?) {
+    open fun onToggleOn(instance: AbilityInstance?, entity: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -335,7 +341,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun onToggleOff(instance: AbilityInstance?, entity: LivingEntity?) {
+    open fun onToggleOff(instance: AbilityInstance?, entity: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -345,7 +351,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param living   Affected [LivingEntity] owning this Ability.
      */
-    fun onTick(instance: AbilityInstance?, living: LivingEntity?) {
+    open fun onTick(instance: AbilityInstance?, living: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -355,7 +361,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun onPressed(instance: AbilityInstance?, entity: LivingEntity?, keyNumber: Int, mode: Int) {
+    open fun onPressed(instance: AbilityInstance?, entity: LivingEntity?, keyNumber: Int, mode: Int) {
         // Override this method to add your own logic
     }
 
@@ -366,7 +372,7 @@ abstract class Ability {
      * @param living   Affected [LivingEntity] owning this Ability.
      * @return true to continue ticking this Ability.
      */
-    fun onHeld(instance: AbilityInstance?, living: LivingEntity?, heldTicks: Int, mode: Int): Boolean {
+    open fun onHeld(instance: AbilityInstance?, living: LivingEntity?, heldTicks: Int, mode: Int): Boolean {
         // Override this method to add your own logic
         return false
     }
@@ -377,7 +383,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun onRelease(instance: AbilityInstance?, entity: LivingEntity?, heldTicks: Int, keyNumber: Int, mode: Int) {
+    open fun onRelease(instance: AbilityInstance?, entity: LivingEntity?, heldTicks: Int, keyNumber: Int, mode: Int) {
         // Override this method to add your own logic
     }
 
@@ -388,7 +394,7 @@ abstract class Ability {
      * @param living   Affected [LivingEntity] owning this Ability.
      * @param delta    The scroll delta of the mouse scroll.
      */
-    fun onScroll(instance: AbilityInstance?, living: LivingEntity?, delta: Double, mode: Int) {
+    open fun onScroll(instance: AbilityInstance?, living: LivingEntity?, delta: Double, mode: Int) {
         // Override this method to add your own logic
     }
 
@@ -398,7 +404,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] learning this Ability.
      */
-    fun onLearnAbility(instance: AbilityInstance?, entity: LivingEntity?) {
+    open fun onLearnAbility(instance: AbilityInstance?, entity: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -408,7 +414,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] learning this Ability.
      */
-    fun onForgetAbility(instance: AbilityInstance?, entity: LivingEntity?) {
+    open fun onForgetAbility(instance: AbilityInstance?, entity: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -418,7 +424,7 @@ abstract class Ability {
      * @param instance Affected [AbilityInstance]
      * @param entity   Affected [LivingEntity] owning this Ability.
      */
-    fun onAbilityMastered(instance: AbilityInstance?, entity: LivingEntity?) {
+    open fun onAbilityMastered(instance: AbilityInstance?, entity: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -427,7 +433,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onEffectAdded
      */
-    fun onEffectAdded(
+    open fun onEffectAdded(
         instance: AbilityInstance?,
         entity: LivingEntity?,
         source: Entity?,
@@ -442,7 +448,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onBeingTargeted
      */
-    fun onBeingTargeted(instance: AbilityInstance?, target: Changeable<LivingEntity?>?, owner: LivingEntity?): Boolean {
+    open fun onBeingTargeted(instance: AbilityInstance?, target: Changeable<LivingEntity?>?, owner: LivingEntity?): Boolean {
         // Override this method to add your own logic
         return true
     }
@@ -452,7 +458,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onBeingDamaged
      */
-    fun onBeingDamaged(
+    open fun onBeingDamaged(
         instance: AbilityInstance?,
         entity: LivingEntity?,
         source: DamageSource?,
@@ -467,7 +473,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onDamageEntity
      */
-    fun onDamageEntity(
+    open fun onDamageEntity(
         instance: AbilityInstance?,
         owner: LivingEntity?,
         target: LivingEntity?,
@@ -483,7 +489,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onTouchEntity
      */
-    fun onTouchEntity(
+    open fun onTouchEntity(
         instance: AbilityInstance?,
         owner: LivingEntity?,
         target: LivingEntity?,
@@ -499,7 +505,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onTakenDamage
      */
-    fun onTakenDamage(
+    open fun onTakenDamage(
         instance: AbilityInstance?,
         owner: LivingEntity?,
         source: DamageSource?,
@@ -512,7 +518,7 @@ abstract class Ability {
     /**
      * Called when the [LivingEntity] is hit by a projectile.
      */
-    fun onProjectileHit(
+    open fun onProjectileHit(
         instance: AbilityInstance?,
         living: LivingEntity?,
         hitResult: EntityHitResult?,
@@ -528,7 +534,7 @@ abstract class Ability {
      *
      * @see AbilityInstance.onDeath
      */
-    fun onDeath(instance: AbilityInstance?, owner: LivingEntity?, source: DamageSource?): Boolean {
+    open fun onDeath(instance: AbilityInstance?, owner: LivingEntity?, source: DamageSource?): Boolean {
         // Override this method to add your own logic
         return true
     }
@@ -536,7 +542,7 @@ abstract class Ability {
     /**
      * Called when the [ServerPlayer] owning this Ability respawns.
      */
-    fun onRespawn(instance: AbilityInstance?, owner: ServerPlayer?, conqueredEnd: Boolean) {
+    open fun onRespawn(instance: AbilityInstance?, owner: ServerPlayer?, conqueredEnd: Boolean) {
         // Override this method to add your own logic
     }
 }

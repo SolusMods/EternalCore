@@ -6,6 +6,7 @@ import net.minecraft.network.chat.contents.TranslatableContents
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.LivingEntity
 
+
 /**
  * Абстрактний базовий клас для всіх елементів у модифікації EternalCore.
  *
@@ -26,7 +27,7 @@ abstract class Element(
      *
      * @return Новий екземпляр елемента
      */
-    fun createDefaultInstance(): ElementInstance = ElementInstance(this)
+    open fun createDefaultInstance(): ElementInstance = ElementInstance(this)
 
     /**
      * Використовується для отримання [ResourceLocation] ідентифікатора цього [Element].
@@ -45,8 +46,16 @@ abstract class Element(
      * @return Компонент імені елемента для перекладу або null, якщо елемент не зареєстрований
      */
     val name: MutableComponent?
-        get() = registryName?.let { id ->
-            Component.translatable("${id.namespace}.element.${id.path.replace('/', '.')}")
+        get() {
+            val id = this.registryName
+            if (id == null) return null
+            return Component.translatable(
+                String.format(
+                    "%s.element.%s",
+                    id.namespace,
+                    id.path.replace('/', '.'),
+                )
+            )
         }
 
     /**

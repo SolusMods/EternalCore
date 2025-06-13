@@ -17,8 +17,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import kotlin.math.min
 
 @Suppress("unchecked_cast")
-abstract class SpiritualRoot {
-    // region ПОЛЯ
+abstract class SpiritualRoot(
     /**
      * Тип кореня, що визначає його категорію та рідкісність.
      *
@@ -32,8 +31,8 @@ abstract class SpiritualRoot {
      *
      *
      */
-    val type: RootType? = null
-
+    val type: RootType) {
+    // region ПОЛЯ
     /**
      * Мапа модифікаторів атрибутів, що застосовуються до сутності з цим Духовним Коренем.
      *
@@ -58,7 +57,7 @@ abstract class SpiritualRoot {
      *
      * @return Новий екземпляр [SpiritualRootInstance] з базовими налаштуваннями
      */
-    fun createDefaultInstance(): SpiritualRootInstance {
+    open fun createDefaultInstance(): SpiritualRootInstance {
         return SpiritualRootInstance(this)
     }
 
@@ -134,7 +133,7 @@ abstract class SpiritualRoot {
      * @param amount           Значення модифікатора (може бути від'ємним)
      * @param operation        Тип операції модифікатора (додавання, множення тощо)
      */
-    fun addAttributeModifier(
+    open fun addAttributeModifier(
         holder: Holder<Attribute>, resourceLocation: ResourceLocation,
         amount: Double, operation: AttributeModifier.Operation
     ) {
@@ -153,7 +152,7 @@ abstract class SpiritualRoot {
      * @param instance Екземпляр Духовного Кореня, що містить поточний стан
      * @param entity   Сутність, до якої застосовуються модифікатори атрибутів
      */
-    fun addAttributeModifiers(instance: SpiritualRootInstance, entity: LivingEntity) {
+    open fun addAttributeModifiers(instance: SpiritualRootInstance, entity: LivingEntity) {
         if (this.attributeModifiers.isEmpty()) return
 
         val attributeMap = entity.attributes
@@ -177,7 +176,7 @@ abstract class SpiritualRoot {
      * @param instance Екземпляр Духовного Кореня, що деактивується
      * @param entity   Сутність, від якої видаляються модифікатори атрибутів
      */
-    fun removeAttributeModifiers(instance: SpiritualRootInstance, entity: LivingEntity) {
+    open fun removeAttributeModifiers(instance: SpiritualRootInstance, entity: LivingEntity) {
         if (this.attributeModifiers.isEmpty()) return
 
         val map = entity.attributes
@@ -212,7 +211,7 @@ abstract class SpiritualRoot {
      * @param amount   Величина збільшення сили (від 0.0 до 1.0)
      * @see SpiritualRootInstance.increaseStrength
      */
-    fun increaseStrength(instance: SpiritualRootInstance, living: LivingEntity, amount: Float) {
+    open fun increaseStrength(instance: SpiritualRootInstance, living: LivingEntity, amount: Float) {
         instance.strength = (min(1.0f, instance.strength + amount))
     }
 
@@ -234,7 +233,7 @@ abstract class SpiritualRoot {
      * @see SpiritualRootInstance.canAdvance
      * @return `true` якщо просування можливе, `false` в іншому випадку
      */
-    fun canAdvance(spiritualRootInstance: SpiritualRootInstance, entity: LivingEntity): Boolean {
+    open fun canAdvance(spiritualRootInstance: SpiritualRootInstance, entity: LivingEntity): Boolean {
         return false
     }
 
@@ -295,7 +294,7 @@ abstract class SpiritualRoot {
      * @return Еволюціонований Духовний Корінь другого ступеня або `null`, якщо еволюція неможлива
      * @see SpiritualRootInstance.getSecondDegree
      */
-    fun getSecondDegree(spiritualRootInstance: SpiritualRootInstance, living: LivingEntity): SpiritualRoot? {
+    open fun getSecondDegree(spiritualRootInstance: SpiritualRootInstance, living: LivingEntity): SpiritualRoot? {
         return null
     }
 
@@ -323,7 +322,7 @@ abstract class SpiritualRoot {
      * @see SpiritualRootInstance.getOpposite
      * @return Протилежний Духовний Корінь або `null` якщо протилежності немає
      */
-    fun getOpposite(instance: SpiritualRootInstance, entity: LivingEntity): SpiritualRoot? {
+    open fun getOpposite(instance: SpiritualRootInstance, entity: LivingEntity): SpiritualRoot? {
         return null
     }
 
@@ -353,7 +352,7 @@ abstract class SpiritualRoot {
      * @param instance Новий екземпляр Духовного Кореня
      * @param living   Сутність, яка отримала Духовний Корінь
      */
-    fun onAdd(instance: SpiritualRootInstance, living: LivingEntity) {
+    open fun onAdd(instance: SpiritualRootInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -379,7 +378,7 @@ abstract class SpiritualRoot {
      * @param living   Сутність, яка досягла наступного рівня
      * @see SpiritualRootInstance.onAdvance
      */
-    fun onAdvance(instance: SpiritualRootInstance, living: LivingEntity) {
+    open fun onAdvance(instance: SpiritualRootInstance, living: LivingEntity) {
         SpiritualRootEvents.Companion.ADVANCE.invoker()!!.advance(instance, living, false, Changeable.of(false), null)
     }
 
@@ -405,7 +404,7 @@ abstract class SpiritualRoot {
      * @param entity               Сутність, яка культивує корінь
      * @see SpiritualRootInstance.onAddExperience
      */
-    fun onAddExperience(spiritualRootInstance: SpiritualRootInstance, entity: LivingEntity, amount: Float) {
+    open fun onAddExperience(spiritualRootInstance: SpiritualRootInstance, entity: LivingEntity, amount: Float) {
         SpiritualRootEvents.Companion.EXPERIENCE_GAIN.invoker()!!.gainExperience(spiritualRootInstance, entity, amount)
     } //endregion
 }

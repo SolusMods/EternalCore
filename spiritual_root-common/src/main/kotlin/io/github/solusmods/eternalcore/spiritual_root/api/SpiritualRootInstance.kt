@@ -507,7 +507,7 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
      * @see .fromNBT
      * @see .serialize
      */
-    fun toNBT(): CompoundTag {
+    open fun toNBT(): CompoundTag {
         val nbt = CompoundTag()
         nbt.putString(KEY, this.spiritualRootId.toString())
         serialize(nbt)
@@ -579,7 +579,7 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
      * @return The same NBT tag with added data
      * @see .deserialize
      */
-    fun serialize(nbt: CompoundTag): CompoundTag {
+    open fun serialize(nbt: CompoundTag): CompoundTag {
         if (this.tag != null) nbt.put("tag", this.tag!!.copy())
         nbt.putInt(LEVEL_KEY, this.level!!.level)
         nbt.putFloat(EXPERIENCE_KEY, this.experience)
@@ -624,7 +624,7 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
      * @param tag NBT tag with saved data
      * @see .serialize
      */
-    fun deserialize(tag: CompoundTag) {
+    open fun deserialize(tag: CompoundTag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag")
         if (tag.contains(LEVEL_KEY)) this.level = RootLevels.Companion.byId(tag.getInt(LEVEL_KEY))
         if (tag.contains(EXPERIENCE_KEY)) this.experience = tag.getFloat(EXPERIENCE_KEY)

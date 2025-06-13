@@ -1,10 +1,12 @@
-package io.github.solusmods.eternalcore.attributes
+package io.github.solusmods.eternalcore.attributes;
 
-import dev.architectury.injectables.annotations.ExpectPlatform
-import net.minecraft.core.Holder
-import net.minecraft.world.entity.ai.attributes.Attribute
+import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import org.jetbrains.annotations.NotNull;
 
-object EternalCoreAttributeRegister {
+public class EternalCoreAttributeRegister {
+
     /**
      * Registers a player-specific attribute with the given parameters.
      *
@@ -16,15 +18,12 @@ object EternalCoreAttributeRegister {
      * @param max        The maximum allowed value for the attribute.
      * @param syncable   Whether the attribute should be synchronized between client and server.
      * @param sentiment  The sentiment classification of the attribute (e.g., beneficial or harmful).
-     * @return A [Holder] containing the registered player attribute.
+     * @return A {@link Holder} containing the registered player attribute.
      */
     @ExpectPlatform
-    @JvmStatic
-    fun registerPlayerAttribute(
-        modID: String?, id: String?, name: String?, amount: Double,
-        min: Double, max: Double, syncable: Boolean, sentiment: Attribute.Sentiment?
-    ): Holder<Attribute?> {
-        throw AssertionError()
+    public static @NotNull Holder<Attribute> registerPlayerAttribute(String modID, String id, String name, double amount,
+                                                                     double min, double max, boolean syncable, Attribute.Sentiment sentiment) {
+        throw new AssertionError();
     }
 
     /**
@@ -38,20 +37,16 @@ object EternalCoreAttributeRegister {
      * @param max        The maximum allowed value for the attribute.
      * @param syncable   Whether the attribute should be synchronized between client and server.
      * @param sentiment  The sentiment classification of the attribute (e.g., beneficial or harmful).
-     * @return A [Holder] containing the registered generic attribute.
+     * @return A {@link Holder} containing the registered generic attribute.
      */
     @ExpectPlatform
-    @JvmStatic
-    fun registerGenericAttribute(
-        modID: String?, id: String?, name: String?, amount: Double,
-        min: Double, max: Double, syncable: Boolean, sentiment: Attribute.Sentiment?
-    ): Holder<Attribute?> {
-        throw AssertionError()
+    public static @NotNull Holder<Attribute> registerGenericAttribute(String modID, String id, String name, double amount,
+                                                                      double min, double max, boolean syncable, Attribute.Sentiment sentiment) {
+        throw new AssertionError();
     }
 
     @ExpectPlatform
-    @JvmStatic
-    fun init() {
-        throw AssertionError()
+    public static void init() {
+        throw new AssertionError();
     }
 }

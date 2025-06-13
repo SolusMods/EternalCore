@@ -85,17 +85,6 @@ public abstract class MixinLevelChunk extends ChunkAccess implements StorageHold
     }
 
     @Override
-    public void sync(ServerPlayer target) {
-        StorageManager.INSTANCE.syncTarget(this, target);
-    }
-
-
-    @Override
-    public void sync(boolean update) {
-        StorageManager.INSTANCE.syncTracking(this, update);
-    }
-
-    @Override
     public @NotNull <T extends Storage> Optional<@Nullable T> getStorageOptional(@Nullable StorageKey<@Nullable T> storageKey) {
         return Optional.ofNullable(getStorage(storageKey));
     }

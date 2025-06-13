@@ -51,13 +51,13 @@ class TestConfig : CoreConfig() {
                 player,
                 level,
                 "Test Config Sync",
-                Objects.requireNonNull<TestConfig>(ConfigRegistry.getConfig<TestConfig>(TestConfig::class.java as Class<TestConfig?>)).testResourceLocation
+                Objects.requireNonNull(ConfigRegistry.getConfig(TestConfig::class.java as Class<TestConfig?>))?.testResourceLocation
             )
         }
 
-        private fun logConfigValue(player: Player, level: Level, configType: String?, value: Any?) {
+        private fun logConfigValue(player: Player, level: Level, configType: String, value: ResourceLocation?) {
             LOG.info(
-                "{} for entity {} on {}:\n{}", configType, player.getName(),
+                "{} for entity {} on {}:\n{}", configType, player.name,
                 if (level.isClientSide()) "client" else "server", value
             )
         }

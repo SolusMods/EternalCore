@@ -17,6 +17,7 @@ import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 
 /**
@@ -214,8 +215,8 @@ class ElementsStorage(holder: StorageHolder?) : Storage(holder), Elements {
                 key = registry.register(
                     ID,
                     ElementsStorage::class.java,
-                    { true },
-                    ::ElementsStorage
+                    { obj -> LivingEntity::class.java.isInstance(obj) },
+                    { holder: Entity -> ElementsStorage(holder) }
                 )
             }
         }

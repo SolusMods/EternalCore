@@ -40,9 +40,12 @@ import java.util.function.Consumer
  */
 @Suppress("UNCHECKED_CAST")
 open class StageStorage
-protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReachedStages {
+protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReachedStages {
     /** Поточна активна стадія гравця  */
-    override var stage: Optional<StageInstance?> = Optional.ofNullable(null) as Optional<StageInstance?>
+    override var stage: StageInstance? = null
+    override fun getStage(): Optional<StageInstance> {
+        return Optional.ofNullable(stage)
+    }
 
     /** Колекція всіх досягнутих гравцем стадій  */
     override val reachedStages: MutableMap<ResourceLocation?, StageInstance> =
@@ -89,33 +92,33 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
      *
      * Встановлює нову активну стадію та викликає відповідні події.
      *
-     * @param instance Нова стадія для встановлення
+     * @param stageInstance Нова стадія для встановлення
      * @param advancement Чи є це просуванням вперед
      * @param notify Чи потрібно сповіщати гравця
      * @param component Компонент повідомлення для гравця (може бути null)
      * @return true, якщо стадія була успішно встановлена, false - якщо була скасована подією
      */
     override fun setStage(
-        instance: StageInstance,
+        stageInstance: StageInstance,
         advancement: Boolean?,
         notify: Boolean?,
         component: MutableComponent?
     ): Boolean {
-        val instance = this.stage.get()
+        val instance = this.stage
         val realmMessage = Changeable.of(component)
         val notifyPlayer: Changeable<Boolean?>? = Changeable.of(notify)
         val result: EventResult? = StageEvents.Companion.SET_STAGE.invoker().set(
             instance,
-            this.owner!!, instance, advancement, notifyPlayer, realmMessage
+            this.owner, stageInstance, advancement, notifyPlayer, realmMessage
         )
         if (result!!.isFalse) return false
 
         val owner = this.owner
 
-        if (realmMessage.isPresent) this.owner?.sendSystemMessage(realmMessage.get()!!)
-        instance.markDirty()
-        instance.onSet(owner)
-        this.stage = Optional.of(instance) as Optional<StageInstance?>
+        if (realmMessage.isPresent) this.owner.sendSystemMessage(realmMessage.get()!!)
+        stageInstance.markDirty()
+        stageInstance.onSet(owner)
+        this.stage = stageInstance
         markDirty()
         return true
     }
@@ -128,7 +131,8 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
      * @param data NBT тег для зберігання даних
      */
     override fun save(data: CompoundTag) {
-        if (stage.isPresent) data.put(STAGE_KEY, this.stage.get().toNBT())
+        if (!getStage().isEmpty)
+            data.put(STAGE_KEY, this.stage!!.toNBT())
         val stageTag = ListTag()
         reachedStages.values.forEach(Consumer { instance: StageInstance ->
             stageTag.add(instance.toNBT())
@@ -146,8 +150,7 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
      */
     override fun load(data: CompoundTag) {
         if (data.contains(STAGE_KEY, 10)) {
-            stage =
-                Optional.of(StageInstance.Companion.fromNBT(data.getCompound(STAGE_KEY))) as Optional<StageInstance?>
+            stage = StageInstance.Companion.fromNBT(data.getCompound(STAGE_KEY))
         }
         for (tag in data.getList(REACHED_STAGES_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
@@ -159,13 +162,13 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
         }
     }
 
-    protected val owner: LivingEntity?
+    protected val owner: LivingEntity
         /**
          * Отримує власника сховища стадій.
          *
          * @return Живу сутність, що володіє цим сховищем стадій
          */
-        get() = this.holder as LivingEntity?
+        get() = this.holder as LivingEntity
 
 
     override fun sync() {
@@ -185,7 +188,7 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
         val ID: ResourceLocation = EternalCoreStage.create("stage_storage")
 
         /** Ключ сховища для доступу до даних StageStorage  */
-        var key: StorageKey<StageStorage?>? = null
+        var key: StorageKey<StageStorage>? = null
 
         /**
          * Ініціалізує систему сховища стадій.
@@ -199,26 +202,27 @@ protected constructor(holder: StorageHolder?) : Storage(holder), Stages, IReache
          *
          */
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry: StorageEvents.StorageRegistry<Entity> ->
+            StorageEvents.REGISTER_ENTITY_STORAGE.register { registry ->
                 key = registry.register(
                     ID,
-                    StageStorage::class.java, { obj: Entity? -> Entity::class.java.isInstance(obj) },
-                    { holder: Entity? -> StageStorage(holder) }) as StorageKey<StageStorage?>?
-            })
-            EntityEvents.LIVING_POST_TICK.register(LivingTickEvent { entity: LivingEntity ->
+                    StageStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
+                    { holder: Entity -> StageStorage(holder) })
+            }
+            EntityEvents.LIVING_POST_TICK.register { entity: LivingEntity ->
                 val level = entity.level()
-                if (level.isClientSide) return@LivingTickEvent
-                if (entity !is Player) return@LivingTickEvent
+                if (level.isClientSide) return@register
+                if (entity !is Player) return@register
                 val reachedStages = StageAPI.getReachedStagesFrom(entity)
-                if (reachedStages!!.reachedStages.isEmpty()) return@LivingTickEvent
-                reachedStages.reachedStages.forEach(
-                    Consumer { stageInstance: StageInstance -> stageInstance.onTick(entity) } as (Map.Entry<ResourceLocation?, StageInstance>) -> Unit)
-            })
-            StageEvents.Companion.STAGE_POST_TICK.register(StageTickEvent { instance: StageInstance, owner: LivingEntity ->
-                if (instance.getEffect(owner)!!.isEmpty) return@StageTickEvent
+                if (reachedStages!!.reachedStages.isEmpty()) return@register
+                reachedStages.reachedStages.forEach{ (key, stage) ->
+                        stage.onTick(entity)
+                    }
+            }
+            StageEvents.Companion.STAGE_POST_TICK.register { instance: StageInstance, owner: LivingEntity ->
+                if (instance.getEffect(owner)!!.isEmpty) return@register
                 val effectInstance = instance.getEffect(owner)!!.get()
                 if (!owner.hasEffect(effectInstance!!.effect)) owner.addEffect(effectInstance)
-            })
+            }
         }
     }
 }

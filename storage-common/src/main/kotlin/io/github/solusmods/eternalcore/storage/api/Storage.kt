@@ -50,14 +50,14 @@ abstract class Storage protected constructor(
      * @param data The compound tag containing update data
      * @see saveOutdated
      */
-    fun loadUpdate(data: CompoundTag) {
+    open fun loadUpdate(data: CompoundTag) {
         load(data)
     }
 
     /**
      * Marks the storage as dirty, indicating it needs synchronization.
      */
-    fun markDirty() {
+    open fun markDirty() {
         isDirty = true
     }
 

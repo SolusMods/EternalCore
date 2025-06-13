@@ -29,7 +29,7 @@ import java.util.function.Consumer
  * Реалізує інтерфейс [SpiritualRoots] та розширює [Storage].
  */
 @Suppress("unchecked_cast")
-class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), SpiritualRoots {
+open class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), SpiritualRoots {
     override val spiritualRoots: MutableMap<ResourceLocation?, SpiritualRootInstance> =
         mutableMapOf()
 
@@ -107,7 +107,7 @@ class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), SpiritualR
      * @return true якщо корінь успішно додано, false якщо додавання скасовано
      */
     override fun addSpiritualRoot(
-        instance: SpiritualRootInstance?,
+        instance: SpiritualRootInstance,
         advance: Boolean,
         notify: Boolean,
         component: MutableComponent?
@@ -196,10 +196,10 @@ class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), SpiritualR
          * Реєструє сховище для гравців.
          */
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry: StorageEvents.StorageRegistry<Entity> ->
+            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry ->
                 key = registry.register(
                     ID,
-                    SpiritualRootStorage::class.java, { obj: Entity? -> Entity::class.java.isInstance(obj) },
+                    SpiritualRootStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
                     { holder: Entity? -> SpiritualRootStorage(holder) }) as StorageKey<SpiritualRootStorage?>?
             })
             SpiritualRootEvents.Companion.ADD.register { instance: SpiritualRootInstance, living: LivingEntity, advancement: Boolean?, notifyPlayer: Changeable<Boolean?>?, rootMessage: Changeable<MutableComponent?>? ->

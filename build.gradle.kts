@@ -22,7 +22,7 @@ plugins {
     id("org.jreleaser") version "1.13.1" apply false
     // Додаткові розширення IDEA
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
-    kotlin("jvm") version "2.1.21"
+    kotlin("jvm") version "2.0.0"
     `kotlin-dsl`
 }
 
@@ -190,8 +190,8 @@ subprojects {
     }
 
     // Налаштування імен архівів для всіх виходів
-    tasks.withType<AbstractArchiveTask>().configureEach {
-        archiveBaseName.set("$archives_name-${rootProject.name}-${project.name}")
+    base {
+        archivesName.set("${rootProject.name}-${project.name}")
     }
 
     // Налаштування залежностей для платформо-специфічних модулів
@@ -296,6 +296,9 @@ subprojects {
         }
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     }
+
+    kotlin { jvmToolchain(21) }
+
 
     // Налаштування параметрів компіляції Java
     java {

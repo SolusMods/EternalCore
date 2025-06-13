@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity
 interface StageEvents {
     fun interface SetStageEvent {
         fun set(
-            instance: StageInstance,
+            instance: StageInstance?,
             owner: LivingEntity,
             newInstance: StageInstance,
             advancement: Boolean?,

@@ -46,7 +46,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     /**
      * Used to create an exact copy of the current instance.
      */
-    fun copy(): RealmInstance {
+    open fun copy(): RealmInstance {
         val clone = RealmInstance(this.realm)
         clone.dirty = this.dirty
         if (this.tag != null) clone.tag = this.tag!!.copy()
@@ -59,7 +59,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * Override [RealmInstance.serialize] to store your custom Data.
      */
-    fun toNBT(): CompoundTag {
+    open fun toNBT(): CompoundTag {
         val nbt = CompoundTag()
         nbt.putString(REALM_KEY, this.realmId.toString())
         serialize(nbt)
@@ -71,7 +71,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param nbt Tag with data from [RealmInstance.fromNBT]
      */
-    fun serialize(nbt: CompoundTag): CompoundTag {
+    open fun serialize(nbt: CompoundTag): CompoundTag {
         if (this.tag != null) nbt.put("tag", this.tag!!.copy())
         return nbt
     }
@@ -79,7 +79,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     /**
      * Can be used to load custom data.
      */
-    fun deserialize(tag: CompoundTag) {
+    open fun deserialize(tag: CompoundTag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag")
     }
 
@@ -345,7 +345,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     }
 
     companion object {
-        const val REALM_KEY: String = "stage"
+        const val REALM_KEY: String = "realm"
 
         /**
          * Can be used to load a [RealmInstance] from a [CompoundTag].

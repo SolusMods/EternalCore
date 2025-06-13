@@ -3,7 +3,6 @@ package io.github.solusmods.eternalcore.attributes.neoforge
 import io.github.solusmods.eternalcore.attributes.api.AttributeEvents
 import io.github.solusmods.eternalcore.attributes.api.EternalCoreAttributeUtils.triggerCriticalAttackEffect
 import io.github.solusmods.eternalcore.attributes.api.EternalCoreAttributes
-import io.github.solusmods.eternalcore.network.api.util.Changeable
 import io.github.solusmods.eternalcore.network.api.util.Changeable.Companion.of
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -25,7 +24,7 @@ object NeoForgeCommonEventInvoker {
         val multiplier =
             of<Float?>(attacker.getAttributeValue(EternalCoreAttributes.CRITICAL_DAMAGE_MULTIPLIER).toFloat())
         val chance =
-            Changeable.Companion.of<Double?>(attacker.getAttributeValue(EternalCoreAttributes.CRITICAL_ATTACK_CHANCE) / 100)
+            of<Double?>(attacker.getAttributeValue(EternalCoreAttributes.CRITICAL_ATTACK_CHANCE) / 100)
         if (AttributeEvents.CRITICAL_ATTACK_CHANCE_EVENT.invoker().applyCrit(attacker, target, 1f, multiplier, chance)
                 .isFalse
         ) return

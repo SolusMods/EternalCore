@@ -5,7 +5,9 @@ import net.minecraft.resources.ResourceLocation
 import java.util.*
 
 interface Stages {
-    val stage: Optional<StageInstance?>
+    val stage: StageInstance?
+
+    fun getStage(): Optional<StageInstance>
 
     fun setStage(stageId: ResourceLocation, notify: Boolean): Boolean {
         return setStage(stageId, notify, null)
@@ -25,11 +27,11 @@ interface Stages {
         return setStage(stage.createDefaultInstance(), false, notify, component)
     }
 
-    fun setStage(instance: StageInstance, advancement: Boolean?, notify: Boolean?): Boolean {
-        return setStage(instance, advancement, notify, null)
+    fun setStage(stageInstance: StageInstance, advancement: Boolean?, notify: Boolean?): Boolean {
+        return setStage(stageInstance, advancement, notify, null)
     }
 
-    fun setStage(instance: StageInstance, advancement: Boolean?, notify: Boolean?, component: MutableComponent?): Boolean
+    fun setStage(stageInstance: StageInstance, advancement: Boolean?, notify: Boolean?, component: MutableComponent?): Boolean
 
     fun breakthroughStage(stageId: ResourceLocation): Boolean {
         return breakthroughStage(stageId, null)
@@ -45,8 +47,8 @@ interface Stages {
         return setStage(stage.createDefaultInstance(), advancement = true, notify = false, component = component)
     }
 
-    fun breakthroughStage(breakthrough: StageInstance, component: MutableComponent? = null): Boolean {
-        return setStage(breakthrough, advancement = true, notify = false, component = component)
+    fun breakthroughStage(stageInstance: StageInstance, component: MutableComponent? = null): Boolean {
+        return setStage(stageInstance, advancement = true, notify = false, component = component)
     }
 
     fun markDirty()

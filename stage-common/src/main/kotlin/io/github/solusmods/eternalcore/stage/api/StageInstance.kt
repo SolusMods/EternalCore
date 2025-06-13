@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 
-open class StageInstance(stage: Stage?) {
+open class StageInstance(stage: Stage?): Cloneable {
     protected val stageRegistrySupplier: RegistrySupplier<Stage?> = StageAPI.stageRegistry!!.delegate(StageAPI.stageRegistry!!.getId(stage))
     private var tag: CompoundTag? = null
 
@@ -41,7 +41,7 @@ open class StageInstance(stage: Stage?) {
     /**
      * Used to create an exact copy of the current instance.
      */
-    fun copy(): StageInstance {
+    open fun copy(): StageInstance {
         val clone = StageInstance(this.stage)
         clone.dirty = this.dirty
         if (this.tag != null) clone.tag = this.tag!!.copy()
@@ -54,7 +54,7 @@ open class StageInstance(stage: Stage?) {
      *
      * Override [StageInstance.serialize] to store your custom Data.
      */
-    fun toNBT(): CompoundTag {
+    open fun toNBT(): CompoundTag {
         val nbt = CompoundTag()
         nbt.putString(STAGE_KEY, this.stageId.toString())
         serialize(nbt)
@@ -66,7 +66,7 @@ open class StageInstance(stage: Stage?) {
      *
      * @param nbt Tag with data from [StageInstance.fromNBT]
      */
-    fun serialize(nbt: CompoundTag): CompoundTag {
+    open fun serialize(nbt: CompoundTag): CompoundTag {
         if (this.tag != null) nbt.put("tag", this.tag!!.copy())
         return nbt
     }
@@ -74,7 +74,7 @@ open class StageInstance(stage: Stage?) {
     /**
      * Can be used to load custom data.
      */
-    fun deserialize(tag: CompoundTag) {
+    open fun deserialize(tag: CompoundTag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag")
     }
 

@@ -30,14 +30,14 @@ object StageAPI {
      * Can be used to load the [StageStorage] from an [LivingEntity].
      */
     fun getStageFrom(entity: LivingEntity): Stages? {
-        return entity.getStorage<StageStorage?>(StageStorage.key)
+        return entity.getStorage(StageStorage.key)
     }
 
     /**
      * Can be used to load the [StageStorage] from an [LivingEntity].
      */
     fun getReachedStagesFrom(entity: LivingEntity): IReachedStages? {
-        return entity.getStorage<StageStorage?>(StageStorage.key)
+        return entity.getStorage(StageStorage.key)
     }
 
     /**

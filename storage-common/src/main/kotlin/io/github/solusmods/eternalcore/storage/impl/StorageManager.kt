@@ -104,7 +104,7 @@ object StorageManager {
     @JvmStatic
     fun syncTracking(source: StorageHolder, update: Boolean = false) {
         NetworkManager.sendToPlayers(
-            source.getTrackingPlayers(),
+            source.trackingPlayers,
             createSyncPacket(source, update)
         )
     }

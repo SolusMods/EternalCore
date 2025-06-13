@@ -61,7 +61,7 @@ abstract class Realm(
      *
      * @return Новий екземпляр Реалму
      */
-    fun createDefaultInstance(): RealmInstance {
+    open fun createDefaultInstance(): RealmInstance {
         return RealmInstance(this)
     }
 
@@ -190,17 +190,18 @@ abstract class Realm(
          */
         get() = this.baseQiRange!!.second!!
 
-    val coefficient: Double
-        /**
-         * Повертає коефіцієнт для розрахунку витрат Ці при прориві.
-         *
-         *
-         * Показник ступеня визначає зростання витрати Кі при прориві. За замовчуванням 0.2.
-         *
-         *
-         * @return Коефіцієнт витрат Ці
-         */
-        get() = 0.2
+    /**
+     * Повертає коефіцієнт для розрахунку витрат Ці при прориві.
+     *
+     *
+     * Показник ступеня визначає зростання витрати Кі при прориві. За замовчуванням 0.2.
+     *
+     *
+     * @return Коефіцієнт витрат Ці
+     */
+    abstract val coefficient: Double
+
+
 
     /**
      * Повертає список Реалмів , у які можливий прорив з цього Реалму .
@@ -391,7 +392,7 @@ abstract class Realm(
      * @param living   Сутність, яка встановлює Реалм
      * @see RealmInstance.onSet
      */
-    fun onSet(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onSet(instance: RealmInstance?, living: LivingEntity?) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -406,7 +407,7 @@ abstract class Realm(
      * @param living   Сутність, яка досягає Реалму
      * @see RealmInstance.onReach
      */
-    fun onReach(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onReach(instance: RealmInstance?, living: LivingEntity?) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -421,7 +422,7 @@ abstract class Realm(
      * @param living   Сутність, яка відстежує Реалм
      * @see RealmInstance.onTrack
      */
-    fun onTrack(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onTrack(instance: RealmInstance?, living: LivingEntity?) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -436,7 +437,7 @@ abstract class Realm(
      * @param living   Сутність, яка здійснює прорив
      * @see RealmInstance.onBreakthrough
      */
-    fun onBreakthrough(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onBreakthrough(instance: RealmInstance?, living: LivingEntity?) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -450,7 +451,7 @@ abstract class Realm(
      * @param instance Екземпляр активного Реалму
      * @param living   Сутність, що має цей Реалм
      */
-    fun onTick(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onTick(instance: RealmInstance?, living: LivingEntity?) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -466,7 +467,7 @@ abstract class Realm(
      * @param amount           Значення модифікатора
      * @param operation        Операція модифікатора
      */
-    fun addAttributeModifier(
+    open fun addAttributeModifier(
         holder: Holder<Attribute?>?,
         resourceLocation: ResourceLocation?,
         amount: Double,
@@ -476,7 +477,7 @@ abstract class Realm(
         return this
     }
 
-    fun createModifiers(
+    open fun createModifiers(
         instance: RealmInstance?,
         i: Int,
         consumer: BiConsumer<Holder<Attribute?>?, AttributeModifier?>
@@ -489,7 +490,7 @@ abstract class Realm(
         }
     }
 
-    fun removeAttributeModifiers(instance: RealmInstance?, entity: LivingEntity) {
+    open fun removeAttributeModifiers(instance: RealmInstance?, entity: LivingEntity) {
         val attributeMap = entity.getAttributes()
         for (entry in this.attributeModifiers.entries) {
             val attributeInstance = attributeMap.getInstance(entry.key)
@@ -499,7 +500,7 @@ abstract class Realm(
         }
     }
 
-    fun addAttributeModifiers(instance: RealmInstance?, entity: LivingEntity, i: Int) {
+    open fun addAttributeModifiers(instance: RealmInstance?, entity: LivingEntity, i: Int) {
         val attributeMap = entity.getAttributes()
         for (entry in this.attributeModifiers.entries) {
             val attributeInstance = attributeMap.getInstance(entry.key)

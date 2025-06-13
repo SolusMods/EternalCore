@@ -2,10 +2,12 @@ package io.github.solusmods.eternalcore.realm.api
 
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
-import java.util.*
+import java.util.Optional
 
 interface Realms {
-    val realm: Optional<RealmInstance?>?
+    val realm: RealmInstance?
+
+    fun getRealm(): Optional<RealmInstance>
 
     fun setRealm(realmId: ResourceLocation, notify: Boolean): Boolean {
         return setRealm(realmId, notify, null)
@@ -25,12 +27,12 @@ interface Realms {
         return setRealm(realm.createDefaultInstance(), false, notify!!, component)
     }
 
-    fun setRealm(instance: RealmInstance, breakthrough: Boolean?, notify: Boolean): Boolean {
-        return setRealm(instance, breakthrough!!, notify, null)
+    fun setRealm(realmInstance: RealmInstance, breakthrough: Boolean?, notify: Boolean): Boolean {
+        return setRealm(realmInstance, breakthrough!!, notify, null)
     }
 
     fun setRealm(
-        instance: RealmInstance,
+        realmInstance: RealmInstance,
         breakthrough: Boolean?,
         notify: Boolean?,
         component: MutableComponent?
@@ -50,8 +52,8 @@ interface Realms {
     }
 
     
-    fun breakthroughRealm(breakthrough: RealmInstance, component: MutableComponent? = null): Boolean {
-        return setRealm(breakthrough, true, false, component)
+    fun breakthroughRealm(realmInstance: RealmInstance, component: MutableComponent? = null): Boolean {
+        return setRealm(realmInstance, true, false, component)
     }
 
     fun markDirty()

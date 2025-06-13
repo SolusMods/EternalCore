@@ -19,7 +19,7 @@ object ClientAccess {
         if (player == null) return
 
         val storage = StageAPI.getStageFrom(player)
-        val optional = storage!!.stage!!
+        val optional = storage!!.getStage()
         if (optional.isEmpty) return
 
         val stage = StageAPI.stageRegistry!!.get(packet.stage)

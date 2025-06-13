@@ -63,13 +63,13 @@ interface SpiritualRoots {
     /**
      * Додає екземпляр духовного кореня до сутності.
      *
-     * @param instance Екземпляр духовного кореня
+     * @param spiritualRootInstance Екземпляр духовного кореня
      * @param advance Чи є це просуванням (advancement)
      * @param notify Чи слід сповіщати про додавання
      * @return true, якщо духовний корінь був успішно доданий, false - в іншому випадку
      */
-    fun addSpiritualRoot(instance: SpiritualRootInstance?, advance: Boolean, notify: Boolean): Boolean {
-        return addSpiritualRoot(instance, advance, notify, null)
+    fun addSpiritualRoot(spiritualRootInstance: SpiritualRootInstance, advance: Boolean, notify: Boolean): Boolean {
+        return addSpiritualRoot(spiritualRootInstance, advance, notify, null)
     }
 
     /**
@@ -86,7 +86,7 @@ interface SpiritualRoots {
      * @return true, якщо духовний корінь був успішно доданий, false - в іншому випадку
      */
     fun addSpiritualRoot(
-        instance: SpiritualRootInstance?,
+        instance: SpiritualRootInstance,
         advance: Boolean,
         notify: Boolean,
         component: MutableComponent?
@@ -143,7 +143,7 @@ interface SpiritualRoots {
     }
 
 
-    fun advanceSpiritualRoot(advance: SpiritualRootInstance?, component: MutableComponent? = null): Boolean {
+    fun advanceSpiritualRoot(advance: SpiritualRootInstance, component: MutableComponent? = null): Boolean {
         return addSpiritualRoot(advance, advance = true, notify = false, component = component)
     }
 }

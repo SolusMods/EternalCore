@@ -14,10 +14,7 @@ import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.LivingEntity
 import java.awt.Color
 
-@Getter
-@AllArgsConstructor
-abstract class Stage {
-    val type: Type? = null
+abstract class Stage(val type: Type?) {
 
     /**
      * Return [Pair] of min and max Qi for this [Stage]
@@ -42,7 +39,7 @@ abstract class Stage {
          */
         get() = this.baseQiRange!!.second!!
 
-    fun getEffect(instance: StageInstance?, living: LivingEntity?): Changeable<MobEffectInstance?> {
+    open fun getEffect(instance: StageInstance?, living: LivingEntity?): Changeable<MobEffectInstance?> {
         return Changeable.of(null)
     }
 
@@ -60,7 +57,7 @@ abstract class Stage {
      */
     abstract fun getPreviousBreakthroughs(instance: StageInstance?, living: LivingEntity?): MutableList<Stage?>?
 
-    fun getInfo(instance: StageInstance?, entity: LivingEntity?): MutableList<MutableComponent?> {
+    open fun getInfo(instance: StageInstance?, entity: LivingEntity?): MutableList<MutableComponent?> {
         val info: MutableList<MutableComponent?> = ArrayList<MutableComponent?>()
         return info
     }
@@ -101,7 +98,7 @@ abstract class Stage {
      *
      * @see StageInstance.onSet
      */
-    fun onSet(instance: StageInstance?, living: LivingEntity?) {
+    open fun onSet(instance: StageInstance?, living: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -110,7 +107,7 @@ abstract class Stage {
      *
      * @see StageInstance.onReach
      */
-    fun onReach(instance: StageInstance?, living: LivingEntity?) {
+    open fun onReach(instance: StageInstance?, living: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -119,7 +116,7 @@ abstract class Stage {
      *
      * @see StageInstance.onTrack
      */
-    fun onTrack(instance: StageInstance?, living: LivingEntity?) {
+    open fun onTrack(instance: StageInstance?, living: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -128,7 +125,7 @@ abstract class Stage {
      *
      * @see StageInstance.onTick
      */
-    fun onTick(instance: StageInstance, living: LivingEntity) {
+    open fun onTick(instance: StageInstance, living: LivingEntity) {
         StageEvents.Companion.STAGE_POST_TICK.invoker().tick(instance, living)
     }
 
@@ -139,7 +136,7 @@ abstract class Stage {
      *
      * @see StageInstance.onBreakthrough
      */
-    fun onBreakthrough(instance: StageInstance?, living: LivingEntity?) {
+    open fun onBreakthrough(instance: StageInstance?, living: LivingEntity?) {
         // Override this method to add your own logic
     }
 
@@ -149,7 +146,7 @@ abstract class Stage {
      *
      * Override this Method to use your extended version of [StageInstance]
      */
-    fun createDefaultInstance(): StageInstance {
+    open fun createDefaultInstance(): StageInstance {
         return StageInstance(this)
     }
 
@@ -164,17 +161,10 @@ abstract class Stage {
         }
     }
 
-    @Getter
-    @RequiredArgsConstructor
     enum class Type(val id: Int, val min: Int, val max: Int, val component: MutableComponent, val color: Color) {
         EARLY(1, 0, 1, Component.translatable("%s.stage.type.early".format(ModuleConstants.MOD_ID)), Color.GREEN),
         MIDDLE(2, 1, 2, Component.translatable("%s.stage.type.middle".format(ModuleConstants.MOD_ID)), Color.YELLOW),
         LATE(3, 2, 3, Component.translatable("%s.stage.type.late".format(ModuleConstants.MOD_ID)), Color.ORANGE),
         PEAK(4, 3, 4, Component.translatable("%s.stage.type.peak".format(ModuleConstants.MOD_ID)), Color.RED);
-
-
-
-        @Setter
-        private val track = false
     }
 }

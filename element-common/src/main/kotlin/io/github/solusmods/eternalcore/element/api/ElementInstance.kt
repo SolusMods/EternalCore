@@ -93,7 +93,7 @@ open class ElementInstance(element: Element?) : Cloneable {
      *
      * @return CompoundTag з усіма даними екземпляра
      */
-    fun toNBT(): CompoundTag {
+    open fun toNBT(): CompoundTag {
         val nbt = CompoundTag()
         nbt.putString(ELEMENT_KEY, this.elementId.toString())
         serialize(nbt)
@@ -106,7 +106,7 @@ open class ElementInstance(element: Element?) : Cloneable {
      * @param nbt Тег, в який будуть збережені дані
      * @return Тег з серіалізованими даними
      */
-    fun serialize(nbt: CompoundTag): CompoundTag {
+    open fun serialize(nbt: CompoundTag): CompoundTag {
         if (this.tag != null) nbt.put("tag", this.tag!!.copy())
         nbt.putFloat(AMOUNT_KEY, amount)
         return nbt
@@ -117,7 +117,7 @@ open class ElementInstance(element: Element?) : Cloneable {
      *
      * @param tag Тег, з якого будуть завантажені дані
      */
-    fun deserialize(tag: CompoundTag) {
+    open fun deserialize(tag: CompoundTag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag")
         amount = tag.getFloat(AMOUNT_KEY)
     }

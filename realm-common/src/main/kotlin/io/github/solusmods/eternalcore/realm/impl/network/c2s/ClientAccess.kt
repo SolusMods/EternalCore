@@ -22,7 +22,7 @@ object ClientAccess {
         player ?: return
 
         val storage = RealmAPI.getRealmFrom(player) ?: return
-        val realmOptional = storage.realm ?: return
+        val realmOptional = storage.getRealm()
 
         if (realmOptional.isEmpty) return
 

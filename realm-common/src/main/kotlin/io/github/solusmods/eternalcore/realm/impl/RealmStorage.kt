@@ -38,7 +38,7 @@ import java.util.function.Consumer
  *
  */
 @Suppress("unchecked_cast")
-open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(holder), Realms, IReachedRealms {
+open class RealmStorage protected constructor(holder: StorageHolder) : Storage(holder), Realms, IReachedRealms {
 /**
  * Створює нове сховище світів для вказаного власника.
  *
@@ -48,7 +48,11 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
     override val reachedRealms: MutableMap<ResourceLocation?, RealmInstance> = HashMap<ResourceLocation?, RealmInstance>()
 
     /** Поточний активний світ гравця  */
-    override var realm: Optional<RealmInstance?>? = null
+    override var realm: RealmInstance? = null
+
+    override fun getRealm(): Optional<RealmInstance>{
+        return Optional.ofNullable(realm)
+    }
     
 
     /**
@@ -72,17 +76,17 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
         teleportToSpawn: Boolean,
         component: MutableComponent?
     ): Boolean {
-        val realmMessage = Changeable.of(component)
-        val notify: Changeable<Boolean?>? = Changeable.of(teleportToSpawn)
-        val result: EventResult? = RealEvents.Companion.REACH_REALM.invoker()!!.reach(
+        val realmMessage: Changeable<MutableComponent>? = Changeable.of(component) as Changeable<MutableComponent>?
+        val notify: Changeable<Boolean>? = Changeable.of(teleportToSpawn) as Changeable<Boolean>?
+        val result: EventResult = RealEvents.Companion.REACH_REALM.invoker().reach(
             instance,
             this.owner, breakthrough, notify, realmMessage
         )
-        if (result!!.isFalse) return false
+        if (result.isFalse) return false
 
         val owner = this.owner
-        if (realmMessage.isPresent) this.owner?.sendSystemMessage(realmMessage.get())
-        instance!!.markDirty()
+        if (realmMessage!!.isPresent) this.owner.sendSystemMessage(realmMessage.get())
+        instance.markDirty()
         instance.onReach(owner)
         reachedRealms.put(instance.realmId, instance)
         markDirty()
@@ -98,34 +102,34 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
      * модифікатори атрибутів, а новий світ ініціалізується через [RealmInstance.onSet].
      *
      *
-     * @param instance Екземпляр світу для встановлення
+     * @param realmInstance Екземпляр світу для встановлення
      * @param breakthrough Чи є це проривом (breakthrough)
      * @param notify Чи повідомляти гравця про зміну
      * @param component Компонент повідомлення (може бути null)
      * @return true, якщо світ було успішно встановлено, false в іншому випадку
      */
     override fun setRealm(
-        instance: RealmInstance,
+        realmInstance: RealmInstance,
         breakthrough: Boolean?,
         notify: Boolean?,
         component: MutableComponent?
     ): Boolean {
-        val instance: RealmInstance? = this.realm?.get()
-        val realmMessage = Changeable.of(component)
-        val notify: Changeable<Boolean?>? = Changeable.of(notify)
-        val result: EventResult? = RealEvents.Companion.SET_REALM.invoker()!!.set(
+        val instance = this.realm
+        val realmMessage: Changeable<MutableComponent>? = Changeable.of(component) as Changeable<MutableComponent>?
+        val notify: Changeable<Boolean>? = Changeable.of(notify) as Changeable<Boolean>?
+        val result: EventResult = RealEvents.Companion.SET_REALM.invoker().set(
             instance,
-            this.owner, instance, breakthrough!!, notify, realmMessage
+            this.owner, realmInstance, breakthrough!!, notify, realmMessage
         )
-        if (result!!.isFalse) return false
+        if (result.isFalse) return false
 
         val owner = this.owner
 
 
-        if (realmMessage.isPresent) this.owner?.sendSystemMessage(realmMessage.get())
-        instance!!.markDirty()
-        instance.onSet(owner)
-        this.realm = Optional.of(instance) as Optional<RealmInstance?>?
+        if (realmMessage!!.isPresent) this.owner.sendSystemMessage(realmMessage.get()!!)
+        realmInstance.markDirty()
+        realmInstance.onSet(owner)
+        this.realm = realmInstance
         markDirty()
         return true
     }
@@ -142,7 +146,8 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
             instance.resetDirty()
         })
         data.put(REACHED_REALMS_KEY, elementsTag)
-        data.put(REALM_KEY, realm?.get()?.toNBT()!!)
+        if (!getRealm().isEmpty)
+            data.put(REALM_KEY, realm!!.toNBT())
     }
 
     /**
@@ -152,25 +157,25 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
      */
     override fun load(data: CompoundTag) {
         if (data.contains(REALM_KEY)) {
-            realm = Optional.of(RealmInstance.Companion.fromNBT(data.getCompound(REALM_KEY))) as Optional<RealmInstance?>?
+            realm = RealmInstance.Companion.fromNBT(data.getCompound(REALM_KEY))
         }
         for (tag in data.getList(REACHED_REALMS_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
                 val instance: RealmInstance = RealmInstance.Companion.fromNBT(tag as CompoundTag?)
                 this.reachedRealms.put(instance.realmId, instance)
             } catch (e: Exception) {
-                EternalCoreStorage.LOG!!.error("Failed to load realm from NBT", e)
+                EternalCoreStorage.LOG.error("Failed to load realm from NBT", e)
             }
         }
     }
 
-    protected val owner: LivingEntity?
+    protected val owner: LivingEntity
         /**
          * Отримує власника сховища як живу сутність.
          *
          * @return Власник сховища як LivingEntity
          */
-        get() = this.holder as LivingEntity?
+        get() = this.holder as LivingEntity
 
     override fun sync() {
         val data = CompoundTag()
@@ -190,7 +195,7 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
 
         /** Ключ для доступу до цього сховища  */
 
-        var key: StorageKey<RealmStorage?>? = null
+        var key: StorageKey<RealmStorage>? = null
 
         /**
          * Ініціалізує систему сховища світів, реєструючи його в системі сховищ EternalCore.
@@ -200,11 +205,11 @@ open class RealmStorage protected constructor(holder: StorageHolder?) : Storage(
          *
          */
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry: StorageEvents.StorageRegistry<Entity> ->
+            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry ->
                 key = registry.register(
                     ID,
-                    RealmStorage::class.java, { obj: Entity -> Entity::class.java.isInstance(obj) },
-                    { holder: Entity? -> RealmStorage(holder) }) as StorageKey<RealmStorage?>?
+                    RealmStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
+                    { holder: Entity -> RealmStorage(holder) })
             })
         }
     }
