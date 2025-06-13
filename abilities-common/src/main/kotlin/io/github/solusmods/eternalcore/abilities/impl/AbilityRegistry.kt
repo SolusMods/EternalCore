@@ -32,17 +32,18 @@ import net.minecraft.world.entity.projectile.ProjectileDeflection
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+
 object AbilityRegistry {
     private val registryId: ResourceLocation = EternalCoreAbilities.create("abilities")
-    val ABILITIES: Registrar<Ability?> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Ability?>(registryId)
+    @JvmField
+    val ABILITIES: Registrar<Ability> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Ability>(registryId)
         .syncToClients()
         .build()
-    val KEY: ResourceKey<Registry<Ability?>?>? = ABILITIES.key() as ResourceKey<Registry<Ability?>?>?
+    @JvmField
+    val KEY: ResourceKey<Registry<Ability>> = ABILITIES.key() as ResourceKey<Registry<Ability>>
 
     fun init() {
-        EntityEvents.LIVING_EFFECT_ADDED.register(LivingEffectAddedEvent {
-            entity: LivingEntity?, source: Entity?, changeableTarget: Changeable<MobEffectInstance?>? ->
+        EntityEvents.LIVING_EFFECT_ADDED.register { entity: LivingEntity?, source: Entity?, changeableTarget: Changeable<MobEffectInstance?>? ->
             for (instance in AbilityAPI.getAbilitiesFrom(
                 entity!!
             )?.learnedAbilities!!) {
@@ -52,37 +53,39 @@ object AbilityRegistry {
                         source,
                         changeableTarget
                     )
-                ) return@LivingEffectAddedEvent EventResult.interruptFalse()
+                ) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        EntityEvents.LIVING_CHANGE_TARGET.register(EntityEvents.LivingChangeTargetEvent {
-            entity: LivingEntity?, changeableTarget: Changeable<LivingEntity?>? ->
-            if (!changeableTarget!!.isPresent) return@LivingChangeTargetEvent EventResult.pass()
+        EntityEvents.LIVING_CHANGE_TARGET.register { entity: LivingEntity?, changeableTarget: Changeable<LivingEntity?>? ->
+            if (!changeableTarget!!.isPresent) return@register EventResult.pass()
             val owner = changeableTarget.get()
-            if (owner == null) return@LivingChangeTargetEvent EventResult.pass()
+            if (owner == null) return@register EventResult.pass()
 
             for (instance in AbilityAPI.getAbilitiesFrom(owner)?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(owner)) continue
-                if (!instance.onBeingTargeted(changeableTarget, entity)) return@LivingChangeTargetEvent EventResult.interruptFalse()
+                if (!instance.onBeingTargeted(
+                        changeableTarget,
+                        entity
+                    )
+                ) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        EntityEvent.LIVING_HURT.register(EntityEvent.LivingHurt { entity: LivingEntity?, source: DamageSource?, amount: Float ->
+        EntityEvent.LIVING_HURT.register { entity: LivingEntity?, source: DamageSource?, amount: Float ->
             for (instance in AbilityAPI.getAbilitiesFrom(
                 entity!!
             )?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(entity)) continue
-                if (!instance.onBeingDamaged(entity, source, amount)) return@LivingHurt EventResult.interruptFalse()
+                if (!instance.onBeingDamaged(entity, source, amount)) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        AbilityEvents.Companion.ABILITY_DAMAGE_PRE_CALCULATION.register(AbilityDamageCalculationEvent {
-            storage: Abilities?, target: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
-            if (source!!.entity !is LivingEntity) return@AbilityDamageCalculationEvent EventResult.pass()
+        AbilityEvents.ABILITY_DAMAGE_PRE_CALCULATION.register { storage: Abilities?, target: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
+            if (source!!.entity !is LivingEntity) return@register EventResult.pass()
             val owner = source!!.entity as LivingEntity
             for (instance in AbilityAPI.getAbilitiesFrom(owner)?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(owner)) continue
@@ -92,56 +95,67 @@ object AbilityRegistry {
                         source,
                         amount
                     )
-                ) return@AbilityDamageCalculationEvent EventResult.interruptFalse()
+                ) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        AbilityEvents.Companion.ABILITY_DAMAGE_POST_CALCULATION.register(AbilityDamageCalculationEvent { storage: Abilities?, target: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
-            if (source!!.getEntity() !is LivingEntity) return@AbilityDamageCalculationEvent EventResult.pass()
+        AbilityEvents.ABILITY_DAMAGE_POST_CALCULATION.register { storage: Abilities?, target: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
+            if (source!!.getEntity() !is LivingEntity) return@register EventResult.pass()
             val owner = source!!.entity as LivingEntity
             for (instance in AbilityAPI.getAbilitiesFrom(owner)?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(owner)) continue
-                if (!instance.onTouchEntity(owner, target, source, amount)) return@AbilityDamageCalculationEvent EventResult.interruptFalse()
+                if (!instance.onTouchEntity(
+                        owner,
+                        target,
+                        source,
+                        amount
+                    )
+                ) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        EntityEvents.LIVING_DAMAGE.register(EntityEvents.LivingDamageEvent { entity: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
+        EntityEvents.LIVING_DAMAGE.register { entity: LivingEntity?, source: DamageSource?, amount: Changeable<Float?>? ->
             for (instance in AbilityAPI.getAbilitiesFrom(
                 entity!!
             )?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(entity)) continue
-                if (!instance.onTakenDamage(entity, source, amount)) return@LivingDamageEvent EventResult.interruptFalse()
+                if (!instance.onTakenDamage(
+                        entity,
+                        source,
+                        amount
+                    )
+                ) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        EntityEvent.LIVING_DEATH.register(EntityEvent.LivingDeath { entity: LivingEntity?, source: DamageSource? ->
+        EntityEvent.LIVING_DEATH.register { entity: LivingEntity?, source: DamageSource? ->
             for (instance in AbilityAPI.getAbilitiesFrom(entity!!)?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(entity)) continue
-                if (!instance.onDeath(entity, source)) return@LivingDeath EventResult.interruptFalse()
+                if (!instance.onDeath(entity, source)) return@register EventResult.interruptFalse()
             }
             EventResult.pass()
-        })
+        }
 
-        PlayerEvent.PLAYER_RESPAWN.register(PlayerEvent.PlayerRespawn { newPlayer: ServerPlayer?, conqueredEnd: Boolean, removalReason: Entity.RemovalReason? ->
+        PlayerEvent.PLAYER_RESPAWN.register { newPlayer: ServerPlayer?, conqueredEnd: Boolean, removalReason: Entity.RemovalReason? ->
             for (instance in AbilityAPI.getAbilitiesFrom(
                 newPlayer!!
             )?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(newPlayer)) continue
                 instance.onRespawn(newPlayer, conqueredEnd)
             }
-        })
+        }
 
-        EntityEvents.PROJECTILE_HIT.register(ProjectileHitEvent { result: HitResult?, projectile: Projectile?, deflectionChangeable: Changeable<ProjectileDeflection?>?, hitResultChangeable: Changeable<ProjectileHitResult?>? ->
-            if (result !is EntityHitResult) return@ProjectileHitEvent
-            if (result.getEntity() !is LivingEntity) return@ProjectileHitEvent
+        EntityEvents.PROJECTILE_HIT.register { result: HitResult?, projectile: Projectile?, deflectionChangeable: Changeable<ProjectileDeflection?>?, hitResultChangeable: Changeable<ProjectileHitResult?>? ->
+            if (result !is EntityHitResult) return@register
+            if (result.getEntity() !is LivingEntity) return@register
             val hitEntity = result.getEntity() as LivingEntity
             for (instance in AbilityAPI.getAbilitiesFrom(hitEntity)?.learnedAbilities!!) {
                 if (!instance!!.canInteractAbility(hitEntity)) continue
                 instance.onProjectileHit(hitEntity, result, projectile, deflectionChangeable, hitResultChangeable)
             }
-        })
+        }
     }
 }

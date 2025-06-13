@@ -3,11 +3,10 @@ package io.github.solusmods.eternalcore.element.api
 import dev.architectury.registry.registries.Registrar
 import io.github.solusmods.eternalcore.element.impl.ElementRegistry
 import io.github.solusmods.eternalcore.element.impl.ElementsStorage
-import io.github.solusmods.eternalcore.storage.api.Storage
-import io.github.solusmods.eternalcore.storage.api.StorageKey
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.entity.LivingEntity
+import java.util.Optional
 
 /**
  * API object for working with Elements in the EternalCore mod.
@@ -20,15 +19,15 @@ object ElementAPI {
      * Returns the Element Registry.
      * Can be used to load Elements from the Registry.
      */
-    val elementRegistry: Registrar<Element>
-        get() = ElementRegistry.elements
+    @JvmField
+    val elementRegistry: Registrar<Element> = ElementRegistry.elements
 
     /**
      * Returns the Registry Key of the ElementRegistry.
      * Can be used to create DeferredRegister instances.
      */
-    val elementRegistryKey: ResourceKey<Registry<Element>>
-        get() = ElementRegistry.key
+    @JvmField
+    val elementRegistryKey: ResourceKey<Registry<Element>> = ElementRegistry.key
 
     /**
      * Loads the dominant element from a LivingEntity.
@@ -36,8 +35,9 @@ object ElementAPI {
      * @param entity The living entity to get the dominant element from
      * @return The dominant Elements instance, or null if not found
      */
+    @JvmStatic
     fun getDominantElementFrom(entity: LivingEntity): Elements? {
-        return entity.getStorage<ElementsStorage>(ElementsStorage.key)
+        return entity.getStorage(ElementsStorage.key)
     }
 
     /**
@@ -46,16 +46,13 @@ object ElementAPI {
      * @param entity The living entity to get elements from
      * @return The Elements instance, or null if not found
      */
+    @JvmStatic
     fun getElementsFrom(entity: LivingEntity): Elements? {
-        return entity.getStorage<ElementsStorage>(ElementsStorage.key)
+        return entity.getStorage(ElementsStorage.key)
     }
-}
 
-/**
- * Extension function to safely get storage from a LivingEntity.
- * Provides a cleaner API for accessing entity storage.
- */
-@Suppress("UNCHECKED_CAST")
-private inline fun <reified T> LivingEntity.getStorage(key: StorageKey<ElementsStorage>?): T? {
-    return this.getStorage(key as StorageKey<Storage?>?) as T?
+    @JvmStatic
+    fun getStorageOptional(entity: LivingEntity): Optional<ElementsStorage> {
+        return entity.getStorageOptional(ElementsStorage.key)
+    }
 }

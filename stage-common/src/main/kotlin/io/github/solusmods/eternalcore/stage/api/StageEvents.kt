@@ -44,10 +44,15 @@ interface StageEvents {
     }
 
     companion object {
+        @JvmField
         val SET_STAGE: Event<SetStageEvent> = EventFactory.createEventResult<SetStageEvent>()
+        @JvmField
         val STAGE_PRE_TICK: Event<StageTickEvent> = EventFactory.createLoop<StageTickEvent>()
+        @JvmField
         val STAGE_POST_TICK: Event<StageTickEvent> = EventFactory.createLoop<StageTickEvent>()
+        @JvmField
         val TRACK_STAGE: Event<TrackStageEvent> = EventFactory.createEventResult<TrackStageEvent>()
+        @JvmField
         val REACH_STAGE: Event<ReachStageEvent> = EventFactory.createEventResult<ReachStageEvent>()
     }
 }

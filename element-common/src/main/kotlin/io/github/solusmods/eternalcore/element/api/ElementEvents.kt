@@ -7,48 +7,51 @@ import io.github.solusmods.eternalcore.network.api.util.Changeable
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.LivingEntity
 
-object ElementEvents {
+interface ElementEvents {
     fun interface SetElementEvent {
         fun set(
-            instance: ElementInstance?,
-            owner: LivingEntity?,
-            newInstance: ElementInstance?,
+            instance: ElementInstance,
+            owner: LivingEntity,
+            newInstance: ElementInstance,
             breakthrough: Boolean,
             notify: Changeable<Boolean?>?,
             elementMessage: Changeable<MutableComponent?>?
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface ElementTickEvent {
-        fun tick(instance: ElementInstance?, owner: LivingEntity?)
+        fun tick(instance: ElementInstance, owner: LivingEntity)
     }
 
     fun interface AddElementEvent {
         fun add(
-            instance: ElementInstance?,
-            owner: LivingEntity?,
+            instance: ElementInstance,
+            owner: LivingEntity,
             advancement: Boolean,
             notifyPlayer: Changeable<Boolean?>?,
             elementMessage: Changeable<MutableComponent?>?
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface ForgetElementEvent {
         fun forget(
-            instance: ElementInstance?,
-            owner: LivingEntity?,
+            instance: ElementInstance,
+            owner: LivingEntity,
             elementMessage: Changeable<MutableComponent?>?
-        ): EventResult?
+        ): EventResult
     }
 
-    @JvmField
-    val SET_ELEMENT: Event<SetElementEvent?> = EventFactory.createEventResult<SetElementEvent?>()
-    @JvmField
-    val ELEMENT_PRE_TICK: Event<ElementTickEvent?> = EventFactory.createLoop<ElementTickEvent?>()
-    @JvmField
-    val ELEMENT_POST_TICK: Event<ElementTickEvent?> = EventFactory.createLoop<ElementTickEvent?>()
-    @JvmField
-    val ADD_ELEMENT: Event<AddElementEvent?> = EventFactory.createEventResult<AddElementEvent?>()
-    @JvmField
-    val FORGET_ELEMENT: Event<ForgetElementEvent?> = EventFactory.createEventResult<ForgetElementEvent?>()
+    companion object {
+        @JvmField
+        val SET_ELEMENT: Event<SetElementEvent> = EventFactory.createEventResult<SetElementEvent>()
+        @JvmField
+        val ELEMENT_PRE_TICK: Event<ElementTickEvent> = EventFactory.createLoop<ElementTickEvent>()
+        @JvmField
+        val ELEMENT_POST_TICK: Event<ElementTickEvent> = EventFactory.createLoop<ElementTickEvent>()
+        @JvmField
+        val ADD_ELEMENT: Event<AddElementEvent> = EventFactory.createEventResult<AddElementEvent>()
+        @JvmField
+        val FORGET_ELEMENT: Event<ForgetElementEvent?> = EventFactory.createEventResult<ForgetElementEvent?>()
+    }
+
 }

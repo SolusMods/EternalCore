@@ -44,10 +44,15 @@ interface RealEvents {
     }
 
     companion object {
+        @JvmField
         val SET_REALM: Event<SetRealmEvent> = EventFactory.createEventResult<SetRealmEvent>()
+        @JvmField
         val REALM_PRE_TICK: Event<RealmTickEvent> = EventFactory.createLoop<RealmTickEvent>()
+        @JvmField
         val REALM_POST_TICK: Event<RealmTickEvent> = EventFactory.createLoop<RealmTickEvent>()
+        @JvmField
         val REACH_REALM: Event<ReachRealmEvent> = EventFactory.createEventResult<ReachRealmEvent>()
+        @JvmField
         val TRACK_REALM: Event<TrackRealmEvent> = EventFactory.createEventResult<TrackRealmEvent>()
     }
 }

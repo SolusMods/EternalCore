@@ -6,41 +6,51 @@ import dev.architectury.utils.Env
 import io.github.solusmods.eternalcore.realm.impl.RealmRegistry
 import io.github.solusmods.eternalcore.realm.impl.RealmStorage
 import io.github.solusmods.eternalcore.realm.impl.network.InternalRealmPacketActions
+import io.github.solusmods.eternalcore.storage.api.Storage
 import lombok.AccessLevel
 import lombok.NoArgsConstructor
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.LivingEntity
+import java.util.Optional
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 object RealmAPI {
-    val realmRegistry: Registrar<Realm?>?
-        /**
-         * This Method returns the [Realm] Registry.
-         * It can be used to load [Realm]s from the Registry.
-         */
-        get() = RealmRegistry.REALMS
 
-    val realmRegistryKey: ResourceKey<Registry<Realm?>?>?
-        /**
-         * This Method returns the Registry Key of the [RealmRegistry].
-         * It can be used to create [DeferredRegister] instances
-         */
-        get() = RealmRegistry.KEY
+    /**
+     * This Method returns the [Realm] Registry.
+     * It can be used to load [Realm]s from the Registry.
+     */
+    @JvmField
+    var realmRegistry: Registrar<Realm> = RealmRegistry.REALMS
+
+    /**
+     * This Method returns the Registry Key of the [RealmRegistry].
+     * It can be used to create [dev.architectury.registry.registries.DeferredRegister] instances
+     */
+    @JvmField
+    val realmRegistryKey: ResourceKey<Registry<Realm>> = RealmRegistry.KEY
+
 
     /**
      * Can be used to load the [RealmStorage] from an [LivingEntity].
      */
+    @JvmStatic
     fun getRealmFrom(entity: LivingEntity): Realms? {
-        return entity.getStorage<RealmStorage?>(RealmStorage.key)
+        return entity.getStorage(RealmStorage.key)
     }
 
     /**
      * Can be used to load the [RealmStorage] from an [LivingEntity].
      */
+    @JvmStatic
     fun getReachedRealmsFrom(entity: LivingEntity): IReachedRealms? {
-        return entity.getStorage<RealmStorage?>(RealmStorage.key)
+        return entity.getStorage(RealmStorage.key)
+    }
+
+    @JvmStatic
+    fun getStorageOptional(entity: LivingEntity): Optional<RealmStorage> {
+        return entity.getStorageOptional(RealmStorage.key)
     }
 
     /**

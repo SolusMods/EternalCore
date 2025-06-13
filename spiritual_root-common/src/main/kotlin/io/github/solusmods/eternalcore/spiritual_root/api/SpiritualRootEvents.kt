@@ -207,6 +207,7 @@ interface SpiritualRootEvents {
          *
          * @see SpiritualRootAddEvent
          */
+        @JvmField
         val ADD: Event<SpiritualRootAddEvent<SpiritualRootInstance>> =
             EventFactory.createCompoundEventResult<SpiritualRootAddEvent<SpiritualRootInstance>>()
 
@@ -227,6 +228,7 @@ interface SpiritualRootEvents {
          *
          * @see SpiritualRootAdvanceEvent
          */
+        @JvmField
         val ADVANCE: Event<SpiritualRootAdvanceEvent> = EventFactory.createLoop<SpiritualRootAdvanceEvent>()
 
         /**
@@ -246,13 +248,17 @@ interface SpiritualRootEvents {
          *
          * @see SpiritualRootExperienceGainEvent
          */
+        @JvmField
         val EXPERIENCE_GAIN: Event<SpiritualRootExperienceGainEvent> =
             EventFactory.createLoop<SpiritualRootExperienceGainEvent>()
 
+        @JvmField
         val CALCULATE_PURITY: Event<SpiritualRootPurityCalculateEvent<Float>> =
             EventFactory.createCompoundEventResult<SpiritualRootPurityCalculateEvent<Float>>()
+        @JvmField
         val CHANGE_PURITY: Event<SpiritualRootPurityChangeEvent> =
             EventFactory.createEventResult<SpiritualRootPurityChangeEvent>()
+        @JvmField
         val FORGET_SPIRITUAL_ROOT: Event<ForgetSpiritualRootEvent> =
             EventFactory.createEventResult<ForgetSpiritualRootEvent>()
     }

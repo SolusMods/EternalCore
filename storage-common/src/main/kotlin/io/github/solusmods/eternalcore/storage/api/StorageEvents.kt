@@ -28,12 +28,13 @@ interface StorageEvents {
     }
 
     companion object {
+        @JvmField
         val REGISTER_ENTITY_STORAGE: Event<RegisterStorage<Entity>> =
             EventFactory.createLoop()
-
+        @JvmField
         val REGISTER_CHUNK_STORAGE: Event<RegisterStorage<LevelChunk>> =
             EventFactory.createLoop()
-
+        @JvmField
         val REGISTER_WORLD_STORAGE: Event<RegisterStorage<Level>> =
             EventFactory.createLoop()
     }

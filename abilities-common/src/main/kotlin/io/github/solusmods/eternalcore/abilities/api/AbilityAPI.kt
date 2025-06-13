@@ -12,28 +12,39 @@ import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.LivingEntity
+import java.util.Optional
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+
 object AbilityAPI {
-    val abilityRegistry: Registrar<Ability?>?
-        /**
-         * This Method returns the [Ability] Registry.
-         * It can be used to load [Ability]s from the Registry.
-         */
-        get() = AbilityRegistry.ABILITIES
 
-    val abilityRegistryKey: ResourceKey<Registry<Ability?>?>?
-        /**
-         * This Method returns the Registry Key of the [AbilityRegistry].
-         * It can be used to create [dev.architectury.registry.registries.DeferredRegister] instances
-         */
-        get() = AbilityRegistry.KEY
+    /**
+     * This Method returns the [Ability] Registry.
+     * It can be used to load [Ability]s from the Registry.
+     */
+    @JvmField
+    val abilityRegistry: Registrar<Ability> = AbilityRegistry.ABILITIES
+
+
+
+    /**
+     * This Method returns the Registry Key of the [AbilityRegistry].
+     * It can be used to create [dev.architectury.registry.registries.DeferredRegister] instances
+     */
+    @JvmField
+    val abilityRegistryKey: ResourceKey<Registry<Ability>> = AbilityRegistry.KEY
+
 
     /**
      * Can be used to load the [AbilityStorage] from an [LivingEntity].
      */
+    @JvmStatic
     fun getAbilitiesFrom(entity: LivingEntity): Abilities? {
-        return entity.getStorage<AbilityStorage?>(AbilityStorage.key)
+        return entity.getStorage(AbilityStorage.key)
+    }
+
+    @JvmStatic
+    fun getStorageOptional(entity: LivingEntity): Optional<AbilityStorage> {
+        return entity.getStorageOptional(AbilityStorage.key)
     }
 
     /**

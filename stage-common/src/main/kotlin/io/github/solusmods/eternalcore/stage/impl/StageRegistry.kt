@@ -14,11 +14,12 @@ import net.minecraft.resources.ResourceLocation
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 object StageRegistry {
     private val registryId: ResourceLocation = EternalCoreStage.create("stages")
-
+    @JvmField
     // endregion
-    val STAGES: Registrar<Stage?> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Stage?>(registryId)
+    val STAGES: Registrar<Stage> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Stage>(registryId)
         .syncToClients().build()
-    val KEY: ResourceKey<Registry<Stage?>?>? = STAGES.key() as ResourceKey<Registry<Stage?>?>?
+    @JvmField
+    val KEY: ResourceKey<Registry<Stage>> = STAGES.key() as ResourceKey<Registry<Stage>>
 
 
     fun init() {}

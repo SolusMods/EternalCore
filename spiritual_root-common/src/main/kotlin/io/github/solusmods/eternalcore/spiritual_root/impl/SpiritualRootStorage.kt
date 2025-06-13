@@ -29,7 +29,7 @@ import java.util.function.Consumer
  * Реалізує інтерфейс [SpiritualRoots] та розширює [Storage].
  */
 @Suppress("unchecked_cast")
-open class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), SpiritualRoots {
+open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), SpiritualRoots {
     override val spiritualRoots: MutableMap<ResourceLocation?, SpiritualRootInstance> =
         mutableMapOf()
 
@@ -189,20 +189,20 @@ open class SpiritualRootStorage(holder: StorageHolder?) : Storage(holder), Spiri
         private const val SPIRITUAL_ROOTS_KEY = "spiritual_roots_key"
         val ID: ResourceLocation = EternalCoreSpiritualRoot.create("spiritual_root_storage")
 
-        var key: StorageKey<SpiritualRootStorage?>? = null
+        var key: StorageKey<SpiritualRootStorage>? = null
 
         /**
          * Ініціалізує систему зберігання духовних коренів.
          * Реєструє сховище для гравців.
          */
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry ->
+            StorageEvents.REGISTER_ENTITY_STORAGE.register { registry ->
                 key = registry.register(
                     ID,
                     SpiritualRootStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
-                    { holder: Entity? -> SpiritualRootStorage(holder) }) as StorageKey<SpiritualRootStorage?>?
-            })
-            SpiritualRootEvents.Companion.ADD.register { instance: SpiritualRootInstance, living: LivingEntity, advancement: Boolean?, notifyPlayer: Changeable<Boolean?>?, rootMessage: Changeable<MutableComponent?>? ->
+                    { holder: Entity -> SpiritualRootStorage(holder) })
+            }
+            SpiritualRootEvents.ADD.register { instance: SpiritualRootInstance, living: LivingEntity, advancement: Boolean?, notifyPlayer: Changeable<Boolean?>?, rootMessage: Changeable<MutableComponent?>? ->
                 CompoundEventResult.interruptTrue(
                     instance
                 )

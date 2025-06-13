@@ -16,9 +16,11 @@ import net.minecraft.world.entity.Entity
 
 object RealmRegistry {
     private val registryId: ResourceLocation = EternalCoreRealm.create("realms")
-    val REALMS: Registrar<Realm?> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Realm?>(registryId)
+    @JvmField
+    val REALMS: Registrar<Realm> = RegistrarManager.get(ModuleConstants.MOD_ID).builder<Realm>(registryId)
         .syncToClients().build()
-    val KEY: ResourceKey<Registry<Realm?>?>? = REALMS.key() as ResourceKey<Registry<Realm?>?>?
+    @JvmField
+    val KEY: ResourceKey<Registry<Realm>> = REALMS.key() as ResourceKey<Registry<Realm>>
 
 
     fun init() {

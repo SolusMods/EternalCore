@@ -57,7 +57,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
         }
 
         val unlockMessage = Changeable.of<MutableComponent?>(component)
-        val result: EventResult? = AbilityEvents.Companion.UNLOCK_ABILITY.invoker()?.unlockAbility(
+        val result: EventResult? = AbilityEvents.UNLOCK_ABILITY.invoker()?.unlockAbility(
             instance,
             this.owner, unlockMessage
         )
@@ -80,7 +80,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
         val instance: AbilityInstance = this.abilityInstance.get(skillId)!!
 
         val forgetMessage = Changeable.of<MutableComponent?>(component)
-        val result: EventResult? = AbilityEvents.Companion.REMOVE_ABILITY.invoker()!!.removeAbility(
+        val result: EventResult? = AbilityEvents.REMOVE_ABILITY.invoker()!!.removeAbility(
             instance,
             this.owner, forgetMessage
         )
@@ -109,7 +109,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
     fun handleAbilityRelease(skillId: ResourceLocation, heldTick: Int, keyNumber: Int, mode: Int) {
         getAbility(skillId).ifPresent(Consumer { abilityInstance: AbilityInstance? ->
             val changeable = Changeable.of<AbilityInstance?>(abilityInstance)
-            if (AbilityEvents.Companion.RELEASE_ABILITY.invoker()!!.releaseAbility(
+            if (AbilityEvents.RELEASE_ABILITY.invoker()!!.releaseAbility(
                     changeable,
                     this.owner, keyNumber, mode, heldTick
                 )!!.isFalse
@@ -147,7 +147,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
 
         for (tag in data.getList(ABILITY_LIST_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
-                val instance: AbilityInstance = AbilityInstance.Companion.fromNBT(tag as CompoundTag?)
+                val instance: AbilityInstance = AbilityInstance.fromNBT(tag as CompoundTag?)
                 this.abilityInstance.put(instance.abilityId, instance)
             } catch (e: Exception) {
                 EternalCoreStorage.LOG!!.error("Failed to load ability instance from NBT", e)
@@ -195,13 +195,13 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
                 val skills = AbilityAPI.getAbilitiesFrom(
                     entity!!
                 )
-                if (AbilityEvents.Companion.ABILITY_DAMAGE_PRE_CALCULATION.invoker()
+                if (AbilityEvents.ABILITY_DAMAGE_PRE_CALCULATION.invoker()
                     !!.calculate(skills, entity, source, changeable)!!.isFalse
                 ) return@register EventResult.interruptFalse()
-                if (AbilityEvents.Companion.ABILITY_DAMAGE_CALCULATION.invoker()
+                if (AbilityEvents.ABILITY_DAMAGE_CALCULATION.invoker()
                     !!.calculate(skills, entity, source, changeable)!!.isFalse()
                 ) return@register EventResult.interruptFalse()
-                if (AbilityEvents.Companion.ABILITY_DAMAGE_POST_CALCULATION.invoker()
+                if (AbilityEvents.ABILITY_DAMAGE_POST_CALCULATION.invoker()
                     !!.calculate(skills, entity, source, changeable)!!.isFalse
                 ) return@register EventResult.interruptFalse()
                 EventResult.pass()
@@ -252,13 +252,13 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
                 val skillInstance = optional.get()
                 if (!skillInstance.canInteractAbility(entity)) continue
                 if (!skillInstance.canTick(entity)) continue
-                if (AbilityEvents.Companion.ABILITY_PRE_TICK.invoker()!!.tick(skillInstance, entity)!!.isFalse) continue
+                if (AbilityEvents.ABILITY_PRE_TICK.invoker()!!.tick(skillInstance, entity)!!.isFalse) continue
                 tickingAbilities.add(skillInstance)
             }
 
             for (instance in tickingAbilities) {
                 instance.onTick(entity)
-                AbilityEvents.Companion.ABILITY_POST_TICK.invoker()!!.tick(instance, entity)
+                AbilityEvents.ABILITY_POST_TICK.invoker()!!.tick(instance, entity)
             }
         }
 
@@ -270,7 +270,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
                 // Update cooldown
                 for (i in 0..<instance!!.modes) {
                     if (!instance.onCoolDown(i)) continue
-                    if (!AbilityEvents.Companion.ABILITY_UPDATE_COOLDOWN.invoker()
+                    if (!AbilityEvents.ABILITY_UPDATE_COOLDOWN.invoker()
                             !!.cooldown(instance, entity, instance.getCoolDown(i), i)!!.isFalse
                     ) instance.decreaseCoolDown(1, i)
                 }

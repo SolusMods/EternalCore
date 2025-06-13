@@ -82,22 +82,35 @@ interface AbilityEvents {
     }
 
     companion object {
+        @JvmField
         val UNLOCK_ABILITY: Event<UnlockAbilityEvent?> = EventFactory.createEventResult<UnlockAbilityEvent?>()
+        @JvmField
         val REMOVE_ABILITY: Event<RemoveAbilityEvent?> = EventFactory.createEventResult<RemoveAbilityEvent?>()
+        @JvmField
         val ACTIVATE_ABILITY: Event<AbilityActivationEvent?> = EventFactory.createEventResult<AbilityActivationEvent?>()
+        @JvmField
         val RELEASE_ABILITY: Event<AbilityReleaseEvent?> = EventFactory.createEventResult<AbilityReleaseEvent?>()
+        @JvmField
         val TOGGLE_ABILITY: Event<AbilityToggleEvent?> = EventFactory.createEventResult<AbilityToggleEvent?>()
+        @JvmField
         val ABILITY_SCROLL: Event<AbilityScrollEvent?> = EventFactory.createEventResult<AbilityScrollEvent?>()
+        @JvmField
         val ABILITY_SCROLL_CLIENT: Event<AbilityScrollClientEvent?> =
             EventFactory.createEventResult<AbilityScrollClientEvent?>()
+        @JvmField
         val ABILITY_PRE_TICK: Event<AbilityTickEvent?> = EventFactory.createEventResult<AbilityTickEvent?>()
+        @JvmField
         val ABILITY_POST_TICK: Event<AbilityPostTickEvent?> = EventFactory.createLoop<AbilityPostTickEvent?>()
+        @JvmField
         val ABILITY_UPDATE_COOLDOWN: Event<AbilityUpdateCooldownEvent?> =
             EventFactory.createEventResult<AbilityUpdateCooldownEvent?>()
+        @JvmField
         val ABILITY_DAMAGE_PRE_CALCULATION: Event<AbilityDamageCalculationEvent?> =
             EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
+        @JvmField
         val ABILITY_DAMAGE_CALCULATION: Event<AbilityDamageCalculationEvent?> =
             EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
+        @JvmField
         val ABILITY_DAMAGE_POST_CALCULATION: Event<AbilityDamageCalculationEvent?> =
             EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
     }

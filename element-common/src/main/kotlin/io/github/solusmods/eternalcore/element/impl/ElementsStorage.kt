@@ -41,8 +41,8 @@ class ElementsStorage(holder: StorageHolder?) : Storage(holder), Elements {
     private var hasRemovedElements = false
 
     /** Отримує власника сховища як живу сутність */
-    private val owner: LivingEntity?
-        get() = holder as? LivingEntity
+    private val owner: LivingEntity
+        get() = holder as LivingEntity
 
     /**
      * Зберігає стан сховища в NBT формат.
