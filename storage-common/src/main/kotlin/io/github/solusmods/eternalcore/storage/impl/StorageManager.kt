@@ -73,8 +73,8 @@ object StorageManager {
         // Copy storage from old player to new player
         PlayerEvent.PLAYER_CLONE.register { oldPlayer, newPlayer, _ ->
             val newStorage = CombinedStorage(newPlayer)
-            newStorage.load(oldPlayer.getCombinedStorage().toNBT())
-            newPlayer.setCombinedStorage(newStorage)
+            newStorage.load(oldPlayer.`eternalCore$getCombinedStorage`().toNBT())
+            newPlayer.`eternalCore$setCombinedStorage`(newStorage)
         }
     }
 
@@ -88,7 +88,7 @@ object StorageManager {
      */
     @JvmStatic
     fun initialStorageFilling(holder: StorageHolder) {
-        when (holder.getStorageType()) {
+        when (holder.`eternalCore$getStorageType`()) {
             StorageType.ENTITY -> entityStorageRegistry.attach(holder as Entity)
             StorageType.CHUNK -> chunkStorageRegistry.attach(holder as LevelChunk)
             StorageType.WORLD -> levelStorageRegistry.attach(holder as Level)
@@ -128,10 +128,10 @@ object StorageManager {
      * @return Пакет синхронізації відповідного типу
      */
     fun createSyncPacket(source: StorageHolder, update: Boolean): StorageSyncPayload {
-        return when (source.getStorageType()) {
+        return when (source.`eternalCore$getStorageType`()) {
             StorageType.ENTITY -> {
                 val sourceEntity = source as Entity
-                val combinedStorage = sourceEntity.getCombinedStorage()
+                val combinedStorage = sourceEntity.`eternalCore$getCombinedStorage`()
                 SyncEntityStoragePayload(
                     entityId = sourceEntity.id,
                     isUpdate = update,
@@ -141,7 +141,7 @@ object StorageManager {
 
             StorageType.CHUNK -> {
                 val sourceChunk = source as LevelChunk
-                val combinedStorage = sourceChunk.getCombinedStorage()
+                val combinedStorage = sourceChunk.`eternalCore$getCombinedStorage`()
                 SyncChunkStoragePayload(
                     isUpdate = update,
                     chunkPos = sourceChunk.pos,
@@ -150,7 +150,7 @@ object StorageManager {
             }
 
             StorageType.WORLD -> {
-                val combinedStorage = source.getCombinedStorage()
+                val combinedStorage = source.`eternalCore$getCombinedStorage`()
                 SyncWorldStoragePayload(
                     isUpdate = update,
                     storageTag = if (update) combinedStorage.createUpdatePacket(true) else combinedStorage.toNBT()
@@ -189,21 +189,21 @@ object StorageManager {
      * @return Сховище вказаного типу або null, якщо сховище не знайдено
      */
     fun <T : Storage> getStorage(holder: StorageHolder, storageKey: StorageKey<T>): T? {
-        return holder.getStorage(storageKey as StorageKey<T?>?)
+        return holder.`eternalCore$getStorage`(storageKey as StorageKey<T?>?)
     }
 
     /**
      * Extension function для синхронізації сховища сутності/гравця
      */
     private fun ServerPlayer.syncStorage() {
-        sync(this)
+        `eternalCore$sync`(this)
     }
 
     /**
      * Extension function для синхронізації сховища рівня з гравцем
      */
     private fun Level.syncStorage(player: ServerPlayer) {
-        sync(player)
+        `eternalCore$sync`(player)
     }
 
     /**
@@ -245,7 +245,7 @@ object StorageManager {
                 val (predicate, factory) = checkAndFactory
                 if (predicate.test(target)) {
                     val storage = factory.create(target)
-                    target.attachStorage(id, storage)
+                    target.`eternalCore$attachStorage`(id, storage)
                 }
             }
         }

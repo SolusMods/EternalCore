@@ -13,7 +13,7 @@ import java.util.function.Consumer
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 object ClientAccess {
     fun handle(packet: SyncSpiritualRootStoragePayload, player: ServerPlayer?) {
-        player!!.getStorageOptional<SpiritualRootStorage?>(SpiritualRootStorage.key).ifPresent(
+        player!!.`eternalCore$getStorageOptional`(SpiritualRootStorage.key!!).ifPresent(
             Consumer { storage: SpiritualRootStorage? -> storage!!.load(packet.data!!) })
     }
 

@@ -248,10 +248,10 @@ open class StageInstance(stage: Stage?): Cloneable {
          * The [CompoundTag] has to be created though [StageInstance.toNBT]
          */
         @Throws(NullPointerException::class)
-        fun fromNBT(tag: CompoundTag?): StageInstance {
-            val location = ResourceLocation.tryParse(tag!!.getString(STAGE_KEY))
-            val stage = StageAPI.stageRegistry!!.get(location)
-            if (stage == null) throw NullPointerException("No stage found for location: " + location)
+        @JvmStatic
+        fun fromNBT(tag: CompoundTag): StageInstance {
+            val location = ResourceLocation.tryParse(tag.getString(STAGE_KEY))
+            val stage = StageAPI.stageRegistry.get(location) ?: throw NullPointerException("No stage found for location: $location")
             val instance = stage.createDefaultInstance()
             instance.deserialize(tag)
             return instance

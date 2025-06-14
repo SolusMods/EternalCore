@@ -10,8 +10,6 @@ import io.github.solusmods.eternalcore.abilities.api.AbilityAPI
 import io.github.solusmods.eternalcore.abilities.api.AbilityEvents
 import io.github.solusmods.eternalcore.abilities.api.AbilityInstance
 import io.github.solusmods.eternalcore.entity.api.EntityEvents
-import io.github.solusmods.eternalcore.entity.api.EntityEvents.LivingHurtEvent
-import io.github.solusmods.eternalcore.entity.api.EntityEvents.LivingTickEvent
 import io.github.solusmods.eternalcore.network.api.util.Changeable
 import io.github.solusmods.eternalcore.storage.EternalCoreStorage
 import io.github.solusmods.eternalcore.storage.api.Storage
@@ -24,13 +22,11 @@ import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import java.util.*
-import java.util.List
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 
@@ -39,24 +35,24 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
     private val abilityInstance: MutableMap<ResourceLocation?, AbilityInstance> =
         mutableMapOf()
     private var hasRemovedAbilities = false
-    override val learnedAbilities: MutableCollection<AbilityInstance?>?
+    override val learnedAbilities: MutableCollection<AbilityInstance>
         get() {
-            return abilityInstance.values as MutableCollection<AbilityInstance?>?
+            return abilityInstance.values
         }
 
-    override fun updateAbility(updatedInstance: AbilityInstance?, sync: Boolean) {
-        updatedInstance!!.markDirty()
+    override fun updateAbility(updatedInstance: AbilityInstance, sync: Boolean) {
+        updatedInstance.markDirty()
         this.abilityInstance.put(updatedInstance.abilityId, updatedInstance)
         if (sync) markDirty()
     }
 
-    override fun learnAbility(instance: AbilityInstance?, component: MutableComponent?): Boolean {
-        if (this.abilityInstance.containsKey(instance!!.abilityId)) {
+    override fun learnAbility(instance: AbilityInstance, component: MutableComponent?): Boolean {
+        if (this.abilityInstance.containsKey(instance.abilityId)) {
 //            EternalCoreAbilities.log.debug("Tried to register a deduplicate of {}.", instance.abilityId)
             return false
         }
 
-        val unlockMessage = Changeable.of<MutableComponent?>(component)
+        val unlockMessage = Changeable.of(component)
         val result: EventResult? = AbilityEvents.UNLOCK_ABILITY.invoker()?.unlockAbility(
             instance,
             this.owner, unlockMessage
@@ -65,57 +61,51 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
 
         instance.markDirty()
         this.abilityInstance.put(instance.abilityId, instance)
-        if (unlockMessage.isPresent) this.owner.sendSystemMessage(unlockMessage.get())
+        if (unlockMessage.isPresent) this.owner.sendSystemMessage(unlockMessage.get()!!)
         instance.onLearnAbility(this.owner)
         markDirty()
         return true
     }
 
-    override fun getAbility(skillId: ResourceLocation): Optional<AbilityInstance?> {
-        return Optional.ofNullable<AbilityInstance?>(this.abilityInstance.get(skillId)) as Optional<AbilityInstance?>
+    override fun getAbility(abilityId: ResourceLocation): Optional<AbilityInstance?> {
+        return Optional.ofNullable<AbilityInstance?>(this.abilityInstance[abilityId]) as Optional<AbilityInstance?>
     }
 
-    override fun forgetAbility(skillId: ResourceLocation?, component: MutableComponent?) {
-        if (!this.abilityInstance.containsKey(skillId)) return
-        val instance: AbilityInstance = this.abilityInstance.get(skillId)!!
+    override fun forgetAbility(abilityId: ResourceLocation, component: MutableComponent?) {
+        if (!this.abilityInstance.containsKey(abilityId)) return
+        val instance: AbilityInstance = this.abilityInstance[abilityId]!!
 
-        val forgetMessage = Changeable.of<MutableComponent?>(component)
+        val forgetMessage = Changeable.of(component)
         val result: EventResult? = AbilityEvents.REMOVE_ABILITY.invoker()!!.removeAbility(
             instance,
             this.owner, forgetMessage
         )
         if (result!!.isFalse) return
 
-        if (forgetMessage.isPresent) this.owner?.sendSystemMessage(forgetMessage.get())
+        if (forgetMessage.isPresent) this.owner.sendSystemMessage(forgetMessage.get()!!)
         instance.onForgetAbility(this.owner)
         instance.markDirty()
 
-        this.learnedAbilities!!.remove(instance)
+        this.learnedAbilities.remove(instance)
         this.hasRemovedAbilities = true
         markDirty()
     }
 
-    override fun forEachAbility(abilityInstanceConsumer: BiConsumer<AbilityStorage?, AbilityInstance?>?) {
-        List.copyOf<AbilityInstance?>(this.abilityInstance.values)
-            .forEach(Consumer { abilityInstance: AbilityInstance? ->
-                abilityInstanceConsumer!!.accept(
-                    this,
-                    abilityInstance
-                )
-            })
+    override fun forEachAbility(abilityInstanceConsumer: BiConsumer<AbilityStorage, AbilityInstance>) {
+        learnedAbilities.forEach { instance -> abilityInstanceConsumer.accept(this, instance) }
         markDirty()
     }
 
     fun handleAbilityRelease(skillId: ResourceLocation, heldTick: Int, keyNumber: Int, mode: Int) {
-        getAbility(skillId).ifPresent(Consumer { abilityInstance: AbilityInstance? ->
-            val changeable = Changeable.of<AbilityInstance?>(abilityInstance)
-            if (AbilityEvents.RELEASE_ABILITY.invoker()!!.releaseAbility(
+        getAbility(skillId).ifPresent { abilityInstance ->
+            val changeable = Changeable.of(abilityInstance)
+            if (AbilityEvents.RELEASE_ABILITY.invoker().releaseAbility(
                     changeable,
                     this.owner, keyNumber, mode, heldTick
-                )!!.isFalse
-            ) return@Consumer
+                ).isFalse
+            ) return@ifPresent
             val ability = changeable.get()
-            if (ability == null) return@Consumer
+            if (ability == null) return@ifPresent
 
             if (ability.canInteractAbility(this.owner) && mode < ability.modes) {
                 if (!ability.onCoolDown(mode) || ability.canIgnoreCoolDown(this.owner, mode)) {
@@ -125,10 +115,10 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
             }
 
             ability.removeAttributeModifiers(this.owner, mode)
-            val ownerID = this.owner!!.getUUID()
+            val ownerID = this.owner.getUUID()
             if (tickingAbilities.containsKey(ownerID)) tickingAbilities.get(ownerID)
-                .removeIf { tickingAbility: TickingAbility? -> tickingAbility!!.ability === ability.ability }
-        })
+                .removeIf { tickingAbility: TickingAbility -> tickingAbility.ability === ability.ability }
+        }
     }
 
     override fun save(data: CompoundTag) {
@@ -150,7 +140,7 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
                 val instance: AbilityInstance = AbilityInstance.fromNBT(tag as CompoundTag?)
                 this.abilityInstance.put(instance.abilityId, instance)
             } catch (e: Exception) {
-                EternalCoreStorage.LOG!!.error("Failed to load ability instance from NBT", e)
+                EternalCoreStorage.LOG.error("Failed to load ability instance from NBT", e)
             }
         }
     }
@@ -191,18 +181,18 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
                     { target: Entity -> AbilityStorage(target) })
             }
 
-            EntityEvents.LIVING_HURT.register { entity: LivingEntity?, source: DamageSource?, changeable: Changeable<Float?>? ->
+            EntityEvents.LIVING_HURT.register { entity, source, changeable: Changeable<Float?>? ->
                 val skills = AbilityAPI.getAbilitiesFrom(
                     entity!!
-                )
+                ) ?: return@register EventResult.interruptFalse()
                 if (AbilityEvents.ABILITY_DAMAGE_PRE_CALCULATION.invoker()
-                    !!.calculate(skills, entity, source, changeable)!!.isFalse
+                    .calculate(skills, entity, source, changeable).isFalse
                 ) return@register EventResult.interruptFalse()
                 if (AbilityEvents.ABILITY_DAMAGE_CALCULATION.invoker()
-                    !!.calculate(skills, entity, source, changeable)!!.isFalse()
+                    !!.calculate(skills, entity, source, changeable).isFalse
                 ) return@register EventResult.interruptFalse()
                 if (AbilityEvents.ABILITY_DAMAGE_POST_CALCULATION.invoker()
-                    !!.calculate(skills, entity, source, changeable)!!.isFalse
+                    !!.calculate(skills, entity, source, changeable).isFalse
                 ) return@register EventResult.interruptFalse()
                 EventResult.pass()
             }
@@ -229,30 +219,30 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
             }
         }
 
-        private fun handleAbilityTick(entity: LivingEntity?, level: Level, storage: Abilities) {
-            val server = level.getServer()
+        private fun handleAbilityTick(entity: LivingEntity, level: Level, storage: Abilities) {
+            val server = level.server
             if (server == null) return
 
-            val shouldPassiveConsume = server.getTickCount() % INSTANCE_UPDATE == 0
+            val shouldPassiveConsume = server.tickCount % INSTANCE_UPDATE == 0
             if (!shouldPassiveConsume) return
             checkPlayerOnlyEffects(entity, storage)
 
-            val passiveAbilityActivate = server.getTickCount() % PASSIVE_SKILL == 0
+            val passiveAbilityActivate = server.tickCount % PASSIVE_SKILL == 0
             if (!passiveAbilityActivate) return
 
             tickAbilities(entity, storage)
         }
 
-        private fun tickAbilities(entity: LivingEntity?, storage: Abilities) {
+        private fun tickAbilities(entity: LivingEntity, storage: Abilities) {
             val tickingAbilities: MutableList<AbilityInstance> = ArrayList<AbilityInstance>()
-            for (instance in storage.learnedAbilities!!) {
-                val optional = storage.getAbility(instance!!.ability!!)
+            for (instance in storage.learnedAbilities) {
+                val optional = storage.getAbility(instance.ability!!)
                 if (optional!!.isEmpty) continue
 
                 val skillInstance = optional.get()
                 if (!skillInstance.canInteractAbility(entity)) continue
                 if (!skillInstance.canTick(entity)) continue
-                if (AbilityEvents.ABILITY_PRE_TICK.invoker()!!.tick(skillInstance, entity)!!.isFalse) continue
+                if (AbilityEvents.ABILITY_PRE_TICK.invoker()!!.tick(skillInstance, entity).isFalse) continue
                 tickingAbilities.add(skillInstance)
             }
 
@@ -266,12 +256,12 @@ open class AbilityStorage protected constructor(holder: StorageHolder) : Storage
             if (entity !is Player) return
             val toBeRemoved: MutableList<AbilityInstance> = ArrayList<AbilityInstance>()
 
-            for (instance in storage.learnedAbilities!!) {
+            for (instance in storage.learnedAbilities) {
                 // Update cooldown
-                for (i in 0..<instance!!.modes) {
+                for (i in 0..<instance.modes) {
                     if (!instance.onCoolDown(i)) continue
                     if (!AbilityEvents.ABILITY_UPDATE_COOLDOWN.invoker()
-                            !!.cooldown(instance, entity, instance.getCoolDown(i), i)!!.isFalse
+                            !!.cooldown(instance, entity, instance.getCoolDown(i), i).isFalse
                     ) instance.decreaseCoolDown(1, i)
                 }
 

@@ -52,7 +52,7 @@ public abstract class MixinServerLevel extends Level {
     private void onPostTickChunk(LevelChunk pChunk, int pRandomTickSpeed, CallbackInfo ci) {
         ProfilerFiller profiler = getProfiler();
         profiler.push("eternalCoreSyncCheck");
-        if (((StorageHolder) pChunk).getCombinedStorage().isDirty()) {
+        if (((StorageHolder) pChunk).eternalCore$getCombinedStorage().isDirty()) {
             pChunk.setUnsaved(true);
             StorageManager.syncTracking(pChunk, true);
         }
@@ -67,7 +67,7 @@ public abstract class MixinServerLevel extends Level {
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 1, shift = At.Shift.AFTER))
     private void onTick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         getProfiler().push("eternalCoreSyncCheck");
-        if (getCombinedStorage().isDirty()) StorageManager.syncTracking(this, true);
+        if (eternalCore$getCombinedStorage().isDirty()) StorageManager.syncTracking(this, true);
         getProfiler().pop();
     }
 
@@ -75,7 +75,7 @@ public abstract class MixinServerLevel extends Level {
     private void loadStorage(MinecraftServer server, Executor dispatcher, LevelStorageSource.LevelStorageAccess levelStorageAccess, ServerLevelData serverLevelData, ResourceKey dimension, LevelStem levelStem, ChunkProgressListener progressListener, boolean isDebug, long biomeZoomSeed, List customSpawners, boolean tickTime, RandomSequences randomSequences, CallbackInfo ci) {
         try {
             StoragePersistentState.LOADING.set(true);
-            this.getDataStorage().computeIfAbsent(StoragePersistentState.getFactory(getCombinedStorage()), "eternalcore_world_storage");
+            this.getDataStorage().computeIfAbsent(StoragePersistentState.getFactory(eternalCore$getCombinedStorage()), "eternalcore_world_storage");
         } finally {
             StoragePersistentState.LOADING.set(false);
         }

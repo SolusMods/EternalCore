@@ -3,7 +3,6 @@ package io.github.solusmods.eternalcore.spiritual_root.api
 import dev.architectury.platform.Platform
 import dev.architectury.registry.registries.Registrar
 import dev.architectury.utils.Env
-import io.github.solusmods.eternalcore.element.impl.ElementsStorage
 import io.github.solusmods.eternalcore.spiritual_root.impl.SpiritualRootRegistry
 import io.github.solusmods.eternalcore.spiritual_root.impl.SpiritualRootStorage
 import io.github.solusmods.eternalcore.spiritual_root.impl.network.InternalSpiritualRootPacketActions
@@ -37,12 +36,12 @@ object SpiritualRootAPI {
      */
     @JvmStatic
     fun getSpiritualRootFrom(entity: LivingEntity): SpiritualRoots? {
-        return entity.getStorage<SpiritualRootStorage?>(SpiritualRootStorage.key)
+        return entity.`eternalCore$getStorage`(SpiritualRootStorage.key)
     }
 
     @JvmStatic
     fun getStorageOptional(entity: LivingEntity): Optional<SpiritualRootStorage> {
-        return entity.getStorageOptional(SpiritualRootStorage.key)
+        return entity.`eternalCore$getStorageOptional`(SpiritualRootStorage.key!!)
     }
 
     /**

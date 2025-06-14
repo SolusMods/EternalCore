@@ -151,7 +151,7 @@ class ElementsStorage(holder: StorageHolder?) : Storage(holder), Elements {
 
         val addMessage = Changeable.of(component)
         val notify = Changeable.of(teleportToSpawn)
-        val result = ElementEvents.ADD_ELEMENT.invoker()?.add(
+        val result = ElementEvents.ADD_ELEMENT.invoker().add(
             instance,
             owner,
             breakthrough,
@@ -159,7 +159,7 @@ class ElementsStorage(holder: StorageHolder?) : Storage(holder), Elements {
             addMessage
         )
 
-        if (result?.isFalse == true) return false
+        if (result.isFalse == true) return false
 
         instance.markDirty()
         elements[instance.elementId] = instance

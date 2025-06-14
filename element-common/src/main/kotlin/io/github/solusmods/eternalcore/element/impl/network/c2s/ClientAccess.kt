@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerPlayer
 
 object ClientAccess {
     fun handle(packet: SyncElementsStoragePayload, player: ServerPlayer?) {
-        player!!.getStorageOptional(ElementsStorage.key as StorageKey<ElementsStorage?>?).ifPresent {
+        player!!.`eternalCore$getStorageOptional`(ElementsStorage.key as StorageKey<ElementsStorage>).ifPresent {
             storage: ElementsStorage? -> storage!!.load(packet.data!!)
         }
     }

@@ -18,7 +18,7 @@ data class SyncStagesStoragePayload(val data: CompoundTag?) : CustomPacketPayloa
 
     fun handle(context: NetworkManager.PacketContext) {
         if (context.environment != Env.SERVER) return
-        context.queue { ClientAccess.handle(this, context.player as ServerPlayer?) }
+        context.queue { ClientAccess.handle(this, context.player as ServerPlayer) }
     }
 
     /**

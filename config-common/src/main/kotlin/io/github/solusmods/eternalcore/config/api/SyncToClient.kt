@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2025. ManasMods
- * GNU General Public License 3
- */
 package io.github.solusmods.eternalcore.config.api
 
 /**

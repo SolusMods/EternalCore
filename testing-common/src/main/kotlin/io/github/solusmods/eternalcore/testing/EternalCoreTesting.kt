@@ -44,8 +44,8 @@ object EternalCoreTesting {
                 elements.addElement(RegistryTest.TEST_ELEMENT.get(), false)
                 val roots = getSpiritualRootFrom(player) ?: return@register
                 roots.addSpiritualRoot(RegistryTest.TEST_ROOT.get(), false)
-                val abilities = getAbilitiesFrom(player) ?: return@register
-                abilities.learnAbility(RegistryTest.TEST_ABILITY.get())
+//                val abilities = getAbilitiesFrom(player) ?: return@register
+//                abilities.learnAbility(RegistryTest.TEST_ABILITY.get())
             }
 
         }

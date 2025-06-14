@@ -48,8 +48,8 @@ abstract class Realm(
     /**
      * Мапа модифікаторів атрибутів, що застосовуються до сутності в цьому Реалмі
      */
-    private val attributeModifiers: MutableMap<Holder<Attribute?>?, AttributeTemplate?> =
-        Object2ObjectOpenHashMap<Holder<Attribute?>?, AttributeTemplate?>()
+    private val attributeModifiers: MutableMap<Holder<Attribute>, AttributeTemplate> =
+        Object2ObjectOpenHashMap()
 
     /**
      * Створює новий екземпляр Реалму з базовими налаштуваннями.
@@ -88,7 +88,7 @@ abstract class Realm(
      * @return Пара (мінімум, максимум) значень Ці
      * @see RealmInstance.getBaseQiRange
      */
-    abstract val baseQiRange: Pair<Float?, Float?>?
+    abstract val baseQiRange: Pair<Float, Float>
 
     /**
      * Повертає базову силу атаки для цього Реалму .
@@ -215,7 +215,7 @@ abstract class Realm(
      * @return Список Реалмів  для прориву
      * @see RealmInstance.getNextBreakthroughs
      */
-    abstract fun getNextBreakthroughs(instance: RealmInstance?, living: LivingEntity?): MutableList<Realm?>?
+    abstract fun getNextBreakthroughs(instance: RealmInstance, living: LivingEntity): MutableList<Realm?>
 
     /**
      * Повертає список Реалмів , з яких можливий прорив у цей Реалм .
@@ -230,7 +230,7 @@ abstract class Realm(
      * @return Список попередніх Реалмів
      * @see RealmInstance.getPreviousBreakthroughs
      */
-    abstract fun getPreviousBreakthroughs(instance: RealmInstance?, living: LivingEntity?): MutableList<Realm?>?
+    abstract fun getPreviousBreakthroughs(instance: RealmInstance, living: LivingEntity): MutableList<Realm?>
 
     /**
      * Повертає Реалм , у який відбувається прорив за замовчуванням з цього Реалму .
@@ -244,7 +244,7 @@ abstract class Realm(
      * @return Реалм  для прориву або null, якщо прорив неможливий
      * @see RealmInstance.getDefaultBreakthrough
      */
-    abstract fun getDefaultBreakthrough(instance: RealmInstance?, living: LivingEntity?): Realm?
+    abstract fun getDefaultBreakthrough(instance: RealmInstance, living: LivingEntity): Realm?
 
     /**
      * Повертає список стадій, доступних у цьому Реалмі .
@@ -258,7 +258,7 @@ abstract class Realm(
      * @return Список стадій
      * @see RealmInstance.getRealmStages
      */
-    abstract fun getRealmStages(instance: RealmInstance?, living: LivingEntity?): MutableList<Stage?>?
+    abstract fun getRealmStages(instance: RealmInstance, living: LivingEntity): MutableList<Stage?>
 
     /**
      * Повертає вимір та блок для відродження сутності в цьому Реалмі .
@@ -274,8 +274,8 @@ abstract class Realm(
      * @see RealmInstance.getRespawnDimension
      */
     fun getRespawnDimension(
-        instance: RealmInstance?,
-        owner: LivingEntity?
+        instance: RealmInstance,
+        owner: LivingEntity
     ): com.mojang.datafixers.util.Pair<ResourceKey<Level?>?, BlockState?> {
         return com.mojang.datafixers.util.Pair.of<ResourceKey<Level?>?, BlockState?>(
             Level.OVERWORLD,
@@ -293,7 +293,7 @@ abstract class Realm(
      * @param entity Сутність для перевірки
      * @return true, якщо сутність дружня, false - в іншому випадку
      */
-    abstract fun passivelyFriendlyWith(instance: RealmInstance?, entity: LivingEntity?): Boolean
+    abstract fun passivelyFriendlyWith(instance: RealmInstance, entity: LivingEntity): Boolean
 
     /**
      * Визначає, чи може сутність в цьому Реалмі  літати.
@@ -304,7 +304,7 @@ abstract class Realm(
      *
      * @return true, якщо політ дозволено, false - в іншому випадку
      */
-    abstract fun canFly(instance: RealmInstance?, living: LivingEntity?): Boolean
+    abstract fun canFly(instance: RealmInstance, living: LivingEntity): Boolean
 
     val registryName: ResourceLocation?
         /**
@@ -312,7 +312,7 @@ abstract class Realm(
          *
          * @return Ідентифікатор Реалму  або null, якщо Реалм  не зареєстровано
          */
-        get() = RealmAPI.realmRegistry!!.getId(this)
+        get() = RealmAPI.realmRegistry.getId(this)
 
     val name: MutableComponent?
         /**
@@ -392,7 +392,7 @@ abstract class Realm(
      * @param living   Сутність, яка встановлює Реалм
      * @see RealmInstance.onSet
      */
-    open fun onSet(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onSet(instance: RealmInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -407,7 +407,7 @@ abstract class Realm(
      * @param living   Сутність, яка досягає Реалму
      * @see RealmInstance.onReach
      */
-    open fun onReach(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onReach(instance: RealmInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -422,7 +422,7 @@ abstract class Realm(
      * @param living   Сутність, яка відстежує Реалм
      * @see RealmInstance.onTrack
      */
-    open fun onTrack(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onTrack(instance: RealmInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -437,7 +437,7 @@ abstract class Realm(
      * @param living   Сутність, яка здійснює прорив
      * @see RealmInstance.onBreakthrough
      */
-    open fun onBreakthrough(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onBreakthrough(instance: RealmInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -451,7 +451,7 @@ abstract class Realm(
      * @param instance Екземпляр активного Реалму
      * @param living   Сутність, що має цей Реалм
      */
-    open fun onTick(instance: RealmInstance?, living: LivingEntity?) {
+    open fun onTick(instance: RealmInstance, living: LivingEntity) {
         // Перевизначте цей метод для додавання власної логіки
     }
 
@@ -468,24 +468,24 @@ abstract class Realm(
      * @param operation        Операція модифікатора
      */
     open fun addAttributeModifier(
-        holder: Holder<Attribute?>?,
-        resourceLocation: ResourceLocation?,
+        holder: Holder<Attribute>,
+        resourceLocation: ResourceLocation,
         amount: Double,
-        operation: AttributeModifier.Operation?
+        operation: AttributeModifier.Operation
     ): Realm {
         this.attributeModifiers.put(holder, AttributeTemplate(resourceLocation, amount, operation))
         return this
     }
 
     open fun createModifiers(
-        instance: RealmInstance?,
+        instance: RealmInstance,
         i: Int,
-        consumer: BiConsumer<Holder<Attribute?>?, AttributeModifier?>
+        consumer: BiConsumer<Holder<Attribute>, AttributeModifier>
     ) {
-        this.attributeModifiers.forEach { (holder: Holder<Attribute?>?, template: AttributeTemplate?) ->
+        this.attributeModifiers.forEach { (holder, template) ->
             consumer.accept(
                 holder,
-                template!!.create(i)
+                template.create(i)
             )
         }
     }
@@ -494,41 +494,18 @@ abstract class Realm(
         val attributeMap = entity.getAttributes()
         for (entry in this.attributeModifiers.entries) {
             val attributeInstance = attributeMap.getInstance(entry.key)
-            if (attributeInstance != null) {
-                attributeInstance.removeModifier((entry.value)!!.id)
-            }
+            attributeInstance?.removeModifier((entry.value)!!.id)
         }
     }
 
     open fun addAttributeModifiers(instance: RealmInstance?, entity: LivingEntity, i: Int) {
-        val attributeMap = entity.getAttributes()
+        val attributeMap = entity.attributes
         for (entry in this.attributeModifiers.entries) {
             val attributeInstance = attributeMap.getInstance(entry.key)
             if (attributeInstance != null) {
                 attributeInstance.removeModifier(entry.value!!.id)
-                attributeInstance.addPermanentModifier((entry.value)!!.create(i))
+                attributeInstance.addPermanentModifier((entry.value).create(i))
             }
         }
-    }
-
-    override fun hashCode(): Int {
-        var result = type.hashCode()
-        result = 31 * result + attributeModifiers.hashCode()
-        result = 31 * result + baseHealth.hashCode()
-        result = 31 * result + baseAttackDamage.hashCode()
-        result = 31 * result + baseAttackSpeed.hashCode()
-        result = 31 * result + knockBackResistance.hashCode()
-        result = 31 * result + jumpHeight.hashCode()
-        result = 31 * result + movementSpeed.hashCode()
-        result = 31 * result + sprintSpeed.hashCode()
-        result = 31 * result + minBaseQi.hashCode()
-        result = 31 * result + maxBaseQi.hashCode()
-        result = 31 * result + coefficient.hashCode()
-        result = 31 * result + (baseQiRange?.hashCode() ?: 0)
-        result = 31 * result + (registryName?.hashCode() ?: 0)
-        result = 31 * result + (name?.hashCode() ?: 0)
-        result = 31 * result + (trackedName?.hashCode() ?: 0)
-        result = 31 * result + nameTranslationKey.hashCode()
-        return result
     }
 }

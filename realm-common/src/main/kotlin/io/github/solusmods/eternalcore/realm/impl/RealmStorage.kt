@@ -45,13 +45,13 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
  * @param holder Власник цього сховища
  */
     /** Колекція світів, які досягнув гравець  */
-    override val reachedRealms: MutableMap<ResourceLocation?, RealmInstance> = HashMap<ResourceLocation?, RealmInstance>()
+    override val reachedRealms: MutableMap<ResourceLocation, RealmInstance> = mutableMapOf()
 
     /** Поточний активний світ гравця  */
     override var realm: RealmInstance? = null
 
-    override fun getRealm(): Optional<RealmInstance>{
-        return Optional.ofNullable(realm)
+    override fun getRealmOptional(): Optional<RealmInstance>{
+        return Optional.ofNullable(realm )
     }
     
 
@@ -85,7 +85,7 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
         if (result.isFalse) return false
 
         val owner = this.owner
-        if (realmMessage!!.isPresent) this.owner.sendSystemMessage(realmMessage.get())
+        if (realmMessage!!.isPresent) this.owner.sendSystemMessage(realmMessage.get()!!)
         instance.markDirty()
         instance.onReach(owner)
         reachedRealms.put(instance.realmId, instance)
@@ -110,8 +110,8 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
      */
     override fun setRealm(
         realmInstance: RealmInstance,
-        breakthrough: Boolean?,
-        notify: Boolean?,
+        breakthrough: Boolean,
+        notify: Boolean,
         component: MutableComponent?
     ): Boolean {
         val instance = this.realm
@@ -119,7 +119,7 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
         val notify: Changeable<Boolean>? = Changeable.of(notify) as Changeable<Boolean>?
         val result: EventResult = RealEvents.Companion.SET_REALM.invoker().set(
             instance,
-            this.owner, realmInstance, breakthrough!!, notify, realmMessage
+            this.owner, realmInstance, breakthrough, notify, realmMessage
         )
         if (result.isFalse) return false
 
@@ -146,8 +146,8 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
             instance.resetDirty()
         })
         data.put(REACHED_REALMS_KEY, elementsTag)
-        if (!getRealm().isEmpty)
-            data.put(REALM_KEY, realm!!.toNBT())
+        if (!getRealmOptional().isEmpty)
+            data.put(REALM_KEY, realm?.toNBT() as Tag)
     }
 
     /**
@@ -161,7 +161,7 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
         }
         for (tag in data.getList(REACHED_REALMS_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
-                val instance: RealmInstance = RealmInstance.Companion.fromNBT(tag as CompoundTag?)
+                val instance: RealmInstance = RealmInstance.Companion.fromNBT(tag as CompoundTag)
                 this.reachedRealms.put(instance.realmId, instance)
             } catch (e: Exception) {
                 EternalCoreStorage.LOG.error("Failed to load realm from NBT", e)
@@ -205,12 +205,12 @@ open class RealmStorage protected constructor(holder: StorageHolder) : Storage(h
          *
          */
         fun init() {
-            StorageEvents.REGISTER_ENTITY_STORAGE.register(StorageEvents.RegisterStorage { registry ->
+            StorageEvents.REGISTER_ENTITY_STORAGE.register { registry ->
                 key = registry.register(
                     ID,
                     RealmStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
                     { holder: Entity -> RealmStorage(holder) })
-            })
+            }
         }
     }
 }

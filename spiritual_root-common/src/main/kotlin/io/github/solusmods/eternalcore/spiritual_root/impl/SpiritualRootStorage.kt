@@ -20,9 +20,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
-import java.util.List
 import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 /**
  * Клас для зберігання та управління духовними коренями сутності.
@@ -30,7 +28,7 @@ import java.util.function.Consumer
  */
 @Suppress("unchecked_cast")
 open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), SpiritualRoots {
-    override val spiritualRoots: MutableMap<ResourceLocation?, SpiritualRootInstance> =
+    override val spiritualRoots: MutableMap<ResourceLocation, SpiritualRootInstance> =
         mutableMapOf()
 
     private var hasRemovedRoots = false
@@ -42,10 +40,10 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
      */
     override fun save(data: CompoundTag) {
         val elementsTag = ListTag()
-        spiritualRoots.values.forEach(Consumer { instance: SpiritualRootInstance? ->
-            elementsTag.add(instance!!.toNBT())
+        spiritualRoots.values.forEach { instance: SpiritualRootInstance ->
+            elementsTag.add(instance.toNBT())
             instance.resetDirty()
-        })
+        }
         data.put(SPIRITUAL_ROOTS_KEY, elementsTag)
     }
 
@@ -60,7 +58,7 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
         }
         for (tag in data.getList(SPIRITUAL_ROOTS_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
-                val instance: SpiritualRootInstance = SpiritualRootInstance.Companion.fromNBT(tag as CompoundTag?)
+                val instance: SpiritualRootInstance = SpiritualRootInstance.fromNBT(tag as CompoundTag)
                 this.spiritualRoots.put(instance.spiritualRootId, instance)
             } catch (e: Exception) {
                 EternalCoreStorage.LOG.error("Failed to load root instance from NBT", e)
@@ -68,8 +66,8 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
         }
     }
 
-    override val gainedRoots: MutableCollection<SpiritualRootInstance?>?
-        get() {return this.spiritualRoots.values as MutableCollection<SpiritualRootInstance?>? }
+    override val gainedRoots: MutableCollection<SpiritualRootInstance>
+        get() {return this.spiritualRoots.values }
 
 
     override fun saveOutdated(data: CompoundTag) {
@@ -112,7 +110,7 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
         notify: Boolean,
         component: MutableComponent?
     ): Boolean {
-        if (this.spiritualRoots.containsKey(instance!!.spiritualRootId)) {
+        if (this.spiritualRoots.containsKey(instance.spiritualRootId)) {
             EternalCoreStorage.LOG.debug("Tried to register a deduplicate of {}.", instance.spiritualRoot)
             return false
         }
@@ -126,7 +124,7 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
         )
         if (result.isFalse) return false
         val owner = this.owner
-        if (rootMessage.isPresent) this.owner.sendSystemMessage(rootMessage.get())
+        if (rootMessage.isPresent) this.owner.sendSystemMessage(rootMessage.get()!!)
         val newInstance = result.`object`()
         newInstance.markDirty()
         newInstance.onAdd(owner)
@@ -143,20 +141,14 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
      * @param updatedInstance The instance to update
      * @param sync            If true, synchronizes the change to all clients/server
      */
-    override fun updateRoot(updatedInstance: SpiritualRootInstance?, sync: Boolean) {
-        updatedInstance?.markDirty()
-        spiritualRoots.put(updatedInstance?.spiritualRootId, updatedInstance!!)
+    override fun updateRoot(updatedInstance: SpiritualRootInstance, sync: Boolean) {
+        updatedInstance.markDirty()
+        spiritualRoots.put(updatedInstance.spiritualRootId, updatedInstance)
         if (sync) markDirty()
     }
 
-    override fun forEachRoot(biConsumer: BiConsumer<SpiritualRootStorage?, SpiritualRootInstance?>?) {
-        List.copyOf<SpiritualRootInstance?>(spiritualRoots.values)
-            .forEach(Consumer { spiritualRootInstance: SpiritualRootInstance? ->
-                biConsumer?.accept(
-                    this,
-                    spiritualRootInstance
-                )
-            })
+    override fun forEachRoot(biConsumer: BiConsumer<SpiritualRootStorage, SpiritualRootInstance>) {
+        gainedRoots.forEach { instance -> biConsumer.accept(this, instance) }
         markDirty()
     }
 
@@ -171,10 +163,10 @@ open class SpiritualRootStorage(holder: StorageHolder) : Storage(holder), Spirit
         )
         if (result!!.isFalse) return
 
-        if (forgetMessage.isPresent) this.owner.sendSystemMessage(forgetMessage.get())
+        if (forgetMessage.isPresent) this.owner.sendSystemMessage(forgetMessage.get()!!)
         instance.markDirty()
 
-        this.gainedRoots?.remove(instance)
+        this.gainedRoots.remove(instance)
         this.hasRemovedRoots = true
         markDirty()
     }

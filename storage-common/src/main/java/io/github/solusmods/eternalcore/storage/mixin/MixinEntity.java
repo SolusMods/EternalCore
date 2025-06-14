@@ -33,37 +33,37 @@ public class MixinEntity implements StorageHolder {
     @Shadow
     private Level level;
     @Unique
-    private CombinedStorage storage;
+    private CombinedStorage eternalCore$storage;
 
     @Override
-    public @NotNull CompoundTag getStorageData() {
-        return this.storage.toNBT();
+    public @NotNull CompoundTag eternalCore$getStorage() {
+        return this.eternalCore$storage.toNBT();
     }
 
     @Nullable
     @Override
-    public <T extends Storage> T getStorage(StorageKey<T> storageKey) {
-        return (T) this.storage.get(storageKey.id);
+    public <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
+        return (T) this.eternalCore$storage.get(storageKey.id);
     }
 
     @Override
-    public void attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
-        this.storage.add(id, storage);
+    public void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+        this.eternalCore$storage.add(id, storage);
     }
 
     @Override
-    public @NotNull StorageType getStorageType() {
+    public @NotNull StorageType eternalCore$getStorageType() {
         return StorageType.ENTITY;
     }
 
     @Override
-    public @NotNull CombinedStorage getCombinedStorage() {
-        return this.storage;
+    public @NotNull CombinedStorage eternalCore$getCombinedStorage() {
+        return this.eternalCore$storage;
     }
 
     @Override
-    public void setCombinedStorage(@NotNull CombinedStorage storage) {
-        this.storage = storage;
+    public void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
+        this.eternalCore$storage = storage;
     }
 
     @Override
@@ -74,23 +74,23 @@ public class MixinEntity implements StorageHolder {
     @Inject(method = "<init>", at = @At("RETURN"))
     void initStorage(EntityType<?> entityType, Level level, CallbackInfo ci) {
         // Create empty storage
-        setCombinedStorage(new CombinedStorage(this));
+        eternalCore$setCombinedStorage(new CombinedStorage(this));
         // Fill storage with data
         StorageManager.initialStorageFilling(this);
     }
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER), cancellable = true)
     void saveStorage(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        if (this.storage != null) {
-            compound.put(STORAGE_TAG_KEY, this.storage.toNBT());
+        if (this.eternalCore$storage != null) {
+            compound.put(STORAGE_TAG_KEY, this.eternalCore$storage.toNBT());
         }
         cir.setReturnValue(compound);
     }
 
     @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", shift = At.Shift.AFTER))
     void loadStorage(CompoundTag compound, CallbackInfo ci) {
-        if (this.storage != null) {
-            this.storage.load(compound.getCompound(STORAGE_TAG_KEY));
+        if (this.eternalCore$storage != null) {
+            this.eternalCore$storage.load(compound.getCompound(STORAGE_TAG_KEY));
         }
 
     }
@@ -99,12 +99,12 @@ public class MixinEntity implements StorageHolder {
     void onTickSyncCheck(CallbackInfo ci) {
         if (this.level.isClientSide) return;
         this.level.getProfiler().push("eternalCoreSyncCheck");
-        if (this.storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
+        if (this.eternalCore$storage.isDirty()) StorageManager.syncTracking((Entity) (Object) this, true);
         this.level.getProfiler().pop();
     }
 
     @Override
-    public @NotNull <T extends Storage> Optional<@Nullable T> getStorageOptional(@Nullable StorageKey<@Nullable T> storageKey) {
-        return Optional.ofNullable(getStorage(storageKey));
+    public @NotNull <T extends Storage> Optional<T> eternalCore$getStorageOptional(@NotNull StorageKey<T> storageKey) {
+        return Optional.ofNullable(eternalCore$getStorage(storageKey));
     }
 }

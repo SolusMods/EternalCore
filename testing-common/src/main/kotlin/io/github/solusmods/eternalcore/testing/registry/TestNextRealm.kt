@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity
 
 class TestNextRealm(
     override val baseHealth: Double = 10.0,
-    override val baseQiRange: Pair<Float?, Float?>? = Pair(null, null),
+    override val baseQiRange: Pair<Float, Float> = Pair(0.0F, 0.0F),
     override val baseAttackDamage: Double = 5.0,
     override val baseAttackSpeed: Double = 1.0,
     override val knockBackResistance: Double = 1.0,
@@ -17,43 +17,43 @@ class TestNextRealm(
     override val coefficient: Double = 1.0,
 ) : Realm(Type.IV) {
     override fun getNextBreakthroughs(
-        instance: RealmInstance?,
-        living: LivingEntity?
-    ): MutableList<Realm?>? {
+        instance: RealmInstance,
+        living: LivingEntity
+    ): MutableList<Realm?> {
         TODO("Not yet implemented")
     }
 
     override fun getPreviousBreakthroughs(
-        instance: RealmInstance?,
-        living: LivingEntity?
-    ): MutableList<Realm?>? {
+        instance: RealmInstance,
+        living: LivingEntity
+    ): MutableList<Realm?> {
         return mutableListOf(RegistryTest.TEST_REALM.get())
     }
 
     override fun getDefaultBreakthrough(
-        instance: RealmInstance?,
-        living: LivingEntity?
+        instance: RealmInstance,
+        living: LivingEntity
     ): Realm? {
         TODO("Not yet implemented")
     }
 
     override fun getRealmStages(
-        instance: RealmInstance?,
-        living: LivingEntity?
-    ): MutableList<Stage?>? {
+        instance: RealmInstance,
+        living: LivingEntity
+    ): MutableList<Stage?> {
         TODO("Not yet implemented")
     }
 
     override fun passivelyFriendlyWith(
-        instance: RealmInstance?,
-        entity: LivingEntity?
+        instance: RealmInstance,
+        entity: LivingEntity
     ): Boolean {
         TODO("Not yet implemented")
     }
 
     override fun canFly(
-        instance: RealmInstance?,
-        living: LivingEntity?
+        instance: RealmInstance,
+        living: LivingEntity
     ): Boolean {
         TODO("Not yet implemented")
     }

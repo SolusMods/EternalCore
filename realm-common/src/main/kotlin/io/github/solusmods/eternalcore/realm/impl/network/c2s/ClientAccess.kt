@@ -7,9 +7,9 @@ import net.minecraft.world.entity.player.Player
 
 object ClientAccess {
 
-    fun handle(packet: SyncRealmStoragePayload, player: ServerPlayer?) {
-        player?.let { serverPlayer ->
-            serverPlayer.getStorageOptional(RealmStorage.key)
+    fun handle(packet: SyncRealmStoragePayload, player: ServerPlayer) {
+        player.let { serverPlayer ->
+            serverPlayer.`eternalCore$getStorageOptional`(RealmStorage.key!!)
                 .ifPresent { storage ->
                     packet.data?.let { data ->
                         storage.load(data)
@@ -22,7 +22,7 @@ object ClientAccess {
         player ?: return
 
         val storage = RealmAPI.getRealmFrom(player) ?: return
-        val realmOptional = storage.getRealm()
+        val realmOptional = storage.getRealmOptional()
 
         if (realmOptional.isEmpty) return
 

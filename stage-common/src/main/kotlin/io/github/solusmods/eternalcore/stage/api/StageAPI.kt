@@ -32,12 +32,12 @@ object StageAPI {
      */
     @JvmStatic
     fun getStageFrom(entity: LivingEntity): Stages? {
-        return entity.getStorage(StageStorage.key)
+        return entity.`eternalCore$getStorage`(StageStorage.key)
     }
 
     @JvmStatic
     fun getStorageOptional(entity: LivingEntity): Optional<StageStorage> {
-        return entity.getStorageOptional(StageStorage.key)
+        return entity.`eternalCore$getStorageOptional`(StageStorage.key!!)
     }
 
     /**
@@ -45,7 +45,7 @@ object StageAPI {
      */
     @JvmStatic
     fun getReachedStagesFrom(entity: LivingEntity): IReachedStages? {
-        return entity.getStorage(StageStorage.key)
+        return entity.`eternalCore$getStorage`(StageStorage.key)
     }
 
     /**

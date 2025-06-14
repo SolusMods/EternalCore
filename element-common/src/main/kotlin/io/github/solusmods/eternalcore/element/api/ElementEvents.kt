@@ -28,7 +28,7 @@ interface ElementEvents {
             instance: ElementInstance,
             owner: LivingEntity,
             advancement: Boolean,
-            notifyPlayer: Changeable<Boolean?>?,
+            notifyPlayer: Changeable<Boolean>?,
             elementMessage: Changeable<MutableComponent?>?
         ): EventResult
     }

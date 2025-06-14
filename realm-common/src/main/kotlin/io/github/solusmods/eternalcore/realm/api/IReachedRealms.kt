@@ -4,7 +4,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
 
 interface IReachedRealms {
-    val reachedRealms: MutableMap<ResourceLocation?, RealmInstance>
+    val reachedRealms: MutableMap<ResourceLocation, RealmInstance>
 
 
     fun addRealm(realmId: ResourceLocation, teleportToSpawn: Boolean?, component: MutableComponent? = null): Boolean {

@@ -10,7 +10,7 @@ import java.util.function.BiConsumer
 interface Abilities {
     fun markDirty()
 
-    val learnedAbilities: MutableCollection<AbilityInstance?>?
+    val learnedAbilities: MutableCollection<AbilityInstance>
 
     /**
      * Updates a ability instance and optionally synchronizes the change across the network.
@@ -19,7 +19,7 @@ interface Abilities {
      * @param updatedInstance The instance to update
      * @param sync If true, synchronizes the change to all clients/server
      */
-    fun updateAbility(updatedInstance: AbilityInstance?, sync: Boolean)
+    fun updateAbility(updatedInstance: AbilityInstance, sync: Boolean)
 
     fun learnAbility(abilityId: ResourceLocation): Boolean {
         return learnAbility(AbilityAPI.abilityRegistry!!.get(abilityId)!!.createDefaultInstance())
@@ -44,7 +44,7 @@ interface Abilities {
         )
     }
 
-    fun learnAbility(instance: AbilityInstance?, component: MutableComponent?): Boolean
+    fun learnAbility(instance: AbilityInstance, component: MutableComponent?): Boolean
 
     fun getAbility(abilityId: ResourceLocation): Optional<AbilityInstance?>?
 
@@ -52,9 +52,9 @@ interface Abilities {
         return getAbility(ability.registryName!!)
     }
 
-    fun forgetAbility(abilityId: ResourceLocation?, component: MutableComponent?)
+    fun forgetAbility(abilityId: ResourceLocation, component: MutableComponent?)
 
-    fun forgetAbility(abilityId: ResourceLocation?) {
+    fun forgetAbility(abilityId: ResourceLocation) {
         forgetAbility(abilityId, null)
     }
 
@@ -67,12 +67,12 @@ interface Abilities {
     }
 
     fun forgetAbility(instance: AbilityInstance, component: MutableComponent?) {
-        forgetAbility(instance.abilityId, component)
+        forgetAbility(instance.abilityId!!, component)
     }
 
     fun forgetAbility(instance: AbilityInstance) {
-        forgetAbility(instance.abilityId)
+        forgetAbility(instance.abilityId!!)
     }
 
-    fun forEachAbility(abilityInstanceConsumer: BiConsumer<AbilityStorage?, AbilityInstance?>?)
+    fun forEachAbility(abilityInstanceConsumer: BiConsumer<AbilityStorage, AbilityInstance>)
 }

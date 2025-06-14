@@ -2,7 +2,6 @@ package io.github.solusmods.eternalcore.realm.api
 
 import dev.architectury.registry.registries.RegistrySupplier
 import io.github.solusmods.eternalcore.stage.api.Stage
-import lombok.Getter
 import net.minecraft.ChatFormatting
 import net.minecraft.core.Holder
 import net.minecraft.nbt.CompoundTag
@@ -21,27 +20,27 @@ import net.minecraft.world.level.block.state.BlockState
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 
-open class RealmInstance(realm: Realm?) : Cloneable {
-    protected val realmRegistrySupplier: RegistrySupplier<Realm?> = RealmAPI.realmRegistry!!.delegate(RealmAPI.realmRegistry!!.getId(realm))
+open class RealmInstance(realm: Realm) : Cloneable {
+    protected val realmRegistrySupplier: RegistrySupplier<Realm> = RealmAPI.realmRegistry.delegate(RealmAPI.realmRegistry.getId(realm))
     private var tag: CompoundTag? = null
 
-    @Getter
+
     private var dirty = false
 
-    val realm: Realm?
-        /**
-         * Used to get the [Realm] type of this Instance.
-         */
+    /**
+     * Used to get the [Realm] type of this Instance.
+     */
+    val realm: Realm
         get() = realmRegistrySupplier.get()
 
-    val realmId: ResourceLocation?
-        get() = this.realmRegistrySupplier.getId()
+    val realmId: ResourceLocation
+        get() = this.realmRegistrySupplier.id
 
-    val rType: Type?
-        /**
-         * Used to get the type of this [RealmInstance].
-         */
-        get() = this.realm!!.type
+    /**
+     * Used to get the type of this [RealmInstance].
+     */
+    val rType: Type
+        get() =  this.realm.type
 
     /**
      * Used to create an exact copy of the current instance.
@@ -102,8 +101,6 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     }
 
     override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
         val instance = o as RealmInstance
         return this.realmId == instance.realmId &&
                 realmRegistrySupplier.getRegistryKey() == instance.realmRegistrySupplier.getRegistryKey()
@@ -121,13 +118,13 @@ open class RealmInstance(realm: Realm?) : Cloneable {
         /**
          * Used to get the [MutableComponent] name of this spiritual_root for translation.
          */
-        get() = this.realm!!.name
+        get() = this.realm.name
 
     fun getChatDisplayName(withDescription: Boolean): MutableComponent {
         var style = Style.EMPTY.withColor(ChatFormatting.GRAY)
         if (withDescription) {
             val hoverMessage = this.displayName?.append("\n")
-            hoverMessage?.append(this.realm!!.name!!.withStyle(ChatFormatting.GRAY))
+            hoverMessage?.append(this.realm.name!!.withStyle(ChatFormatting.GRAY))
             style = style.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverMessage))
         }
 
@@ -138,70 +135,70 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     }
 
     val trackedName: MutableComponent?
-        get() = this.realm!!.trackedName
+        get() = this.realm.trackedName
 
     val baseHealth: Double
         /**
          * Return base health for this [RealmInstance]
          */
-        get() = this.realm!!.baseHealth
+        get() = this.realm.baseHealth
 
-    val baseQiRange: Pair<Float?, Float?>?
+    val baseQiRange: Pair<Float, Float>
         /**
          * Return [Pair] of min and max Qi for this [RealmInstance]
          */
-        get() = this.realm!!.baseQiRange
+        get() = this.realm.baseQiRange
 
     val baseAttackDamage: Double
         /**
          * Return base attack damage for this [RealmInstance]
          */
-        get() = this.realm!!.baseAttackDamage
+        get() = this.realm.baseAttackDamage
 
     val baseAttackSpeed: Double
         /**
          * Return base attack speed for this [RealmInstance]
          */
-        get() = this.realm!!.baseAttackSpeed
+        get() = this.realm.baseAttackSpeed
 
     val knockBackResistance: Double
         /**
          * Return knock back Resistance for this [RealmInstance]
          */
-        get() = this.realm!!.knockBackResistance
+        get() = this.realm.knockBackResistance
 
     val jumpHeight: Double
         /**
          * Return jump height for this [RealmInstance]
          */
-        get() = this.realm!!.jumpHeight
+        get() = this.realm.jumpHeight
 
     val movementSpeed: Double
         /**
          * Return movement speed for this [RealmInstance]
          */
-        get() = this.realm!!.movementSpeed
+        get() = this.realm.movementSpeed
 
     val sprintSpeed: Double
         /**
          * Return sprint speed for this [RealmInstance]
          */
-        get() = this.realm!!.sprintSpeed
+        get() = this.realm.sprintSpeed
 
     val minBaseQi: Float
         /**
          * Return min Qi from [.getBaseQiRange] for this [RealmInstance]
          */
-        get() = this.realm!!.minBaseQi
+        get() = this.realm.minBaseQi
 
     val maxBaseQi: Float
         /**
          * Return max Qi from [.getBaseQiRange] for this [RealmInstance]
          */
-        get() = this.realm!!.maxBaseQi
+        get() = this.realm.maxBaseQi
 
     val coefficient: Double
-        get() = this.realm!!.coefficient
+        get() = this.realm.coefficient
 
     /**
      * Returns a list of all [Realm] that this Realm can break through into.
@@ -209,8 +206,8 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] breakthrough this spiritual_root.
      */
-    fun getNextBreakthroughs(living: LivingEntity?): MutableList<Realm?>? {
-        return this.realm!!.getNextBreakthroughs(this, living)
+    fun getNextBreakthroughs(living: LivingEntity): MutableList<Realm?> {
+        return this.realm.getNextBreakthroughs(this, living)
     }
 
     /**
@@ -219,7 +216,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] being this spiritual_root.
      */
-    fun getPreviousBreakthroughs(living: LivingEntity?): MutableList<Realm?>? {
+    fun getPreviousBreakthroughs(living: LivingEntity): MutableList<Realm?> {
         return this.realm!!.getPreviousBreakthroughs(this, living)
     }
 
@@ -229,7 +226,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] breakthrough this spiritual_root.
      */
-    fun getDefaultBreakthrough(living: LivingEntity?): Realm? {
+    fun getDefaultBreakthrough(living: LivingEntity): Realm? {
         return this.realm!!.getDefaultBreakthrough(this, living)
     }
 
@@ -239,7 +236,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] being this spiritual_root.
      */
-    fun getRealmStages(living: LivingEntity?): MutableList<Stage?>? {
+    fun getRealmStages(living: LivingEntity): MutableList<Stage?>? {
         return this.realm!!.getRealmStages(this, living)
     }
 
@@ -248,7 +245,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] sets to this spiritual_root.
      */
-    fun onSet(living: LivingEntity?) {
+    fun onSet(living: LivingEntity) {
         this.realm!!.onSet(this, living)
     }
 
@@ -257,7 +254,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] reach this Realm.
      */
-    fun onReach(living: LivingEntity?) {
+    fun onReach(living: LivingEntity) {
         this.realm!!.onReach(this, living)
     }
 
@@ -266,7 +263,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] track on GUI this Realm.
      */
-    fun onTrack(living: LivingEntity?) {
+    fun onTrack(living: LivingEntity) {
         this.realm!!.onTrack(this, living)
     }
 
@@ -275,7 +272,7 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param entity Affected [LivingEntity] breakthrough this Realm.
      */
-    fun onBreakthrough(entity: LivingEntity?) {
+    fun onBreakthrough(entity: LivingEntity) {
         this.realm!!.onBreakthrough(this, entity)
     }
 
@@ -298,10 +295,10 @@ open class RealmInstance(realm: Realm?) : Cloneable {
     }
 
     fun createModifiers(entity: LivingEntity) {
-        this.realm!!.createModifiers(this, 0, (java.util.function.BiConsumer { attributeHolder: Holder<Attribute?>?, attributeModifier: AttributeModifier? ->
+        this.realm.createModifiers(this, 0) { attributeHolder, attributeModifier ->
             val instance = entity.getAttribute(attributeHolder)
             instance?.addOrReplacePermanentModifier(attributeModifier)
-        }))
+        }
     }
 
     /**
@@ -311,16 +308,16 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param player Affected [LivingEntity] being this spiritual_root.
      */
-    fun getRespawnDimension(player: LivingEntity?): com.mojang.datafixers.util.Pair<ResourceKey<Level?>?, BlockState?>? {
-        return this.realm!!.getRespawnDimension(this, player)
+    fun getRespawnDimension(player: LivingEntity): com.mojang.datafixers.util.Pair<ResourceKey<Level?>?, BlockState?>? {
+        return this.realm.getRespawnDimension(this, player)
     }
 
-    fun passivelyFriendlyWith(entity: LivingEntity?): Boolean {
-        return this.realm!!.passivelyFriendlyWith(this, entity)
+    fun passivelyFriendlyWith(entity: LivingEntity): Boolean {
+        return this.realm.passivelyFriendlyWith(this, entity)
     }
 
-    fun canFly(entity: LivingEntity?): Boolean {
-        return this.realm!!.canFly(this, entity)
+    fun canFly(entity: LivingEntity): Boolean {
+        return this.realm.canFly(this, entity)
     }
 
     /**
@@ -328,8 +325,8 @@ open class RealmInstance(realm: Realm?) : Cloneable {
      *
      * @param living Affected [LivingEntity] being this Realm.
      */
-    fun onTick(living: LivingEntity?) {
-        this.realm!!.onTick(this, living)
+    fun onTick(living: LivingEntity) {
+        this.realm.onTick(this, living)
     }
 
 
@@ -354,10 +351,10 @@ open class RealmInstance(realm: Realm?) : Cloneable {
          * The [CompoundTag] has to be created though [RealmInstance.toNBT]
          */
         @Throws(NullPointerException::class)
-        fun fromNBT(tag: CompoundTag?): RealmInstance {
-            val location = ResourceLocation.tryParse(tag!!.getString(REALM_KEY))
-            val realm = RealmAPI.realmRegistry!!.get(location)
-            if (realm == null) throw NullPointerException("No realm found for location: " + location)
+        @JvmStatic
+        fun fromNBT(tag: CompoundTag): RealmInstance {
+            val location = ResourceLocation.tryParse(tag.getString(REALM_KEY))
+            val realm = RealmAPI.realmRegistry.get(location) ?: throw NullPointerException("No realm found for location: $location")
             val instance = realm.createDefaultInstance()
             instance.deserialize(tag)
             return instance

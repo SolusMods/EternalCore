@@ -16,8 +16,8 @@ object ClientAccess {
     fun handle(packet: RequestAbilityActivationPacket, player: Player?) {
         if (player == null) return
         val storage = AbilityAPI.getAbilitiesFrom(player)
-        storage!!.getAbility(packet.abilityId!!)?.ifPresent { instance: AbilityInstance? ->
-            val changeable = Changeable.of<AbilityInstance?>(instance)
+        storage!!.getAbility(packet.abilityId!!)?.ifPresent { instance: AbilityInstance ->
+            val changeable = Changeable.of(instance)
             if (AbilityEvents.Companion.ACTIVATE_ABILITY.invoker()
                 !!.activateAbility(changeable, player, packet.keyNumber, packet.mode)!!.isFalse
             ) return@ifPresent
@@ -57,11 +57,10 @@ object ClientAccess {
 
         val storage = AbilityAPI.getAbilitiesFrom(player)
         for (skillId in packet.abilityList!!) {
-            storage!!.getAbility(skillId!!)?.ifPresent { abilityInstance: AbilityInstance? ->
-                val skillChangeable = Changeable.of<AbilityInstance?>(abilityInstance)
-                val deltaChangeable = Changeable.of<Double?>(packet.delta)
-                if (AbilityEvents.Companion.ABILITY_SCROLL.invoker()!!.scroll(skillChangeable, player, deltaChangeable)
-                    !!.isFalse
+            storage!!.getAbility(skillId!!)?.ifPresent { abilityInstance: AbilityInstance ->
+                val skillChangeable = Changeable.of<AbilityInstance>(abilityInstance)
+                val deltaChangeable = Changeable.of<Double>(packet.delta)
+                if (AbilityEvents.Companion.ABILITY_SCROLL.invoker()!!.scroll(skillChangeable, player, deltaChangeable).isFalse
                 ) return@ifPresent
 
                 val abilityInstance1 = skillChangeable.get()
@@ -78,10 +77,10 @@ object ClientAccess {
     fun handle(packet: RequestAbilityTogglePacket, player: Player?) {
         if (player == null) return
         val storage = AbilityAPI.getAbilitiesFrom(player)
-        storage!!.getAbility(packet.abilityId!!)?.ifPresent( { abilityInstance: AbilityInstance? ->
-            val changeable = Changeable.of<AbilityInstance?>(abilityInstance)
+        storage!!.getAbility(packet.abilityId!!)?.ifPresent { abilityInstance: AbilityInstance ->
+            val changeable = Changeable.of(abilityInstance)
             if (AbilityEvents.Companion.TOGGLE_ABILITY.invoker()!!.toggleAbility(changeable, player)
-                    !!.isFalse
+                !!.isFalse
             ) return@ifPresent
 
             val skill = changeable.get()
@@ -96,6 +95,6 @@ object ClientAccess {
                 skill.onToggleOn(player)
             }
             storage.markDirty()
-        })
+        }
     }
 }

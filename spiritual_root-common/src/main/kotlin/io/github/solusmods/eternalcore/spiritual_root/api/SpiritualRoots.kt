@@ -26,14 +26,14 @@ interface SpiritualRoots {
 
     fun sync()
 
-    val gainedRoots: MutableCollection<SpiritualRootInstance?>?
+    val gainedRoots: MutableCollection<SpiritualRootInstance>
 
     /**
      * Отримує колекцію всіх духовних коренів, якими володіє сутність.
      *
      * @return Колекція екземплярів духовних коренів
      */
-    val spiritualRoots: MutableMap<ResourceLocation?, SpiritualRootInstance>
+    val spiritualRoots: MutableMap<ResourceLocation, SpiritualRootInstance>
 
     /**
      * Додає духовний корінь до сутності за ідентифікатором.
@@ -44,8 +44,7 @@ interface SpiritualRoots {
      */
 
     fun addSpiritualRoot(spiritualRootId: ResourceLocation, notify: Boolean, component: MutableComponent? = null): Boolean {
-        val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry.get(spiritualRootId)
-        if (spiritualRoot == null) return false
+        val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry.get(spiritualRootId) ?: return false
         return addSpiritualRoot(spiritualRoot.createDefaultInstance(), false, notify, component)
     }
 
@@ -100,9 +99,9 @@ interface SpiritualRoots {
      * @param updatedInstance The instance to update
      * @param sync If true, synchronizes the change to all clients/server
      */
-    fun updateRoot(updatedInstance: SpiritualRootInstance?, sync: Boolean)
+    fun updateRoot(updatedInstance: SpiritualRootInstance, sync: Boolean)
 
-    fun forEachRoot(biConsumer: BiConsumer<SpiritualRootStorage?, SpiritualRootInstance?>?)
+    fun forEachRoot(biConsumer: BiConsumer<SpiritualRootStorage, SpiritualRootInstance>)
 
     fun forgetRoot(spiritualRootId: ResourceLocation, component: MutableComponent?)
 
@@ -119,17 +118,16 @@ interface SpiritualRoots {
     }
 
     fun forgetRoot(spiritualRootInstance: SpiritualRootInstance, component: MutableComponent?) {
-        forgetRoot(spiritualRootInstance.spiritualRootId!!, component)
+        forgetRoot(spiritualRootInstance.spiritualRootId, component)
     }
 
     fun forgetRoot(spiritualRootInstance: SpiritualRootInstance) {
-        forgetRoot(spiritualRootInstance.spiritualRootId!!)
+        forgetRoot(spiritualRootInstance.spiritualRootId)
     }
 
 
     fun advanceSpiritualRoot(spiritualRootId: ResourceLocation, component: MutableComponent? = null): Boolean {
-        val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry.get(spiritualRootId)
-        if (spiritualRoot == null) return false
+        val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry.get(spiritualRootId) ?: return false
         return addSpiritualRoot(spiritualRoot.createDefaultInstance(), advance = true, notify = false)
     }
 

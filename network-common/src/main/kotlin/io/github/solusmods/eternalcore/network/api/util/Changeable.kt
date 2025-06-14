@@ -32,8 +32,8 @@ open class Changeable<T> protected constructor(private val original: T?) {
 
     companion object {
         @JvmStatic
-        fun <T> of(value: T?): Changeable<T?> {
-            return Changeable<T?>(value)
+        fun <T> of(value: T): Changeable<T> {
+            return Changeable<T>(value)
         }
     }
 }

@@ -27,7 +27,7 @@ object RealmRegistry {
         PlayerEvent.PLAYER_RESPAWN.register { newPlayer: ServerPlayer, conqueredEnd: Boolean, removalReason: Entity.RemovalReason? ->
             val optional = RealmAPI.getRealmFrom(
                 newPlayer
-            )!!.getRealm()
+            )!!.getRealmOptional()
             if (optional.isEmpty) return@register
 
             val instance = optional.get()

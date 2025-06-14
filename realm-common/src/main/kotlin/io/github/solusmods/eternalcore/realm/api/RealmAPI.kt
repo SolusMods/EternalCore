@@ -6,9 +6,6 @@ import dev.architectury.utils.Env
 import io.github.solusmods.eternalcore.realm.impl.RealmRegistry
 import io.github.solusmods.eternalcore.realm.impl.RealmStorage
 import io.github.solusmods.eternalcore.realm.impl.network.InternalRealmPacketActions
-import io.github.solusmods.eternalcore.storage.api.Storage
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -37,7 +34,7 @@ object RealmAPI {
      */
     @JvmStatic
     fun getRealmFrom(entity: LivingEntity): Realms? {
-        return entity.getStorage(RealmStorage.key)
+        return entity.`eternalCore$getStorage`(RealmStorage.key)
     }
 
     /**
@@ -45,12 +42,12 @@ object RealmAPI {
      */
     @JvmStatic
     fun getReachedRealmsFrom(entity: LivingEntity): IReachedRealms? {
-        return entity.getStorage(RealmStorage.key)
+        return entity.`eternalCore$getStorage`(RealmStorage.key)
     }
 
     @JvmStatic
     fun getStorageOptional(entity: LivingEntity): Optional<RealmStorage> {
-        return entity.getStorageOptional(RealmStorage.key)
+        return entity.`eternalCore$getStorageOptional`(RealmStorage.key!!)
     }
 
     /**

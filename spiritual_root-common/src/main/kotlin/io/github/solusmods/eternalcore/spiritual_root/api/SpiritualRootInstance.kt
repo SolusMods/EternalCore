@@ -44,7 +44,7 @@ import java.util.*
  *
  * @see RootLevels
  */
-open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
+open class SpiritualRootInstance(spiritualRoot: SpiritualRoot) : Cloneable {
     //region Core Fields
     /**
      * Registry supplier for obtaining the spiritual root type.
@@ -54,8 +54,8 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
      * during mod reloading.
      *
      */
-    protected val spiritualRootRegistrySupplier: RegistrySupplier<SpiritualRoot?> = SpiritualRootAPI.spiritualRootRegistry!!
-        .delegate(SpiritualRootAPI.spiritualRootRegistry!!.getId(spiritualRoot))
+    protected val spiritualRootRegistrySupplier: RegistrySupplier<SpiritualRoot> = SpiritualRootAPI.spiritualRootRegistry
+        .delegate(SpiritualRootAPI.spiritualRootRegistry.getId(spiritualRoot))
 
     /**
      * Strength (purity) of the spiritual root from 0.0 to 1.0.
@@ -249,7 +249,7 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
 
     //endregion
     //region Basic Information Access Methods
-    val spiritualRoot: SpiritualRoot?
+    val spiritualRoot: SpiritualRoot
         /**
          * Gets the spiritual root type for this instance.
          *
@@ -278,7 +278,7 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
          */
         get() = spiritualRootRegistrySupplier.get()
 
-        val spiritualRootId: ResourceLocation?
+        val spiritualRootId: ResourceLocation
         /**
          * Gets the identifier of the spiritual root type.
          *
@@ -311,91 +311,81 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
         get() = this.spiritualRootRegistrySupplier.id
 
 
-    var displayName: MutableComponent? = null
-        /**
-         * Gets the localized name of the spiritual root for display.
-         *
-         *
-         * The name is automatically localized according to the client's language
-         * and can be used in the user interface.
-         *
-         *
-         *
-         * **Example Usage:**
-         *
-         * <pre>`SpiritualRootInstance instance = // ... get instance
-         * MutableComponent displayName = instance.getDisplayName();
-         *
-         * // Display in chat
-         * player.sendSystemMessage(Component.literal("Your spiritual root: ")
-         * .append(displayName.withStyle(ChatFormatting.GOLD)));
-         *
-         * // Using in GUI
-         * tooltip.add(Component.literal("Type: ").append(displayName));
-         *
-         * // Creating complex message
-         * MutableComponent message = Component.literal("Root ")
-         * .append(displayName.withStyle(ChatFormatting.AQUA))
-         * .append(" reached level ")
-         * .append(Component.literal(String.valueOf(instance.getLevel().getLevel()))
-         * .withStyle(ChatFormatting.YELLOW));
-        `</pre> *
-         *
-         * @return Localized component with the spiritual root name
-         */
-        get() = this.spiritualRoot!!.name
-        set(value) {
-            field = value
-            markDirty()
-        }
+    /**
+     * Gets the localized name of the spiritual root for display.
+     *
+     *
+     * The name is automatically localized according to the client's language
+     * and can be used in the user interface.
+     *
+     *
+     *
+     * **Example Usage:**
+     *
+     * <pre>`SpiritualRootInstance instance = // ... get instance
+     * MutableComponent displayName = instance.getDisplayName();
+     *
+     * // Display in chat
+     * player.sendSystemMessage(Component.literal("Your spiritual root: ")
+     * .append(displayName.withStyle(ChatFormatting.GOLD)));
+     *
+     * // Using in GUI
+     * tooltip.add(Component.literal("Type: ").append(displayName));
+     *
+     * // Creating complex message
+     * MutableComponent message = Component.literal("Root ")
+     * .append(displayName.withStyle(ChatFormatting.AQUA))
+     * .append(" reached level ")
+     * .append(Component.literal(String.valueOf(instance.getLevel().getLevel()))
+     * .withStyle(ChatFormatting.YELLOW));
+    `</pre> *
+     *
+     * @return Localized component with the spiritual root name
+     */
+    var displayName: MutableComponent? = this.spiritualRoot.name
 
-    var type: RootType? = null
-        /**
-         * Gets the type (category) of this spiritual root.
-         *
-         *
-         * The type determines rarity, potential, and special characteristics of the root.
-         *
-         *
-         *
-         * **Example Usage:**
-         *
-         * <pre>`SpiritualRootInstance instance = // ... get instance
-         * RootType type = instance.getType();
-         *
-         * // Setting bonuses based on type
-         * float experienceMultiplier = switch (type) {
-         * case COMMON -> 1.0f;
-         * case RARE -> 1.2f;
-         * case EPIC -> 1.5f;
-         * case LEGENDARY -> 2.0f;
-         * case MYTHIC -> 3.0f;
-         * };
-         *
-         * // Determining display color
-         * ChatFormatting color = switch (type) {
-         * case COMMON -> ChatFormatting.WHITE;
-         * case RARE -> ChatFormatting.BLUE;
-         * case EPIC -> ChatFormatting.DARK_PURPLE;
-         * case LEGENDARY -> ChatFormatting.GOLD;
-         * case MYTHIC -> ChatFormatting.DARK_RED;
-         * };
-         *
-         * // Check evolution availability
-         * if (type.ordinal() >= RootType.EPIC.ordinal()) {
-         * // Only epic and higher roots can evolve
-         * SpiritualRoot evolved = instance.getFirstDegree(player);
-         * }
-        `</pre> *
-         *
-         * @return The spiritual root type
-         * @see RootType
-         */
-        get() = this.spiritualRoot!!.type
-        set(value) {
-            field = value
-            markDirty()
-        }
+    /**
+     * Gets the type (category) of this spiritual root.
+     *
+     *
+     * The type determines rarity, potential, and special characteristics of the root.
+     *
+     *
+     *
+     * **Example Usage:**
+     *
+     * <pre>`SpiritualRootInstance instance = // ... get instance
+     * RootType type = instance.getType();
+     *
+     * // Setting bonuses based on type
+     * float experienceMultiplier = switch (type) {
+     * case COMMON -> 1.0f;
+     * case RARE -> 1.2f;
+     * case EPIC -> 1.5f;
+     * case LEGENDARY -> 2.0f;
+     * case MYTHIC -> 3.0f;
+     * };
+     *
+     * // Determining display color
+     * ChatFormatting color = switch (type) {
+     * case COMMON -> ChatFormatting.WHITE;
+     * case RARE -> ChatFormatting.BLUE;
+     * case EPIC -> ChatFormatting.DARK_PURPLE;
+     * case LEGENDARY -> ChatFormatting.GOLD;
+     * case MYTHIC -> ChatFormatting.DARK_RED;
+     * };
+     *
+     * // Check evolution availability
+     * if (type.ordinal() >= RootType.EPIC.ordinal()) {
+     * // Only epic and higher roots can evolve
+     * SpiritualRoot evolved = instance.getFirstDegree(player);
+     * }
+    `</pre> *
+     *
+     * @return The spiritual root type
+     * @see RootType
+     */
+    var type: RootType = this.spiritualRoot.type
 
     /**
      * Checks if this spiritual root belongs to the specified tag.
@@ -1553,12 +1543,10 @@ open class SpiritualRootInstance(spiritualRoot: SpiritualRoot?) : Cloneable {
          * @see .toNBT
          */
         @Throws(NullPointerException::class)
-        fun fromNBT(tag: CompoundTag?): SpiritualRootInstance {
-            val location = ResourceLocation.tryParse(tag!!.getString(KEY))
-            val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry!!.get(location)
-            if (spiritualRoot == null) {
-                throw NullPointerException("No spiritualRoot found for location: " + location)
-            }
+        @JvmStatic
+        fun fromNBT(tag: CompoundTag): SpiritualRootInstance {
+            val location = ResourceLocation.tryParse(tag.getString(KEY))
+            val spiritualRoot = SpiritualRootAPI.spiritualRootRegistry.get(location) ?: throw NullPointerException("No spiritualRoot found for location: $location")
             val instance = spiritualRoot.createDefaultInstance()
             instance.deserialize(tag)
             return instance

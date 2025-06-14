@@ -7,14 +7,14 @@ import java.util.*
 interface Stages {
     val stage: StageInstance?
 
-    fun getStage(): Optional<StageInstance>
+    fun getStageOptional(): Optional<StageInstance>
 
     fun setStage(stageId: ResourceLocation, notify: Boolean): Boolean {
         return setStage(stageId, notify, null)
     }
 
     fun setStage(stageId: ResourceLocation, notify: Boolean, component: MutableComponent?): Boolean {
-        val stage = StageAPI.stageRegistry!!.get(stageId)
+        val stage = StageAPI.stageRegistry.get(stageId)
         if (stage == null) return false
         return setStage(stage.createDefaultInstance(), false, notify, component)
     }

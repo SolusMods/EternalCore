@@ -2,11 +2,9 @@ package io.github.solusmods.eternalcore.stage.impl
 
 import dev.architectury.event.EventResult
 import io.github.solusmods.eternalcore.entity.api.EntityEvents
-import io.github.solusmods.eternalcore.entity.api.EntityEvents.LivingTickEvent
 import io.github.solusmods.eternalcore.network.api.util.Changeable
 import io.github.solusmods.eternalcore.stage.EternalCoreStage
 import io.github.solusmods.eternalcore.stage.api.*
-import io.github.solusmods.eternalcore.stage.api.StageEvents.StageTickEvent
 import io.github.solusmods.eternalcore.stage.impl.network.InternalStagePacketActions
 import io.github.solusmods.eternalcore.storage.EternalCoreStorage
 import io.github.solusmods.eternalcore.storage.api.Storage
@@ -22,7 +20,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * Система зберігання та управління стадіями гравців.
@@ -43,7 +40,8 @@ open class StageStorage
 protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReachedStages {
     /** Поточна активна стадія гравця  */
     override var stage: StageInstance? = null
-    override fun getStage(): Optional<StageInstance> {
+
+    override fun getStageOptional(): Optional<StageInstance> {
         return Optional.ofNullable(stage)
     }
 
@@ -73,12 +71,12 @@ protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReached
         val notify: Changeable<Boolean?>? = Changeable.of(notify)
         val result: EventResult? = StageEvents.Companion.REACH_STAGE.invoker().reach(
             instance,
-            this.owner!!, breakthrough, notify, stageMessage
+            this.owner, breakthrough, notify, stageMessage
         )
         if (result!!.isFalse) return false
 
         val owner = this.owner
-        if (stageMessage.isPresent) this.owner?.sendSystemMessage(stageMessage.get()!!)
+        if (stageMessage.isPresent) this.owner.sendSystemMessage(stageMessage.get()!!)
         instance.markDirty()
         instance.onReach(owner)
         reachedStages.put(instance.stageId, instance)
@@ -131,13 +129,13 @@ protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReached
      * @param data NBT тег для зберігання даних
      */
     override fun save(data: CompoundTag) {
-        if (!getStage().isEmpty)
+        if (!getStageOptional().isEmpty)
             data.put(STAGE_KEY, this.stage!!.toNBT())
         val stageTag = ListTag()
-        reachedStages.values.forEach(Consumer { instance: StageInstance ->
+        reachedStages.values.forEach { instance: StageInstance ->
             stageTag.add(instance.toNBT())
             instance.resetDirty()
-        })
+        }
         data.put(REACHED_STAGES_KEY, stageTag)
     }
 
@@ -150,11 +148,11 @@ protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReached
      */
     override fun load(data: CompoundTag) {
         if (data.contains(STAGE_KEY, 10)) {
-            stage = StageInstance.Companion.fromNBT(data.getCompound(STAGE_KEY))
+            stage = StageInstance.fromNBT(data.getCompound(STAGE_KEY))
         }
         for (tag in data.getList(REACHED_STAGES_KEY, Tag.TAG_COMPOUND.toInt())) {
             try {
-                val instance: StageInstance = StageInstance.Companion.fromNBT(tag as CompoundTag)
+                val instance: StageInstance = StageInstance.fromNBT(tag as CompoundTag)
                 this.reachedStages.put(instance.stageId, instance)
             } catch (e: Exception) {
                 EternalCoreStorage.LOG.error("Failed to load stage from NBT", e)
@@ -218,7 +216,7 @@ protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReached
                         stage.onTick(entity)
                     }
             }
-            StageEvents.Companion.STAGE_POST_TICK.register { instance: StageInstance, owner: LivingEntity ->
+            StageEvents.STAGE_POST_TICK.register { instance: StageInstance, owner: LivingEntity ->
                 if (instance.getEffect(owner)!!.isEmpty) return@register
                 val effectInstance = instance.getEffect(owner)!!.get()
                 if (!owner.hasEffect(effectInstance!!.effect)) owner.addEffect(effectInstance)

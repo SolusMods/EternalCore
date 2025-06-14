@@ -32,7 +32,7 @@ class CombinedStorage(val holder: StorageHolder) {
         entriesTag.forEach { tagElement ->
             val entryTag = tagElement as CompoundTag
             val id = ResourceLocation.parse(entryTag.getString(STORAGE_ID_KEY))
-            val storage = StorageManager.constructStorageFor(holder.getStorageType(), id, holder)
+            val storage = StorageManager.constructStorageFor(holder.`eternalCore$getStorageType`(), id, holder)
 
             if (storage == null) {
                 EternalCoreStorage.LOG.warn(

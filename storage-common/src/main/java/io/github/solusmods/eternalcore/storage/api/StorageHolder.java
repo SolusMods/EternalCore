@@ -36,7 +36,7 @@ public interface StorageHolder {
      * @throws AssertionError якщо метод не реалізовано
      */
     @NotNull
-    default CompoundTag getStorageData() {
+    default CompoundTag eternalCore$getStorage() {
         throw new AssertionError();
     }
 
@@ -53,7 +53,7 @@ public interface StorageHolder {
      * @throws AssertionError якщо метод не реалізовано
      */
     @Nullable
-    default <T extends Storage> T getStorage(StorageKey<T> storageKey) {
+    default <T extends Storage> T eternalCore$getStorage(StorageKey<T> storageKey) {
         throw new AssertionError();
     }
 
@@ -69,8 +69,8 @@ public interface StorageHolder {
      * @return Optional, що містить сховище вказаного типу, або порожній Optional
      */
     @NotNull
-    default <T extends Storage> Optional<T> getStorageOptional(StorageKey<T> storageKey) {
-        return Optional.ofNullable(this.getStorage(storageKey));
+    default <T extends Storage> Optional<T> eternalCore$getStorageOptional(@NotNull StorageKey<T> storageKey) {
+        return Optional.ofNullable(this.eternalCore$getStorage(storageKey));
     }
 
     /**
@@ -82,18 +82,18 @@ public interface StorageHolder {
      *
      * @param update Якщо true, надсилає лише зміни; якщо false - повний стан сховища
      */
-    default void sync(boolean update) {
+    default void eternalCore$sync(boolean update) {
         StorageManager.syncTracking(this, update);
     }
 
     /**
      * Синхронізує повний стан сховища з усіма гравцями, що відстежують цей об'єкт.
      * <p>
-     * Це зручний метод, що викликає {@link #sync(boolean)} з параметром false.
+     * Це зручний метод, що викликає {@link #eternalCore$sync(boolean)} з параметром false.
      * </p>
      */
-    default void sync() {
-        this.sync(false);
+    default void eternalCore$sync() {
+        this.eternalCore$sync(false);
     }
 
     /**
@@ -105,7 +105,7 @@ public interface StorageHolder {
      *
      * @param target Цільовий гравець для синхронізації
      */
-    default void sync(@NotNull ServerPlayer target) {
+    default void eternalCore$sync(@NotNull ServerPlayer target) {
         StorageManager.syncTarget(this, target);
     }
 
@@ -120,7 +120,7 @@ public interface StorageHolder {
      * @param storage Сховище для приєднання
      * @throws AssertionError якщо метод не реалізовано
      */
-    default void attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
+    default void eternalCore$attachStorage(@NotNull ResourceLocation id, @NotNull Storage storage) {
         throw new AssertionError();
     }
 
@@ -135,7 +135,7 @@ public interface StorageHolder {
      * @throws AssertionError якщо метод не реалізовано
      */
     @NotNull
-    default StorageType getStorageType() {
+    default StorageType eternalCore$getStorageType() {
         throw new AssertionError();
     }
 
@@ -150,7 +150,7 @@ public interface StorageHolder {
      * @throws AssertionError якщо метод не реалізовано
      */
     @NotNull
-    default CombinedStorage getCombinedStorage() {
+    default CombinedStorage eternalCore$getCombinedStorage() {
         throw new AssertionError();
     }
 
@@ -164,7 +164,7 @@ public interface StorageHolder {
      * @param storage Комбіноване сховище для встановлення
      * @throws AssertionError якщо метод не реалізовано
      */
-    default void setCombinedStorage(@NotNull CombinedStorage storage) {
+    default void eternalCore$setCombinedStorage(@NotNull CombinedStorage storage) {
         throw new AssertionError();
     }
 

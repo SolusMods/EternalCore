@@ -11,14 +11,9 @@ import io.github.solusmods.eternalcore.abilities.api.Abilities
 import io.github.solusmods.eternalcore.abilities.api.Ability
 import io.github.solusmods.eternalcore.abilities.api.AbilityAPI
 import io.github.solusmods.eternalcore.abilities.api.AbilityEvents
-import io.github.solusmods.eternalcore.abilities.api.AbilityEvents.AbilityDamageCalculationEvent
 import io.github.solusmods.eternalcore.entity.api.EntityEvents
-import io.github.solusmods.eternalcore.entity.api.EntityEvents.LivingEffectAddedEvent
-import io.github.solusmods.eternalcore.entity.api.EntityEvents.ProjectileHitEvent
 import io.github.solusmods.eternalcore.entity.api.ProjectileHitResult
 import io.github.solusmods.eternalcore.network.api.util.Changeable
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation

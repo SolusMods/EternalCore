@@ -11,107 +11,107 @@ import net.minecraft.world.entity.LivingEntity
 interface AbilityEvents {
     fun interface UnlockAbilityEvent {
         fun unlockAbility(
-            instance: AbilityInstance?,
-            owner: LivingEntity?,
+            instance: AbilityInstance,
+            owner: LivingEntity,
             unlockMessage: Changeable<MutableComponent?>?
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface RemoveAbilityEvent {
         fun removeAbility(
-            instance: AbilityInstance?,
-            owner: LivingEntity?,
+            instance: AbilityInstance,
+            owner: LivingEntity,
             forgetMessage: Changeable<MutableComponent?>?
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface AbilityActivationEvent {
         fun activateAbility(
-            abilityInstance: Changeable<AbilityInstance?>?,
-            owner: LivingEntity?,
+            abilityInstance: Changeable<AbilityInstance>,
+            owner: LivingEntity,
             keyNumber: Int,
             mode: Int
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface AbilityReleaseEvent {
         fun releaseAbility(
-            abilityInstance: Changeable<AbilityInstance?>?,
-            owner: LivingEntity?,
+            abilityInstance: Changeable<AbilityInstance>,
+            owner: LivingEntity,
             keyNumber: Int,
             mode: Int,
             heldTicks: Int
-        ): EventResult?
+        ): EventResult
     }
 
     fun interface AbilityToggleEvent {
-        fun toggleAbility(abilityInstance: Changeable<AbilityInstance?>?, owner: LivingEntity?): EventResult?
+        fun toggleAbility(abilityInstance: Changeable<AbilityInstance>, owner: LivingEntity): EventResult
     }
 
     fun interface AbilityScrollEvent {
         fun scroll(
-            abilityInstance: Changeable<AbilityInstance?>?,
-            owner: LivingEntity?,
-            delta: Changeable<Double?>?
-        ): EventResult?
+            abilityInstance: Changeable<AbilityInstance>,
+            owner: LivingEntity,
+            delta: Changeable<Double>
+        ): EventResult
     }
 
     fun interface AbilityScrollClientEvent {
-        fun scroll(instance: AbilityInstance?, owner: LivingEntity?, delta: Double): EventResult?
+        fun scroll(instance: AbilityInstance, owner: LivingEntity, delta: Double): EventResult
     }
 
     fun interface AbilityTickEvent {
-        fun tick(instance: AbilityInstance?, owner: LivingEntity?): EventResult?
+        fun tick(instance: AbilityInstance, owner: LivingEntity): EventResult
     }
 
     fun interface AbilityPostTickEvent {
-        fun tick(instance: AbilityInstance?, owner: LivingEntity?)
+        fun tick(instance: AbilityInstance, owner: LivingEntity)
     }
 
     fun interface AbilityUpdateCooldownEvent {
-        fun cooldown(instance: AbilityInstance?, owner: LivingEntity?, currentCooldown: Int, mode: Int): EventResult?
+        fun cooldown(instance: AbilityInstance, owner: LivingEntity, currentCooldown: Int, mode: Int): EventResult
     }
 
     fun interface AbilityDamageCalculationEvent {
         fun calculate(
-            storage: Abilities?,
-            entity: LivingEntity?,
-            source: DamageSource?,
+            storage: Abilities,
+            entity: LivingEntity,
+            source: DamageSource,
             amount: Changeable<Float?>?
-        ): EventResult?
+        ): EventResult
     }
 
     companion object {
         @JvmField
-        val UNLOCK_ABILITY: Event<UnlockAbilityEvent?> = EventFactory.createEventResult<UnlockAbilityEvent?>()
+        val UNLOCK_ABILITY: Event<UnlockAbilityEvent> = EventFactory.createEventResult<UnlockAbilityEvent>()
         @JvmField
-        val REMOVE_ABILITY: Event<RemoveAbilityEvent?> = EventFactory.createEventResult<RemoveAbilityEvent?>()
+        val REMOVE_ABILITY: Event<RemoveAbilityEvent> = EventFactory.createEventResult<RemoveAbilityEvent>()
         @JvmField
-        val ACTIVATE_ABILITY: Event<AbilityActivationEvent?> = EventFactory.createEventResult<AbilityActivationEvent?>()
+        val ACTIVATE_ABILITY: Event<AbilityActivationEvent> = EventFactory.createEventResult<AbilityActivationEvent>()
         @JvmField
-        val RELEASE_ABILITY: Event<AbilityReleaseEvent?> = EventFactory.createEventResult<AbilityReleaseEvent?>()
+        val RELEASE_ABILITY: Event<AbilityReleaseEvent> = EventFactory.createEventResult<AbilityReleaseEvent>()
         @JvmField
-        val TOGGLE_ABILITY: Event<AbilityToggleEvent?> = EventFactory.createEventResult<AbilityToggleEvent?>()
+        val TOGGLE_ABILITY: Event<AbilityToggleEvent> = EventFactory.createEventResult<AbilityToggleEvent>()
         @JvmField
-        val ABILITY_SCROLL: Event<AbilityScrollEvent?> = EventFactory.createEventResult<AbilityScrollEvent?>()
+        val ABILITY_SCROLL: Event<AbilityScrollEvent> = EventFactory.createEventResult<AbilityScrollEvent>()
         @JvmField
-        val ABILITY_SCROLL_CLIENT: Event<AbilityScrollClientEvent?> =
-            EventFactory.createEventResult<AbilityScrollClientEvent?>()
+        val ABILITY_SCROLL_CLIENT: Event<AbilityScrollClientEvent> =
+            EventFactory.createEventResult<AbilityScrollClientEvent>()
         @JvmField
-        val ABILITY_PRE_TICK: Event<AbilityTickEvent?> = EventFactory.createEventResult<AbilityTickEvent?>()
+        val ABILITY_PRE_TICK: Event<AbilityTickEvent> = EventFactory.createEventResult<AbilityTickEvent>()
         @JvmField
-        val ABILITY_POST_TICK: Event<AbilityPostTickEvent?> = EventFactory.createLoop<AbilityPostTickEvent?>()
+        val ABILITY_POST_TICK: Event<AbilityPostTickEvent> = EventFactory.createLoop<AbilityPostTickEvent>()
         @JvmField
-        val ABILITY_UPDATE_COOLDOWN: Event<AbilityUpdateCooldownEvent?> =
-            EventFactory.createEventResult<AbilityUpdateCooldownEvent?>()
+        val ABILITY_UPDATE_COOLDOWN: Event<AbilityUpdateCooldownEvent> =
+            EventFactory.createEventResult<AbilityUpdateCooldownEvent>()
         @JvmField
-        val ABILITY_DAMAGE_PRE_CALCULATION: Event<AbilityDamageCalculationEvent?> =
-            EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
+        val ABILITY_DAMAGE_PRE_CALCULATION: Event<AbilityDamageCalculationEvent> =
+            EventFactory.createEventResult<AbilityDamageCalculationEvent>()
         @JvmField
-        val ABILITY_DAMAGE_CALCULATION: Event<AbilityDamageCalculationEvent?> =
-            EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
+        val ABILITY_DAMAGE_CALCULATION: Event<AbilityDamageCalculationEvent> =
+            EventFactory.createEventResult<AbilityDamageCalculationEvent>()
         @JvmField
-        val ABILITY_DAMAGE_POST_CALCULATION: Event<AbilityDamageCalculationEvent?> =
-            EventFactory.createEventResult<AbilityDamageCalculationEvent?>()
+        val ABILITY_DAMAGE_POST_CALCULATION: Event<AbilityDamageCalculationEvent> =
+            EventFactory.createEventResult<AbilityDamageCalculationEvent>()
     }
 }

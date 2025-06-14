@@ -10,19 +10,21 @@ import java.util.function.Consumer
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 object ClientAccess {
-    fun handle(packet: SyncStagesStoragePayload, player: ServerPlayer?) {
-        player!!.getStorageOptional<StageStorage?>(StageStorage.key).ifPresent(
-            Consumer { storage: StageStorage? -> storage!!.load(packet.data!!) })
+    fun handle(packet: SyncStagesStoragePayload, player: ServerPlayer) {
+        player.`eternalCore$getStorageOptional`(StageStorage.key!!).ifPresent { storage: StageStorage ->
+            storage.load(
+                packet.data!!
+            )
+        }
     }
 
-    fun handle(packet: RequestStageBreakthroughPacket, player: Player?) {
-        if (player == null) return
+    fun handle(packet: RequestStageBreakthroughPacket, player: Player) {
 
         val storage = StageAPI.getStageFrom(player)
-        val optional = storage!!.getStage()
+        val optional = storage!!.getStageOptional()
         if (optional.isEmpty) return
 
-        val stage = StageAPI.stageRegistry!!.get(packet.stage)
+        val stage = StageAPI.stageRegistry.get(packet.stage)
         if (stage == null) return
 
         val instance = optional.get()

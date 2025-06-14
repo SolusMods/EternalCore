@@ -37,7 +37,7 @@ object ElementAPI {
      */
     @JvmStatic
     fun getDominantElementFrom(entity: LivingEntity): Elements? {
-        return entity.getStorage(ElementsStorage.key)
+        return entity.`eternalCore$getStorage`(ElementsStorage.key)
     }
 
     /**
@@ -48,11 +48,11 @@ object ElementAPI {
      */
     @JvmStatic
     fun getElementsFrom(entity: LivingEntity): Elements? {
-        return entity.getStorage(ElementsStorage.key)
+        return entity.`eternalCore$getStorage`(ElementsStorage.key)
     }
 
     @JvmStatic
     fun getStorageOptional(entity: LivingEntity): Optional<ElementsStorage> {
-        return entity.getStorageOptional(ElementsStorage.key)
+        return entity.`eternalCore$getStorageOptional`(ElementsStorage.key!!)
     }
 }

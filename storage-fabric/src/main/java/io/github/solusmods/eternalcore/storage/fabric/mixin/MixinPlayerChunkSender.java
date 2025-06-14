@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2025. ManasMods
- * GNU General Public License 3
- */
-
 package io.github.solusmods.eternalcore.storage.fabric.mixin;
 
 import io.github.solusmods.eternalcore.storage.impl.StorageManager;

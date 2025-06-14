@@ -6,8 +6,6 @@ import dev.architectury.utils.Env
 import io.github.solusmods.eternalcore.abilities.impl.AbilityRegistry
 import io.github.solusmods.eternalcore.abilities.impl.AbilityStorage
 import io.github.solusmods.eternalcore.abilities.impl.network.InternalAbilityPacketActions
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -39,12 +37,12 @@ object AbilityAPI {
      */
     @JvmStatic
     fun getAbilitiesFrom(entity: LivingEntity): Abilities? {
-        return entity.getStorage(AbilityStorage.key)
+        return entity.`eternalCore$getStorage`(AbilityStorage.key)
     }
 
     @JvmStatic
     fun getStorageOptional(entity: LivingEntity): Optional<AbilityStorage> {
-        return entity.getStorageOptional(AbilityStorage.key)
+        return entity.`eternalCore$getStorageOptional`(AbilityStorage.key!!)
     }
 
     /**

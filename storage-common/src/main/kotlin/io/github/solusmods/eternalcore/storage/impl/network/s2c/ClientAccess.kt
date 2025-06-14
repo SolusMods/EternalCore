@@ -4,7 +4,6 @@ import io.github.solusmods.eternalcore.storage.api.StorageHolder
 import io.github.solusmods.eternalcore.storage.impl.CombinedStorage
 import net.minecraft.client.Minecraft
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.level.Level
 
 object ClientAccess {
 
@@ -36,13 +35,13 @@ object ClientAccess {
 
     fun handleUpdatePacket(holder: StorageHolder, packet: StorageSyncPayload) {
         val storage = if (packet.isUpdate) {
-            holder.getCombinedStorage().apply {
+            holder.`eternalCore$getCombinedStorage`().apply {
                 handleUpdatePacket(packet.storageTag)
             }
         } else {
             CombinedStorage(holder).apply {
                 load(packet.storageTag)
-                holder.setCombinedStorage(this)
+                holder.`eternalCore$setCombinedStorage`(this)
             }
         }
     }
