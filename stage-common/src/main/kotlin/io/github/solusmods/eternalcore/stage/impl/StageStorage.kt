@@ -206,21 +206,6 @@ protected constructor(holder: StorageHolder) : Storage(holder), Stages, IReached
                     StageStorage::class.java, { obj -> LivingEntity::class.java.isInstance(obj) },
                     { holder: Entity -> StageStorage(holder) })
             }
-            EntityEvents.LIVING_POST_TICK.register { entity: LivingEntity ->
-                val level = entity.level()
-                if (level.isClientSide) return@register
-                if (entity !is Player) return@register
-                val reachedStages = StageAPI.getReachedStagesFrom(entity)
-                if (reachedStages!!.reachedStages.isEmpty()) return@register
-                reachedStages.reachedStages.forEach{ (key, stage) ->
-                        stage.onTick(entity)
-                    }
-            }
-            StageEvents.STAGE_POST_TICK.register { instance: StageInstance, owner: LivingEntity ->
-                if (instance.getEffect(owner)!!.isEmpty) return@register
-                val effectInstance = instance.getEffect(owner)!!.get()
-                if (!owner.hasEffect(effectInstance!!.effect)) owner.addEffect(effectInstance)
-            }
         }
     }
 }
