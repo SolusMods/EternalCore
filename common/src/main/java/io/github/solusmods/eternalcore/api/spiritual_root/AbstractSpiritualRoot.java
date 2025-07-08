@@ -78,15 +78,12 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
      */
     @Nullable
     public static AbstractSpiritualRoot fromNBT(CompoundTag tag) {
-        if (tag.contains("Id")) {
-            val id = ResourceLocation.tryParse(tag.getString("Id"));
-            val abstractSpiritualRoot = SpiritualRootRegistry.getSpiritualRootRegistry().get(id);
-            if (abstractSpiritualRoot != null) {
-                abstractSpiritualRoot.deserialize(tag);
-            }
-            return abstractSpiritualRoot;
+        val id = ResourceLocation.parse(tag.getString("Resource"));
+        val abstractSpiritualRoot = SpiritualRootRegistry.getSpiritualRootRegistry().get(id);
+        if (abstractSpiritualRoot != null) {
+            abstractSpiritualRoot.deserialize(tag);
         }
-        return null;
+        return abstractSpiritualRoot;
     }
 
     /**
@@ -233,7 +230,7 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     @Override
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("Id", this.getResource().toString());
+        tag.putString("Resource", this.getResource().toString());
         serialize(tag);
         return tag;
     }
@@ -242,6 +239,9 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     public CompoundTag serialize(CompoundTag tag) {
         if (this.tag != null) tag.put("tag", this.tag.copy());
         tag.putBoolean("Dominant", this.dominant);
+        tag.putFloat("Strength", this.strength);
+        tag.putFloat("Experience", this.experience);
+        tag.putInt("Level", this.level);
         return tag;
     }
 
@@ -249,6 +249,9 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
         dominant = tag.getBoolean("Dominant");
+        strength = tag.getFloat("Strength");
+        experience = tag.getFloat("Experience");
+        level = tag.getInt("Level");
     }
 
     /**
