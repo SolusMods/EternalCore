@@ -6,9 +6,6 @@ pluginManagement {
         gradlePluginPortal()
         google() // необов'язково, але корисно
     }
-    plugins {
-        kotlin("jvm") version "2.1.21"
-    }
 }
 
 plugins {
@@ -17,8 +14,7 @@ plugins {
 
 rootProject.name = "eternalcore"
 
-listOf("config", "network", "realm", "storage", "testing", "stage", "spiritual_root", "element", "abilities", "entity", "keybind", "attributes").forEach { module ->
-    include(":$module-common")
-    include(":$module-fabric")
-    include(":$module-neoforge")
-}
+
+include("common")
+include("fabric")
+include("neoforge")

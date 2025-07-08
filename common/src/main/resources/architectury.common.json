@@ -1,0 +1,14 @@
+{
+  "accessWidener": "eternalcore.accesswidener",
+  "injected_interfaces": {
+    "net/minecraft/class_1297": [
+      "io/github/solusmods/eternalcore/api/storage/StorageHolder"
+    ],
+    "net/minecraft/class_2818": [
+      "io/github/solusmods/eternalcore/api/storage/StorageHolder"
+    ],
+    "net/minecraft/class_1937": [
+      "io/github/solusmods/eternalcore/api/storage/StorageHolder"
+    ]
+  }
+}
