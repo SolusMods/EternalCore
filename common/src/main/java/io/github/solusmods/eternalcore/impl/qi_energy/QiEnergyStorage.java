@@ -138,6 +138,7 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         for (Tag tag : data.getList(QI_ENERGIES_KEY, Tag.TAG_COMPOUND)) {
             try {
                 ElementalQiEnergy instance = ElementalQiEnergy.fromNBT((CompoundTag) tag);
+                if (instance.getElement() == null) continue;
                 this.ElementalQiEnergies.put(instance.getElement().getResource(), instance);
             } catch (Exception e) {
                 EternalCore.LOG.error("Failed to load qi energy instance from NBT", e);

@@ -3,6 +3,7 @@ package io.github.solusmods.eternalcore.api.qi_energy;
 import io.github.solusmods.eternalcore.api.storage.INBTSerializable;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public class ElementalQiEnergy extends AbstractQiEnergy implements INBTSerializable<CompoundTag> {
@@ -24,18 +25,16 @@ public class ElementalQiEnergy extends AbstractQiEnergy implements INBTSerializa
      * @return An {@link ElementalQiEnergy} instance.
      */
     public static ElementalQiEnergy fromNBT(CompoundTag tag) {
-        ElementType element = ElementType.fromNBT(tag);
-        double amount = tag.getDouble("amount");
-        ElementalQiEnergy qiEnergy = new ElementalQiEnergy(element, amount);
+        var element = QiEnergyAPI.getElementRegistry().get(ResourceLocation.parse(tag.getString("Element")));
+        var qiEnergy = new ElementalQiEnergy(element, 0);
         qiEnergy.deserialize(tag);
         return qiEnergy;
     }
 
     @Override
     public CompoundTag toNBT() {
-        CompoundTag nbt = new CompoundTag();
-        nbt.put("Element", element.toNBT());
-        nbt.putDouble("amount", amount);
+        var nbt = new CompoundTag();
+        nbt.putString("Element", getElement().getResource().toString());
         serialize(nbt);
         return nbt;
     }
@@ -43,13 +42,13 @@ public class ElementalQiEnergy extends AbstractQiEnergy implements INBTSerializa
     @Override
     public CompoundTag serialize(CompoundTag tag) {
         if (this.tag != null) tag.put("tag", this.tag.copy());
+        tag.putDouble("amount", amount);
         return tag;
     }
 
     @Override
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
-        this.element = ElementType.fromNBT(tag);
         this.amount = tag.getDouble("amount");
     }
 
