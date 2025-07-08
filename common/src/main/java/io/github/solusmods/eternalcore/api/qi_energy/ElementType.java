@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 
@@ -24,11 +25,12 @@ public abstract class ElementType implements INBTSerializable<CompoundTag>, IRes
         this.color = color;
     }
 
-    public static ElementType fromNBT(CompoundTag tag) throws NullPointerException {
-        ResourceLocation location = ResourceLocation.tryParse(tag.getString("id"));
-        ElementType abstractRealm = QiEnergyAPI.getElementRegistry().get(location);
-        abstractRealm.deserialize(tag);
-        return abstractRealm;
+    @Nullable
+    public static ElementType fromNBT(CompoundTag tag) {
+        val location = ResourceLocation.tryParse(tag.getString("id"));
+        val elementType = QiEnergyAPI.getElementRegistry().get(location);
+        if (elementType != null) { elementType.deserialize(tag); }
+        return elementType;
     }
 
     public abstract ResourceLocation getResource();

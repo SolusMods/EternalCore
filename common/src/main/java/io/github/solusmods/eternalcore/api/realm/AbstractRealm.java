@@ -75,11 +75,14 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
      * @param tag NBT дані для створення Реалму
      * @return Новий екземпляр {@link AbstractRealm} або null, якщо ідентифікатор відсутній
      */
+    @Nullable
     public static AbstractRealm fromNBT(CompoundTag tag) {
         if (tag.contains(REALM_ID_KEY)) {
             val id = ResourceLocation.tryParse(tag.getString(REALM_ID_KEY));
             val abstractRealm = RealmAPI.getRealmRegistry().get(id);
-            abstractRealm.deserialize(tag);
+            if (abstractRealm != null) {
+                abstractRealm.deserialize(tag);
+            }
             return abstractRealm;
         }
         return null;

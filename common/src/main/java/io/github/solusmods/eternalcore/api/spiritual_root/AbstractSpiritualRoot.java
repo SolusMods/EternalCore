@@ -81,7 +81,9 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         if (tag.contains("Id")) {
             val id = ResourceLocation.tryParse(tag.getString("Id"));
             val abstractSpiritualRoot = SpiritualRootRegistry.getSpiritualRootRegistry().get(id);
-            abstractSpiritualRoot.deserialize(tag);
+            if (abstractSpiritualRoot != null) {
+                abstractSpiritualRoot.deserialize(tag);
+            }
             return abstractSpiritualRoot;
         }
         return null;

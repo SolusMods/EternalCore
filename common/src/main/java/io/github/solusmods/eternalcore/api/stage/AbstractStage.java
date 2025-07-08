@@ -52,7 +52,9 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         if (tag.contains("Id")) {
             val id = ResourceLocation.tryParse(tag.getString("Id"));
             val abstractStage = StageAPI.getStageRegistry().get(id);
-            abstractStage.deserialize(tag);
+            if (abstractStage != null) {
+                abstractStage.deserialize(tag);
+            }
             return abstractStage;
         }
         return null;
