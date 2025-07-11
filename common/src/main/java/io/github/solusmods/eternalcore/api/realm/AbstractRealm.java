@@ -223,7 +223,7 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
     }
 
 
-    public final double getAbsorptionBonus() {return getConfig().getBaseAttackDamage();}
+    public final double getAbsorptionBonus() {return getConfig().getAbsorptionBonus();}
 
     // ========== PROGRESSION METHODS ==========
 
