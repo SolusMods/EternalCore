@@ -20,6 +20,7 @@ public class RealmConfig {
     public double sprintSpeed;
     public double coefficient;
     public boolean canFly = false;
+    public double absorptionBonus;
 
     public RealmConfig(Consumer<RealmConfig> initialize) throws RuntimeException {
         initialize.accept(this);
@@ -86,6 +87,11 @@ public class RealmConfig {
         return this;
     }
 
+    public RealmConfig absorptionBonus(double absorptionBonus) {
+        this.absorptionBonus = absorptionBonus;
+        return this;
+    }
+
     public RealmConfig build() throws RuntimeException {
         List<String> errors = new ArrayList<>();
 
@@ -121,7 +127,7 @@ public class RealmConfig {
         }
 
         if (!validate()) {
-            throw new RuntimeException("Invalid RealmConfig:\n" + String.join("\n", errors));
+            throw new RuntimeException("Invalid RealmConfig:\t" + String.join("\t", errors));
         }
 
         return this;
@@ -137,7 +143,7 @@ public class RealmConfig {
                 && jumpHeight > 0.0F
                 && movementSpeed > 0.0F
                 && sprintSpeed > 0.0F
-                && coefficient > 0.0F;
+                && coefficient > 0.0F && absorptionBonus > 0.0;
     }
 
 }

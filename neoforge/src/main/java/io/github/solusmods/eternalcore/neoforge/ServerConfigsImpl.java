@@ -64,7 +64,8 @@ public class ServerConfigsImpl {
                 BUILDER.defineInRange("MovementSpeed", config.movementSpeed, 0.0, Double.MAX_VALUE),
                 BUILDER.defineInRange("SprintSpeed", config.sprintSpeed, 0.0, Double.MAX_VALUE),
                 BUILDER.defineInRange("Coefficient", config.coefficient, 0.0, Double.MAX_VALUE),
-                BUILDER.define("CanFly", config.canFly)
+                BUILDER.define("CanFly", config.canFly),
+                BUILDER.defineInRange("AbsorptionBonus", config.absorptionBonus, 0.0, Double.MAX_VALUE)
         );
 
         REALM_CONFIGS.put(realm.getId(), entry);
@@ -96,6 +97,7 @@ public class ServerConfigsImpl {
 
         rootEntry.experiencePerLevel(BUILDER.define("ExperiencePerLevel", config.experiencePerLevel));
         rootEntry.maxLevel(BUILDER.define("MaxLevel", config.maxLevel));
+        rootEntry.absorptionBonus(BUILDER.defineInRange("AbsorptionBonus", config.absorptionBonus, 0.0, Double.MAX_VALUE));
 
 
         ROOT_CONFIGS.put(spiritualRoot.getId(), rootEntry.build());

@@ -16,6 +16,7 @@ public class SpiritualRootConfig {
     public float experiencePerLevel = 100.0f;
     public float rarity = 0.5f;
     public int maxLevel = 10;
+    public double absorptionBonus = 0.0;
 
     public SpiritualRootConfig(Consumer<SpiritualRootConfig> initialize) throws RuntimeException {
         initialize.accept(this);
@@ -37,6 +38,11 @@ public class SpiritualRootConfig {
         return this;
     }
 
+    public SpiritualRootConfig absorptionBonus(double absorptionBonus) {
+        this.absorptionBonus = absorptionBonus;
+        return this;
+    }
+
     public SpiritualRootConfig build() throws RuntimeException {
         List<String> errors = new ArrayList<>();
 
@@ -49,9 +55,12 @@ public class SpiritualRootConfig {
         if (maxLevel <= 0) {
             errors.add("maxLevel must be greater than 0 (current: " + maxLevel + ")");
         }
+        if (absorptionBonus > 0.0 && absorptionBonus < 0.3) {
+            errors.add("absorptionBonus must be between 0.0 and 0.3 exclusive (current: " + absorptionBonus + ")");
+        }
 
         if (!validate()) {
-            throw new RuntimeException("Invalid SpiritualRootConfig:\n" + String.join("\n", errors));
+            throw new RuntimeException("Invalid SpiritualRootConfig: \t" + String.join("\t", errors));
         }
 
         return this;
@@ -60,6 +69,6 @@ public class SpiritualRootConfig {
     private boolean validate() {
         return experiencePerLevel > 0.0f
                 && rarity > 0.0f
-                && maxLevel > 0;
+                && maxLevel > 0 && absorptionBonus > 0.0 && absorptionBonus < 0.3;
     }
 }

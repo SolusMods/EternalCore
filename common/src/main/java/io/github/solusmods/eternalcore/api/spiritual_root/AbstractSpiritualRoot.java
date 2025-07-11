@@ -98,6 +98,14 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
+     * Бонус до поглинання Ці для цього типу духовного кореня.
+     * Значення має бути в діапазоні 0.0 - 0.3
+     */
+    public double getAbsorptionBonus() {
+        return ServerConfigs.getSpiritualRootConfig(this).getAbsorptionBonus(); // За замовчуванням — 0
+    }
+
+    /**
      * Повертає унікальний ідентифікатор ресурсу для цього Духовного кореня.
      * Цей метод повинен бути перевизначений у кожній конкретній реалізації.
      *

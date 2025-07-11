@@ -9,6 +9,7 @@ public class SpiritualRootEntry {
 
     Supplier<Float> experiencePerLevel;
     Supplier<Integer> maxLevel;
+    Supplier<Double> absorptionBonus;
 
     public Float getExperiencePerLevel() {
         return experiencePerLevel.get();
@@ -17,4 +18,6 @@ public class SpiritualRootEntry {
     public Integer getMaxLevel() {
         return maxLevel.get();
     }
+
+    public Double getAbsorptionBonus() {return absorptionBonus.get();}
 }

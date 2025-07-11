@@ -12,7 +12,8 @@ public record RealmEntry(Supplier<Double> baseHealth,
                          Supplier<Double> movementSpeed,
                          Supplier<Double> sprintSpeed,
                          Supplier<Double> coefficient,
-                         Supplier<Boolean> canFly) {
+                         Supplier<Boolean> canFly,
+                         Supplier<Double> absorptionBonus) {
 
 
     public double getBaseHealth() {
@@ -57,5 +58,9 @@ public record RealmEntry(Supplier<Double> baseHealth,
 
     public boolean getCanFly() {
         return canFly.get();
+    }
+
+    public double getAbsorptionBonus() {
+        return absorptionBonus.get();
     }
 }
