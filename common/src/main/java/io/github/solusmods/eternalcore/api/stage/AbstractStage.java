@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -44,6 +45,10 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
 
     public final double getMaxBaseQi() {
         return ServerConfigs.getStageConfig(this).getMaxQi();
+    }
+
+    public List<MutableComponent> getUniqueInfo(@Nullable LivingEntity living) {
+        return List.of();
     }
 
 

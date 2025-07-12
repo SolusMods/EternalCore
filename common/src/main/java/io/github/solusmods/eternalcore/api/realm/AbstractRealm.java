@@ -308,6 +308,10 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         // Базова реалізація - можна перевизначити
     }
 
+    public List<MutableComponent> getUniqueInfo(@Nullable LivingEntity living) {
+        return List.of();
+    }
+
     /**
      * Викликається, коли сутність досягає цього Реалму.
      *

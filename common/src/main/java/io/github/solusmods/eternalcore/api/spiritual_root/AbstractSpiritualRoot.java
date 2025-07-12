@@ -105,6 +105,10 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return ServerConfigs.getSpiritualRootConfig(this).getAbsorptionBonus(); // За замовчуванням — 0
     }
 
+    public List<MutableComponent> getUniqueInfo(int rootLevel, @Nullable LivingEntity living) {
+        return List.of();
+    }
+
     /**
      * Повертає унікальний ідентифікатор ресурсу для цього Духовного кореня.
      * Цей метод повинен бути перевизначений у кожній конкретній реалізації.
