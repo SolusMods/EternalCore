@@ -93,9 +93,7 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
     @Override
     public void save(CompoundTag data) {
         if (stage != null) {
-            CompoundTag stageTag = new CompoundTag();
-            stageTag.putString("id", stage.getResource().toString());
-            data.put(STAGE_KEY, stageTag);
+            data.put(STAGE_KEY, stage.toNBT());
         }
         ListTag reachedStagesTag = new ListTag();
         for (AbstractStage stage : reachedStages) {
@@ -107,20 +105,20 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
     @Override
     public void load(CompoundTag data) {
         reachedStages.clear();
+        this.stage = null;
         if (data.contains(STAGE_KEY, Tag.TAG_COMPOUND)) {
             CompoundTag tag = data.getCompound(STAGE_KEY);
-            ResourceLocation id = ResourceLocation.tryParse(tag.getString("id"));
-            if (id != null) {
-                this.stage = StageAPI.getStageRegistry().get(id);
+            AbstractStage loadedStage = AbstractStage.fromNBT(tag);
+            if (loadedStage != null) {
+                this.stage = loadedStage;
             }
         }
         for (Tag tag : data.getList(REACHED_STAGES_KEY, Tag.TAG_COMPOUND)) {
             try {
                 CompoundTag stageTag = (CompoundTag) tag;
                 var stage = AbstractStage.fromNBT(stageTag);
-                if (stage != null) {
-                    reachedStages.add(stage);
-                }
+                if (stage == null) continue;
+                reachedStages.add(stage);
             } catch (Exception e) {
                 EternalCore.LOG.error("Failed to load stage from NBT", e);
             }
