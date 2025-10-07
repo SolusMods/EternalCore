@@ -7,7 +7,7 @@ import io.github.solusmods.eternalcore.api.network.util.Changeable;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
 
-public interface RealEvents {
+public interface RealmEvents {
     Event<SetRealmEvent> SET_REALM = EventFactory.createEventResult();
     Event<RealmTickEvent> REALM_PRE_TICK = EventFactory.createLoop();
     Event<RealmTickEvent> REALM_POST_TICK = EventFactory.createLoop();
