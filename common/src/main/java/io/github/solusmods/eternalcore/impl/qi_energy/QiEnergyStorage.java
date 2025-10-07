@@ -4,6 +4,7 @@ import io.github.solusmods.eternalcore.EternalCore;
 import io.github.solusmods.eternalcore.api.qi_energy.AbstractQiEnergy;
 import io.github.solusmods.eternalcore.api.qi_energy.ElementalQiEnergy;
 import io.github.solusmods.eternalcore.api.qi_energy.QiEnergies;
+import io.github.solusmods.eternalcore.api.qi_energy.QiEnergyAPI;
 import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
 import io.github.solusmods.eternalcore.api.storage.StorageHolder;
@@ -84,25 +85,91 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
 
     @Override
     public void addQi(ResourceLocation qiEnergyId, double amount) {
-        getElementalQiEnergies().get(qiEnergyId).add(amount);
-        markDirty();
+        ElementalQiEnergy qiEnergy = getOrCreateQiEnergy(qiEnergyId);
+        double before = qiEnergy.getAmount();
+        qiEnergy.add(amount);
+        if (Double.compare(before, qiEnergy.getAmount()) != 0) {
+            markDirty();
+        }
     }
 
     @Override
     public void forEachQiEnergy(BiConsumer<QiEnergyStorage, ElementalQiEnergy> action) {
-        List.copyOf(getElementalQiEnergies().values()).forEach(element -> action.accept(this, element));
-        markDirty();
+        boolean mutated = false;
+        for (ElementalQiEnergy element : List.copyOf(getElementalQiEnergies().values())) {
+            double before = element.getAmount();
+            action.accept(this, element);
+            if (!mutated && Double.compare(before, element.getAmount()) != 0) {
+                mutated = true;
+            }
+        }
+        if (mutated) {
+            markDirty();
+        }
     }
 
     @Override
     public void consumeQi(ResourceLocation qiEnergyId, double amount) {
-        getElementalQiEnergies().get(qiEnergyId).subtract(amount);
-        markDirty();
+        ElementalQiEnergy qiEnergy = getExistingQiEnergy(qiEnergyId, "consume");
+        double before = qiEnergy.getAmount();
+        qiEnergy.subtract(amount);
+        if (Double.compare(before, qiEnergy.getAmount()) != 0) {
+            markDirty();
+        }
     }
 
     @Override
     public double getQi(ResourceLocation qiEnergyId) {
-        return getElementalQiEnergies().get(qiEnergyId).getAmount();
+        return getExistingQiEnergy(qiEnergyId, "query").getAmount();
+    }
+
+    private ElementalQiEnergy getOrCreateQiEnergy(ResourceLocation qiEnergyId) {
+        if (qiEnergyId == null) {
+            throw new IllegalArgumentException("Qi energy id cannot be null when attempting to add qi.");
+        }
+
+        ElementalQiEnergy qiEnergy = this.ElementalQiEnergies.get(qiEnergyId);
+        if (qiEnergy != null) {
+            return qiEnergy;
+        }
+
+        var elementType = QiEnergyAPI.getElementRegistry().get(qiEnergyId);
+        if (elementType == null) {
+            handleMissingQiEnergy(qiEnergyId, "initialize");
+        }
+
+        qiEnergy = new ElementalQiEnergy(elementType, 0);
+        this.ElementalQiEnergies.put(qiEnergyId, qiEnergy);
+        markDirty();
+        return qiEnergy;
+    }
+
+    private ElementalQiEnergy getExistingQiEnergy(ResourceLocation qiEnergyId, String operation) {
+        if (qiEnergyId == null) {
+            throw new IllegalArgumentException("Qi energy id cannot be null when attempting to " + operation + " qi.");
+        }
+
+        ElementalQiEnergy qiEnergy = this.ElementalQiEnergies.get(qiEnergyId);
+        if (qiEnergy == null) {
+            handleMissingQiEnergy(qiEnergyId, operation);
+        }
+        return qiEnergy;
+    }
+
+    private void handleMissingQiEnergy(ResourceLocation qiEnergyId, String operation) {
+        String ownerDescription;
+        if (this.holder instanceof LivingEntity livingEntity) {
+            ownerDescription = livingEntity.getName().getString();
+        } else {
+            ownerDescription = String.valueOf(this.holder);
+        }
+
+        String message = String.format("Qi energy '%s' is not registered for '%s' while attempting to %s qi.",
+                qiEnergyId,
+                ownerDescription,
+                operation);
+        EternalCore.LOG.error(message);
+        throw new IllegalStateException(message);
     }
 
     /**
