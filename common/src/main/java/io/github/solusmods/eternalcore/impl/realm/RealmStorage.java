@@ -5,7 +5,7 @@ import io.github.solusmods.eternalcore.EternalCore;
 import io.github.solusmods.eternalcore.api.network.util.Changeable;
 import io.github.solusmods.eternalcore.api.realm.AbstractRealm;
 import io.github.solusmods.eternalcore.api.realm.IReachedRealms;
-import io.github.solusmods.eternalcore.api.realm.RealEvents;
+import io.github.solusmods.eternalcore.api.realm.RealmEvents;
 import io.github.solusmods.eternalcore.api.realm.Realms;
 import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
@@ -158,7 +158,7 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
     /**
      * Додає новий досягнутий шлях культивації до колекції гравця.
      * <p>
-     * Цей метод викликає подію {@link RealEvents#REACH_REALM}, яка може бути скасована
+     * Цей метод викликає подію {@link RealmEvents#REACH_REALM}, яка може бути скасована
      * обробниками подій. Якщо шлях успішно пройдено, викликається {@link AbstractRealm#onReach(LivingEntity)}
      * для ініціалізації ефектів шляху культивації.
      * </p>
@@ -176,7 +176,7 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
         Changeable<Boolean> notify = Changeable.of(notifyPlayer);
 
         // Fire event and check if cancelled
-        EventResult result = RealEvents.REACH_REALM.invoker().reach(abstractRealm, getOwner(), breakthrough, notify, realmMessage);
+        EventResult result = RealmEvents.REACH_REALM.invoker().reach(abstractRealm, getOwner(), breakthrough, notify, realmMessage);
         if (result.isFalse()) {
             return false;
         }
@@ -198,7 +198,7 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
     /**
      * Встановлює активний шлях для культивації гравця.
      * <p>
-     * Цей метод викликає подію {@link RealEvents#SET_REALM}, яка може бути скасована
+     * Цей метод викликає подію {@link RealmEvents#SET_REALM}, яка може бути скасована
      * обробниками подій. Якщо шлях культивації змінюється, попередній шлях культивації видаляє свої
      * модифікатори атрибутів, а новий шлях культивації ініціалізується через {@link io.github.solusmods.eternalcore.api.realm.AbstractRealm#onSet(LivingEntity)}.
      * </p>
@@ -218,7 +218,7 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
         Changeable<Boolean> notify = Changeable.of(notifyPlayer);
 
         // Fire event and check if cancelled
-        EventResult result = RealEvents.SET_REALM.invoker().set(previousRealm, getOwner(), realm, breakthrough, notify, realmMessage);
+        EventResult result = RealmEvents.SET_REALM.invoker().set(previousRealm, getOwner(), realm, breakthrough, notify, realmMessage);
         if (result.isFalse()) {
             return false;
         }
