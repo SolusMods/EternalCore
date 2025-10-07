@@ -1,0 +1,32 @@
+name: Build and Publish EternalCore
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build project
+        run: ./gradlew build
+
+      - name: Publish to Cloudsmith
+        env:
+          CLOUDSMITH_LOGIN: ${{ secrets.CLOUDSMITH_LOGIN }}
+          CLOUDSMITH_API: ${{ secrets.CLOUDSMITH_API }}
+        run: ./gradlew publish
