@@ -268,9 +268,15 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
 
         // Load reached realms
         ListTag reachedRealmsTag = data.getList(REACHED_REALMS_KEY, Tag.TAG_COMPOUND);
-        for (Tag tag : reachedRealmsTag) {
+        for (int index = 0; index < reachedRealmsTag.size(); index++) {
+            Tag tag = reachedRealmsTag.get(index);
+            if (!(tag instanceof CompoundTag realmTag)) {
+                EternalCore.LOG.error("Failed to load reached realm entry at index {}: expected CompoundTag but found {}", index,
+                        tag.getClass().getSimpleName());
+                continue;
+            }
+
             try {
-                CompoundTag realmTag = (CompoundTag) tag;
                 AbstractRealm abstractRealm = AbstractRealm.fromNBT(realmTag);
                 if (abstractRealm != null) {
                     this.reachedRealms.add(abstractRealm);
@@ -297,13 +303,18 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
             currentRealmIds.add(abstractRealm.getResource());
         }
 
+        boolean shouldResetExistingData = false;
         if (!lastSyncedRealmIds.isEmpty()) {
             for (ResourceLocation previousId : lastSyncedRealmIds) {
                 if (!currentRealmIds.contains(previousId)) {
-                    data.putBoolean("resetExistingData", true);
+                    shouldResetExistingData = true;
                     break;
                 }
             }
+        }
+
+        if (shouldResetExistingData) {
+            data.putBoolean("resetExistingData", true);
         }
 
         super.saveOutdated(data);
