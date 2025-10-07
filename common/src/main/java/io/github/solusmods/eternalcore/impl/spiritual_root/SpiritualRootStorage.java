@@ -9,7 +9,6 @@ import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
 import io.github.solusmods.eternalcore.api.storage.StorageHolder;
 import io.github.solusmods.eternalcore.api.storage.StorageKey;
-import lombok.Getter;
 import lombok.NonNull;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -27,28 +26,71 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * Сховище для управління духовними коренями сутності.
+ * Сховище, що керує духовними коренями сутності.
+ * <p>
+ * {@link SpiritualRootStorage} реєструється через {@link #init()} та гарантує, що всі зміни
+ * синхронізуються з клієнтом викликом {@link #markDirty()}. Події {@link SpiritualRootEvents}
+ * дозволяють відміняти, модифікувати або супроводжувати додавання та видалення духовних коренів.
+ * Під час часткових оновлень використовується прапорець <code>resetExistingData</code>, щоб
+ * клієнт скинув кешовані корені, коли їх було видалено на сервері.
+ * </p>
  */
 public class SpiritualRootStorage extends AbstractStorage implements SpiritualRoots {
 
+    /**
+     * Унікальний ідентифікатор цього типу сховища.
+     */
     public static final ResourceLocation ID = EternalCore.create("spiritual_root_storage");
+    /**
+     * Ключ для серіалізації набору духовних коренів у NBT.
+     */
     private static final String SPIRITUAL_ROOTS_KEY = "spiritual_roots_key";
-    @Getter
+    /**
+     * Ключ доступу до цього сховища у реєстрі.
+     */
     private static StorageKey<SpiritualRootStorage> key = null;
 
+    /**
+     * Отримані духовні корені, відображені за ідентифікатором ресурсу.
+     */
     private final Map<ResourceLocation, AbstractSpiritualRoot> spiritualRoots = new HashMap<>();
 
     private boolean hasRemovedRoots = false;
 
+    /**
+     * Створює нове сховище духовних коренів для вказаного власника.
+     *
+     * @param holder Власник цього сховища
+     */
     protected SpiritualRootStorage(StorageHolder holder) {
         super(holder);
     }
 
+    /**
+     * Реєструє тип сховища у системі EternalCore.
+     * <p>
+     * Викликається під час ініціалізації мода та визначає, для яких сутностей буде створено сховище.
+     * </p>
+     */
     public static void init() {
         StorageEvents.REGISTER_ENTITY_STORAGE.register(registry ->
                 key = registry.register(ID, SpiritualRootStorage.class, Entity.class::isInstance, SpiritualRootStorage::new));
     }
 
+    /**
+     * Повертає ключ доступу до сховища духовних коренів.
+     *
+     * @return Ключ сховища, або {@code null}, якщо {@link #init()} ще не викликано
+     */
+    public static StorageKey<SpiritualRootStorage> getKey() {
+        return key;
+    }
+
+    /**
+     * Серіалізує всі наявні духовні корені у NBT.
+     *
+     * @param data Тег, у який записуються дані
+     */
     @Override
     public void save(CompoundTag data) {
         ListTag rootsTag = new ListTag();
@@ -56,6 +98,14 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         data.put(SPIRITUAL_ROOTS_KEY, rootsTag);
     }
 
+    /**
+     * Відновлює стан сховища з NBT.
+     * <p>
+     * Підтримує скидання стану за допомогою прапорця <code>resetExistingData</code> для видалених коренів.
+     * </p>
+     *
+     * @param data Тег, з якого зчитуються дані
+     */
     @Override
     public void load(CompoundTag data) {
         if (data.contains("resetExistingData")) {
@@ -71,11 +121,25 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         }
     }
 
+    /**
+     * Повертає усі отримані духовні корені.
+     *
+     * @return Набір духовних коренів
+     */
     @Override
     public Collection<AbstractSpiritualRoot> getGainedRoots() {
         return this.spiritualRoots.values();
     }
 
+    /**
+     * Серіалізує лише змінені дані для синхронізації з клієнтом.
+     * <p>
+     * Якщо корінь було видалено, встановлює <code>resetExistingData</code>, щоби клієнт повністю
+     * оновив локальний стан.
+     * </p>
+     *
+     * @param data Тег, у який записуються дані
+     */
     @Override
     public void saveOutdated(CompoundTag data) {
         if (this.hasRemovedRoots) {
@@ -91,15 +155,38 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         }
     }
 
+    /**
+     * Отримує власника сховища як живу сутність.
+     *
+     * @return Власник сховища
+     */
     protected LivingEntity getOwner() {
         return (LivingEntity) this.holder;
     }
 
+    /**
+     * Повертає карту духовних коренів за ідентифікатором ресурсу.
+     *
+     * @return Відображення ідентифікатора на корінь
+     */
     @Override
     public Map<ResourceLocation, AbstractSpiritualRoot> getSpiritualRoots() {
         return spiritualRoots;
     }
 
+    /**
+     * Додає новий духовний корінь.
+     * <p>
+     * Викликає {@link SpiritualRootEvents#ADD} для можливості відміни або модифікації кореня перед
+     * додаванням. Успішний виклик відправляє повідомлення гравцю (якщо вказано) та позначає сховище як змінене.
+     * </p>
+     *
+     * @param root        Корінь для додавання
+     * @param advancement Чи пов'язано додавання з просуванням
+     * @param notify      Чи слід сповіщати гравця
+     * @param component   Повідомлення для відображення (може бути {@code null})
+     * @return {@code true}, якщо корінь додано
+     */
     @Override
     public boolean addSpiritualRoot(@NotNull AbstractSpiritualRoot root, boolean advancement, boolean notify, @Nullable MutableComponent component) {
         if (this.spiritualRoots.containsKey(root.getResource())) {
@@ -121,11 +208,26 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         return true;
     }
 
+    /**
+     * Виконує дію для кожного духовного кореня.
+     *
+     * @param consumer Обробник пари «ідентифікатор - корінь»
+     */
     @Override
     public void forEachRoot(BiConsumer<ResourceLocation, AbstractSpiritualRoot> consumer) {
         spiritualRoots.forEach(consumer);
     }
 
+    /**
+     * Забуває (видаляє) духовний корінь.
+     * <p>
+     * Подія {@link SpiritualRootEvents#FORGET_SPIRITUAL_ROOT} може змінити повідомлення або скасувати
+     * видалення. Після успіху сховище позначається як змінене та використовує часткову синхронізацію.
+     * </p>
+     *
+     * @param rootId    Ідентифікатор кореня
+     * @param component Повідомлення для гравця (може бути {@code null})
+     */
     @Override
     public void forgetRoot(@NotNull ResourceLocation rootId, @Nullable MutableComponent component) {
         if (!this.spiritualRoots.containsKey(rootId)) return;
@@ -142,6 +244,19 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         markDirty();
     }
 
+    /**
+     * Оновлює інформацію про існуючий духовний корінь.
+     * <p>
+     * Подія {@link SpiritualRootEvents#UPDATE} може змінити повідомлення або скасувати дію.
+     * При успіху дані оновлюються та синхронізуються з клієнтом.
+     * </p>
+     *
+     * @param root        Оновлений корінь
+     * @param advancement Чи пов'язано оновлення з просуванням
+     * @param notify      Чи слід сповіщати гравця
+     * @param message     Повідомлення для гравця (може бути {@code null})
+     * @return {@code true}, якщо корінь оновлено
+     */
     @Override
     public boolean updateSpiritualRoot(@NonNull AbstractSpiritualRoot root, boolean advancement, boolean notify, @Nullable MutableComponent message) {
         if (!this.spiritualRoots.containsKey(root.getResource())) return false;
@@ -157,6 +272,11 @@ public class SpiritualRootStorage extends AbstractStorage implements SpiritualRo
         return true;
     }
 
+    /**
+     * Повертає зручне для дебагу представлення сховища.
+     *
+     * @return Рядковий опис стану
+     */
     @Override
     public String toString() {
         return String.format("%s{roots=[%s], owner={%s}}", this.getClass().getSimpleName(), this.spiritualRoots.values(), getOwner().toString());

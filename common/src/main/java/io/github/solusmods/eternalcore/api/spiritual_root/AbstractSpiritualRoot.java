@@ -33,6 +33,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Базова реалізація духовного кореня.
+ * <p>
+ * Реалізації повинні бути зареєстровані в {@link SpiritualRootRegistry} до використання.
+ * Корені серіалізуються через {@link #toNBT()} / {@link #deserialize(CompoundTag)} та
+ * взаємодіють із подіями {@link SpiritualRootEvents}, що супроводжують додавання, розвиток
+ * та видалення. Реалізації мають бути ідемпотентними, оскільки методи життєвого циклу можуть
+ * викликатися повторно під час синхронізації клієнта.
+ * </p>
+ */
 @Getter
 @NoArgsConstructor
 public abstract class AbstractSpiritualRoot implements INBTSerializable<CompoundTag>, IResource {
@@ -70,11 +80,10 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     private CompoundTag tag = null;
 
     /**
-     * Створює новий екземпляр AbstractSpiritualRoot з NBT даних.
-     * Якщо дані не містять ідентифікатора, повертає null.
+     * Створює новий корінь із NBT.
      *
-     * @param tag NBT дані для створення кореня
-     * @return Новий екземпляр AbstractSpiritualRoot або null, якщо ідентифікатор відсутній
+     * @param tag Тег із серіалізованими даними
+     * @return Новий корінь або {@code null}, якщо ідентифікатор не зареєстровано
      */
     @Nullable
     public static AbstractSpiritualRoot fromNBT(CompoundTag tag) {
@@ -93,6 +102,11 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return ServerConfigs.getSpiritualRootConfig(this).getMaxLevel();
     }
 
+    /**
+     * Повертає кількість досвіду, необхідного для підвищення рівня.
+     *
+     * @return Кількість досвіду на рівень
+     */
     public double getExperiencePerLevel() {
         return ServerConfigs.getSpiritualRootConfig(this).getExperiencePerLevel();
     }
@@ -105,6 +119,13 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return ServerConfigs.getSpiritualRootConfig(this).getAbsorptionBonus(); // За замовчуванням — 0
     }
 
+    /**
+     * Повертає додаткову інформацію для опису кореня.
+     *
+     * @param rootLevel Поточний рівень кореня
+     * @param living    Сутність (може бути {@code null})
+     * @return Список компонентів опису
+     */
     public List<MutableComponent> getUniqueInfo(int rootLevel, @Nullable LivingEntity living) {
         return List.of();
     }
@@ -117,6 +138,12 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
      */
     public abstract ResourceLocation getResource();
 
+    /**
+     * Створює ресурсний ідентифікатор у просторі імен EternalCore.
+     *
+     * @param name Шляхова частина
+     * @return Новий {@link ResourceLocation}
+     */
     public final ResourceLocation creteResource(String name){
         return EternalCore.create(name);
     }
@@ -161,7 +188,12 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Додавання модифікатора атрибуту
+     * Додає модифікатор атрибуту до набору кореня.
+     *
+     * @param holder           Тримач атрибуту
+     * @param resourceLocation Ідентифікатор модифікатора
+     * @param amount           Значення модифікатора
+     * @param operation        Операція модифікатора
      */
     public void addAttributeModifier(Holder<Attribute> holder, ResourceLocation resourceLocation,
                                      double amount, AttributeModifier.Operation operation) {
@@ -169,7 +201,9 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Застосування модифікаторів
+     * Застосовує модифікатори атрибутів до сутності.
+     *
+     * @param entity Цільова сутність
      */
     public void addAttributeModifiers(LivingEntity entity) {
         if (this.attributeModifiers.isEmpty()) return;
@@ -185,7 +219,9 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Видалення модифікаторів
+     * Видаляє модифікатори атрибутів із сутності.
+     *
+     * @param entity Цільова сутність
      */
     public void removeAttributeModifiers(LivingEntity entity) {
         if (this.attributeModifiers.isEmpty()) return;
@@ -207,38 +243,58 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Збільшення сили
+     * Збільшує силу кореня з урахуванням обмеження 1.0.
+     *
+     * @param living Сутність (може бути {@code null})
+     * @param amount Значення збільшення
      */
     public void increaseStrength(@Nullable LivingEntity living, float amount) {
         this.strength = Math.min(1.0f, this.strength + amount);
     }
 
     /**
-     * Перевірка на просування
+     * Перевіряє можливість підвищення рівня кореня.
+     *
+     * @param entity Сутність (може бути {@code null})
+     * @return {@code true}, якщо підвищення можливе
      */
     public boolean canAdvance(@Nullable LivingEntity entity) {
         return false;
     }
 
     /**
-     * Отримання Qi енергії
+     * Повертає пов'язаний тип енергії Ці.
+     *
+     * @param entity Контекст сутності (може бути {@code null})
+     * @return Тип енергії або {@code null}, якщо він не визначений
      */
     public abstract @Nullable ElementType getElementType(@Nullable LivingEntity entity);
 
     /**
-     * Еволюція 1-го ступеня
+     * Повертає корінь першого ступеня еволюції.
+     *
+     * @param living Сутність (може бути {@code null})
+     * @return Корінь першого ступеня або {@code null}, якщо не визначено
      */
     @Nullable
     public abstract AbstractSpiritualRoot getFirstDegree(@Nullable LivingEntity living);
 
     /**
-     * Еволюція 2-го ступеня
+     * Повертає корінь другого ступеня еволюції.
+     *
+     * @param living Сутність (може бути {@code null})
+     * @return Корінь другого ступеня або {@code null}, якщо не визначено
      */
     @Nullable
     public AbstractSpiritualRoot getSecondDegree(@Nullable LivingEntity living) {
         return null;
     }
 
+    /**
+     * Серіалізує корінь у NBT.
+     *
+     * @return Тег із даними кореня
+     */
     @Override
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
@@ -247,6 +303,12 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return tag;
     }
 
+    /**
+     * Записує внутрішній стан кореня у тег.
+     *
+     * @param tag Тег для запису
+     * @return Той самий тег для ланцюжкових викликів
+     */
     @Override
     public CompoundTag serialize(CompoundTag tag) {
         if (this.tag != null) tag.put("tag", this.tag.copy());
@@ -257,6 +319,11 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return tag;
     }
 
+    /**
+     * Відновлює стан кореня з тега.
+     *
+     * @param tag Тег із даними
+     */
     @Override
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
@@ -267,7 +334,10 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Отримання протилежного кореня
+     * Повертає протилежний корінь.
+     *
+     * @param entity Сутність (може бути {@code null})
+     * @return Протилежний корінь або {@code null}, якщо не визначено
      */
     @Nullable
     public AbstractSpiritualRoot getOpposite(@Nullable LivingEntity entity) {
@@ -275,26 +345,31 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
     }
 
     /**
-     * Попередній ступінь
+     * Повертає попередній ступінь кореня.
+     *
+     * @param living Сутність (може бути {@code null})
+     * @return Попередній ступінь або {@code null}
      */
     @Nullable
     public abstract AbstractSpiritualRoot getPreviousDegree(@Nullable LivingEntity living);
 
     /**
-     * Викликається при додаванні кореня
+     * Викликається під час додавання кореня сутності.
+     *
+     * @param living Сутність (може бути {@code null})
      */
     public void onAdd(@Nullable LivingEntity living) {
     }
 
     /**
-     * Викликається при просуванні
+     * Викликається при просуванні кореня на новий ступінь.
      */
     public void onAdvance(@Nullable LivingEntity living) {
         SpiritualRootEvents.ADVANCE.invoker().advance(this, living, false, Changeable.of(false), null);
     }
 
     /**
-     * Викликається при отриманні досвіду
+     * Викликається під час отримання досвіду коренем.
      */
     public void onAddExperience(@Nullable LivingEntity entity) {
         this.experience += (float) getExperiencePerLevel();
@@ -336,6 +411,11 @@ public abstract class AbstractSpiritualRoot implements INBTSerializable<Compound
         return String.format("%s{id='%s'}", this.getClass().getSimpleName(), getId());
     }
 
+    /**
+     * Повертає існуючий або створює новий тег додаткових даних кореня.
+     *
+     * @return Тег користувацьких даних
+     */
     public CompoundTag getOrCreateTag() {
         if (this.tag == null) {
             this.tag = new CompoundTag();

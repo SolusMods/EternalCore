@@ -11,7 +11,6 @@ import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
 import io.github.solusmods.eternalcore.api.storage.StorageHolder;
 import io.github.solusmods.eternalcore.api.storage.StorageKey;
-import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -60,7 +59,6 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
     /**
      * Ключ для доступу до цього сховища
      */
-    @Getter
     private static StorageKey<RealmStorage> key = null;
     // endregion
 
@@ -68,7 +66,6 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
     /**
      * Колекція шляхів культивації, які досягнув гравець
      */
-    @Getter
     private final Collection<AbstractRealm> reachedRealms = new ArrayDeque<>();
 
     /**
@@ -109,6 +106,15 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
                         Entity.class::isInstance,
                         RealmStorage::new));
     }
+
+    /**
+     * Повертає ключ доступу до сховища.
+     *
+     * @return Ключ сховища, або {@code null}, якщо {@link #init()} ще не викликано
+     */
+    public static StorageKey<RealmStorage> getKey() {
+        return key;
+    }
     // endregion
 
     // region Getters
@@ -132,6 +138,20 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
         return (LivingEntity) this.holder;
     }
     // endregion
+
+    /**
+     * Повертає колекцію досягнутих шляхів культивації.
+     * <p>
+     * Повертається жива колекція, тож виклики мають гарантувати узгодженість змін та виклик
+     * {@link #markDirty()} при модифікаціях.
+     * </p>
+     *
+     * @return Колекція досягнутих шляхів
+     */
+    @Override
+    public Collection<AbstractRealm> getReachedRealms() {
+        return this.reachedRealms;
+    }
 
     // region Realm Management
 
@@ -295,7 +315,16 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
     }
     // endregion
 
-
+    /**
+     * Серіалізує змінені дані для часткової синхронізації.
+     * <p>
+     * Якщо з досягнутих шляхів було видалено будь-який елемент, у тег записується
+     * <code>resetExistingData</code>, сигналізуючи клієнту про потребу очистити локальний стан
+     * перед застосуванням оновлення.
+     * </p>
+     *
+     * @param data Тег, у який записуються дані
+     */
     @Override
     public void saveOutdated(CompoundTag data) {
         Set<ResourceLocation> currentRealmIds = new HashSet<>();
@@ -323,7 +352,11 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
         this.lastSyncedRealmIds.addAll(currentRealmIds);
     }
 
-
+    /**
+     * Повертає стислий опис стану сховища.
+     *
+     * @return Рядкове представлення сховища
+     */
     @Override
     public String toString() {
         return String.format("%s{currentRealm={%s}, reachedRealmsCount={%s}}", getClass().getSimpleName(), getRealm().toString(), getReachedRealms().size());
