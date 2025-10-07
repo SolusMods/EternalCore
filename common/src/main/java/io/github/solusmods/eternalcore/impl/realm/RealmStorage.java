@@ -23,7 +23,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Сховище, що керує світами (realms) для гравців.
@@ -68,6 +70,11 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
      */
     @Getter
     private final Collection<AbstractRealm> reachedRealms = new ArrayDeque<>();
+
+    /**
+     * Набір, що відслідковує синхронізовані ідентифікатори шляхів для визначення видалень.
+     */
+    private final Set<ResourceLocation> lastSyncedRealmIds = new HashSet<>();
 
     /**
      * Поточний активний шлях культивації гравця
@@ -245,32 +252,77 @@ public class RealmStorage extends AbstractStorage implements Realms, IReachedRea
      */
     @Override
     public void load(CompoundTag data) {
-        // Handle reset flag
-        if (data.contains("resetExistingData")) {
-            this.reachedRealms.clear();
-        }
+        this.reachedRealms.clear();
+        this.realm = null;
 
         // Load current realm
-        if (data.contains(REALM_KEY)) {
-            realm = AbstractRealm.fromNBT(data.getCompound(REALM_KEY));
+        if (data.contains(REALM_KEY, Tag.TAG_COMPOUND)) {
+            CompoundTag realmTag = data.getCompound(REALM_KEY);
+            AbstractRealm loadedRealm = AbstractRealm.fromNBT(realmTag);
+            if (loadedRealm != null) {
+                this.realm = loadedRealm;
+            } else {
+                logMissingRealmRegistration(realmTag, "current realm");
+            }
         }
 
         // Load reached realms
         ListTag reachedRealmsTag = data.getList(REACHED_REALMS_KEY, Tag.TAG_COMPOUND);
         for (Tag tag : reachedRealmsTag) {
             try {
-                AbstractRealm abstractRealm = AbstractRealm.fromNBT((CompoundTag) tag);
-                this.reachedRealms.add(abstractRealm);
+                CompoundTag realmTag = (CompoundTag) tag;
+                AbstractRealm abstractRealm = AbstractRealm.fromNBT(realmTag);
+                if (abstractRealm != null) {
+                    this.reachedRealms.add(abstractRealm);
+                } else {
+                    logMissingRealmRegistration(realmTag, "reached realm entry");
+                }
             } catch (Exception e) {
                 EternalCore.LOG.error("Failed to load realm instance from NBT", e);
             }
+        }
+
+        this.lastSyncedRealmIds.clear();
+        for (AbstractRealm abstractRealm : this.reachedRealms) {
+            this.lastSyncedRealmIds.add(abstractRealm.getResource());
         }
     }
     // endregion
 
 
     @Override
+    public void saveOutdated(CompoundTag data) {
+        Set<ResourceLocation> currentRealmIds = new HashSet<>();
+        for (AbstractRealm abstractRealm : this.reachedRealms) {
+            currentRealmIds.add(abstractRealm.getResource());
+        }
+
+        if (!lastSyncedRealmIds.isEmpty()) {
+            for (ResourceLocation previousId : lastSyncedRealmIds) {
+                if (!currentRealmIds.contains(previousId)) {
+                    data.putBoolean("resetExistingData", true);
+                    break;
+                }
+            }
+        }
+
+        super.saveOutdated(data);
+
+        this.lastSyncedRealmIds.clear();
+        this.lastSyncedRealmIds.addAll(currentRealmIds);
+    }
+
+
+    @Override
     public String toString() {
         return String.format("%s{currentRealm={%s}, reachedRealmsCount={%s}}", getClass().getSimpleName(), getRealm().toString(), getReachedRealms().size());
+    }
+
+    private void logMissingRealmRegistration(CompoundTag tag, String context) {
+        if (tag.contains(AbstractRealm.REALM_ID_KEY)) {
+            EternalCore.LOG.error("Failed to load {}: realm '{}' is not registered", context, tag.getString(AbstractRealm.REALM_ID_KEY));
+        } else {
+            EternalCore.LOG.error("Failed to load {}: missing realm id in tag {}", context, tag);
+        }
     }
 }
