@@ -9,7 +9,6 @@ import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
 import io.github.solusmods.eternalcore.api.storage.StorageHolder;
 import io.github.solusmods.eternalcore.api.storage.StorageKey;
-import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -24,36 +23,36 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * Сховище для управління елементами гравця в системі EternalCore.
+ * Сховище для управління запасами Ці (Qi) сутності.
  * <p>
- * Цей клас відповідає за зберігання, управління та синхронізацію елементів,
- * які гравець здобуває протягом гри. Елементи є важливою частиною системи культивації
- * та визначають спеціальні здібності та атрибути гравця.
+ * {@link QiEnergyStorage} реєструється через {@link #init()} та після цього надає публічний API
+ * для додавання, вилучення та читання {@link ElementalQiEnergy}. Контракт сховища гарантує, що
+ * всі операції викликають {@link #markDirty()} лише після фактичної зміни стану, а також що будь-які
+ * спроби взаємодії з невідомою енергією завершуються виключенням і повідомленням у лог.
  * </p>
  * <p>
- * ElementsStorage реалізує інтерфейс {@link AbstractQiEnergy} та розширює базовий клас {@link AbstractStorage},
- * успадковуючи функціональність збереження та завантаження даних у форматі NBT.
+ * Метод {@link #saveOutdated(CompoundTag)} застосовується під час часткової синхронізації з клієнтами:
+ * якщо енергію видалено, сховище надсилає прапорець <code>resetExistingData</code>, і клієнт повинен
+ * очистити локальний стан перед застосуванням нових значень.
  * </p>
  */
 public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
     /**
-     * Унікальний ідентифікатор цього типу сховища
+     * Унікальний ідентифікатор цього типу сховища.
      */
     public static final ResourceLocation ID = EternalCore.create("qi_energies_storage");
     /**
-     * Ключ для зберігання колекції елементів у NBT
+     * Ключ для зберігання колекції елементів у NBT.
      */
     private static final String QI_ENERGIES_KEY = "qi_energies_key";
     /**
-     * Ключ для доступу до цього сховища
+     * Ключ для доступу до цього сховища.
      */
-    @Getter
     private static StorageKey<QiEnergyStorage> key = null;
 
     /**
-     * Колекція елементів, якими володіє гравець
+     * Колекція енергій, якими володіє сутність.
      */
-    @Getter
     private final Map<ResourceLocation, ElementalQiEnergy> ElementalQiEnergies = new HashMap<>();
     private boolean hasRemovedElements = false;
 
@@ -79,10 +78,49 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
                         QiEnergyStorage::new));
     }
 
+    /**
+     * Повертає ключ доступу до сховища у системі зберігання.
+     *
+     * @return Ключ сховища, або {@code null}, якщо {@link #init()} ще не викликано
+     */
+    public static StorageKey<QiEnergyStorage> getKey() {
+        return key;
+    }
+
+    /**
+     * Повертає всі відкриті енергії Ці.
+     *
+     * @return Набір енергій, відсортований за ідентифікаторами реєстру
+     */
     public Collection<ElementalQiEnergy> getObtainedQiEnergies() {
         return this.ElementalQiEnergies.values();
     }
 
+    /**
+     * Повертає доступ до внутрішньої мапи енергій.
+     * <p>
+     * Повертається жива структура даних; виклики повинні гарантувати послідовність змін та виклик
+     * {@link #markDirty()} в разі модифікацій.
+     * </p>
+     *
+     * @return Мапа енергій за ідентифікатором
+     */
+    @Override
+    public Map<ResourceLocation, ElementalQiEnergy> getElementalQiEnergies() {
+        return this.ElementalQiEnergies;
+    }
+
+    /**
+     * Додає певну кількість енергії Ці до сховища.
+     * <p>
+     * Якщо енергія відсутня, вона буде створена на основі зареєстрованого типу.
+     * </p>
+     *
+     * @param qiEnergyId Ідентифікатор енергії Ці
+     * @param amount     Кількість, яку необхідно додати (може бути від'ємною для корекції)
+     * @throws IllegalArgumentException Якщо ідентифікатор дорівнює {@code null}
+     * @throws IllegalStateException    Якщо енергію не зареєстровано в {@link QiEnergyAPI}
+     */
     @Override
     public void addQi(ResourceLocation qiEnergyId, double amount) {
         ElementalQiEnergy qiEnergy = getOrCreateQiEnergy(qiEnergyId);
@@ -93,6 +131,15 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         }
     }
 
+    /**
+     * Виконує дію над кожною енергією Ці.
+     * <p>
+     * Метод гарантує, що під час ітерації можна безпечно модифікувати кількість енергії без
+     * виключень конкурентності; після завершення викликається {@link #markDirty()} у разі змін.
+     * </p>
+     *
+     * @param action Дія, яку потрібно виконати
+     */
     @Override
     public void forEachQiEnergy(BiConsumer<QiEnergyStorage, ElementalQiEnergy> action) {
         boolean mutated = false;
@@ -108,6 +155,14 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         }
     }
 
+    /**
+     * Витрачає певну кількість енергії Ці.
+     *
+     * @param qiEnergyId Ідентифікатор енергії Ці
+     * @param amount     Кількість для списання
+     * @throws IllegalArgumentException Якщо ідентифікатор дорівнює {@code null}
+     * @throws IllegalStateException    Якщо енергію не зареєстровано або її не отримано
+     */
     @Override
     public void consumeQi(ResourceLocation qiEnergyId, double amount) {
         ElementalQiEnergy qiEnergy = getExistingQiEnergy(qiEnergyId, "consume");
@@ -118,6 +173,14 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         }
     }
 
+    /**
+     * Повертає кількість певної енергії Ці, доступної у сховищі.
+     *
+     * @param qiEnergyId Ідентифікатор енергії Ці
+     * @return Кількість енергії
+     * @throws IllegalArgumentException Якщо ідентифікатор дорівнює {@code null}
+     * @throws IllegalStateException    Якщо енергію не зареєстровано або її не отримано
+     */
     @Override
     public double getQi(ResourceLocation qiEnergyId) {
         return getExistingQiEnergy(qiEnergyId, "query").getAmount();
@@ -173,9 +236,10 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
     }
 
     /**
-     * Зберігає стан сховища в NBT формат.
+     * Зберігає стан сховища в NBT.
      * <p>
-     * Зберігає домінуючий елемент та колекцію всіх елементів гравця.
+     * Контракт гарантує, що кожен {@link ElementalQiEnergy} буде серіалізовано через
+     * {@link ElementalQiEnergy#toNBT()} без побічних ефектів.
      * </p>
      *
      * @param data Тег, в який буде збережено дані
@@ -190,9 +254,10 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
     }
 
     /**
-     * Завантажує стан сховища з NBT формату.
+     * Завантажує стан сховища з NBT.
      * <p>
-     * Відновлює колекцію елементів гравця.
+     * Під час завантаження попередні дані можуть бути скинуті, якщо присутній ключ
+     * <code>resetExistingData</code>, що використовується для синхронізації клієнтів.
      * </p>
      *
      * @param data Тег, з якого будуть завантажені дані
@@ -222,6 +287,15 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         return (LivingEntity) this.holder;
     }
 
+    /**
+     * Виконує часткову синхронізацію сховища.
+     * <p>
+     * Якщо будь-яку енергію було видалено, сховище ставить прапорець <code>resetExistingData</code>
+     * і делегує серіалізацію батьківському класу. В іншому випадку відправляється лише оновлений список.
+     * </p>
+     *
+     * @param data Тег для запису
+     */
     @Override
     public void saveOutdated(CompoundTag data) {
         if (this.hasRemovedElements) {
@@ -237,6 +311,11 @@ public class QiEnergyStorage extends AbstractStorage implements QiEnergies {
         }
     }
 
+    /**
+     * Повертає опис стану сховища для відлагодження.
+     *
+     * @return Рядковий опис
+     */
     @Override
     public String toString() {
         return String.format("%s{qiEnergies=[%s], owner={%s}}", this.getClass().getSimpleName(),  getElementalQiEnergies().toString(), getOwner().toString());

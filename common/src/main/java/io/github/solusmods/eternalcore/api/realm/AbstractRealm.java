@@ -35,21 +35,22 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * Абстрактний клас, що представляє Реалм у системі EternalCore.
+ * Базова реалізація шляху культивації (Realm).
  * <p>
- * Реалм визначає базові атрибути, здібності, механіки прориву (breakthrough)
- * та стадії розвитку для сутностей. Кожен Реалм має унікальні характеристики,
- * що впливають на ігрову механіку.
- * </p>
- * <p>
- * Конкретні реалізації Реалмів мають визначати базові атрибути, можливі шляхи
- * прориву та стадії розвитку. Реалми організовані в ієрархію, де кожен наступний
- * Реалм досягається через прорив і надає більші здібності.
+ * Реалізації мають бути зареєстровані через {@link RealmRegistry} до старту гри.
+ * {@link AbstractRealm} описує життєвий цикл шляху: серіалізація виконується через
+ * {@link #toNBT()} / {@link #deserialize(CompoundTag)}, а події {@link #onReach(LivingEntity)},
+ * {@link #onSet(LivingEntity)} та {@link #onBreakthrough(LivingEntity)} викликаються сервером при
+ * переході між світами культивації. Реалізації повинні бути ідемпотентними, оскільки методи можуть
+ * викликатися повторно під час синхронізації.
  * </p>
  */
 @NoArgsConstructor
 public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IResource {
 
+    /**
+     * Ключ серіалізованого ідентифікатора Реалму в NBT.
+     */
     public static final String REALM_ID_KEY = "Realm";
     /**
      * Мапа модифікаторів атрибутів, що застосовуються до сутності в цьому Реалмі
@@ -96,6 +97,12 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
      */
     public abstract ResourceLocation getResource();
 
+    /**
+     * Створює ресурсний ідентифікатор у просторі імен EternalCore.
+     *
+     * @param name Шляхова частина
+     * @return Новий {@link ResourceLocation}
+     */
     public final ResourceLocation creteResource(String name){
         return EternalCore.create(name);
     }
@@ -223,7 +230,14 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
     }
 
 
-    public final double getAbsorptionBonus() {return getConfig().getAbsorptionBonus();}
+    /**
+     * Повертає бонус до абсорбції з конфігурації.
+     *
+     * @return Значення бонусу
+     */
+    public final double getAbsorptionBonus() {
+        return getConfig().getAbsorptionBonus();
+    }
 
     // ========== PROGRESSION METHODS ==========
 
@@ -308,6 +322,12 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         // Базова реалізація - можна перевизначити
     }
 
+    /**
+     * Повертає додаткову інформацію для відображення гравцю.
+     *
+     * @param living Сутність (може бути {@code null})
+     * @return Список компонентів опису
+     */
     public List<MutableComponent> getUniqueInfo(@Nullable LivingEntity living) {
         return List.of();
     }
@@ -408,6 +428,11 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         }
     }
 
+    /**
+     * Серіалізує Реалм у NBT, включно з ідентифікатором.
+     *
+     * @return Тег із даними Реалму
+     */
     @Override
     public CompoundTag toNBT() {
         CompoundTag compoundTag = new CompoundTag();
@@ -415,6 +440,12 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         return compoundTag;
     }
 
+    /**
+     * Записує внутрішні дані Реалму у вказаний тег.
+     *
+     * @param tag Тег для запису
+     * @return Той самий тег для ланцюжкових викликів
+     */
     @Override
     public CompoundTag serialize(CompoundTag tag) {
         if (this.tag != null) tag.put("tag", this.tag.copy());
@@ -425,6 +456,11 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         return tag;
     }
 
+    /**
+     * Відновлює стан Реалму з NBT.
+     *
+     * @param tag Тег з даними
+     */
     @Override
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
@@ -463,6 +499,11 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         return resource != null ? resource.hashCode() : 0;
     }
 
+    /**
+     * Повертає існуючий або створює новий тег додаткових даних.
+     *
+     * @return Тег користувацьких даних
+     */
     public CompoundTag getOrCreateTag() {
         if (this.tag == null) {
             this.tag = new CompoundTag();
@@ -480,6 +521,12 @@ public abstract class AbstractRealm implements INBTSerializable<CompoundTag>, IR
         return String.format("%s{id='%s'}", this.getClass().getSimpleName(), getId());
     }
 
+    /**
+     * Перевіряє належність Реалму до тегу.
+     *
+     * @param tag Тег для перевірки
+     * @return {@code true}, якщо Реалм присутній у вказаному тегу
+     */
     public boolean is(TagKey<AbstractRealm> tag) {
         return RealmRegistry.getRegistrySupplier(this).is(tag);
     }

@@ -22,6 +22,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Базовий опис стадії культивації.
+ * <p>
+ * Кожна реалізація повинна бути зареєстрована через {@link StageRegistry} до початку гри.
+ * Життєвий цикл стадії включає серіалізацію через {@link #toNBT()} / {@link #deserialize(CompoundTag)}
+ * та виклики подій {@link #onReach(LivingEntity)}, {@link #onSet(LivingEntity)}, {@link #onBreakthrough(LivingEntity)}
+ * під час просування гравця. Методи життєвого циклу викликаються лише на сервері, але реалізації мають
+ * бути ідемпотентними для уникнення дублювання ефектів під час повторної синхронізації.
+ * </p>
+ */
 @Getter
 @NoArgsConstructor
 public abstract class AbstractStage implements IResource, INBTSerializable<CompoundTag> {
@@ -31,12 +41,28 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
     @Nullable
     private CompoundTag tag = null;
 
+    /**
+     * Повертає ресурсний ідентифікатор стадії.
+     *
+     * @return {@link ResourceLocation} стадії, використовується при реєстрації
+     */
     public abstract ResourceLocation getResource();
 
+    /**
+     * Створює ресурсний ідентифікатор у просторі імен EternalCore.
+     *
+     * @param name Шляхова частина
+     * @return Новий {@link ResourceLocation}
+     */
     public final ResourceLocation creteResource(String name){
         return EternalCore.create(name);
     }
 
+    /**
+     * Повертає конфігурацію за замовчуванням, яка буде застосована під час генерації server config.
+     *
+     * @return Конфігурація стадії
+     */
     public abstract StageConfig getDefaultConfig();
 
     public final double getMinBaseQi() {
@@ -47,11 +73,21 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         return ServerConfigs.getStageConfig(this).getMaxQi();
     }
 
+    /**
+     * Повертає додаткову інформацію, яка відображається гравцю при перегляді стадії.
+     *
+     * @param living Сутність, для якої генерується опис (може бути {@code null})
+     * @return Список компонентів, що описують особливості стадії
+     */
     public List<MutableComponent> getUniqueInfo(@Nullable LivingEntity living) {
         return List.of();
     }
-
-
+    /**
+     * Відновлює стадію з NBT-представлення.
+     *
+     * @param tag Тег з серіалізованою стадією
+     * @return Екземпляр стадії або {@code null}, якщо ідентифікатор не зареєстровано
+     */
     @Nullable
     public static AbstractStage fromNBT(CompoundTag tag) {
         if (tag.contains("Id")) {
@@ -73,12 +109,23 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         return tag;
     }
 
+    /**
+     * Серіалізує додаткові дані стадії у вказаний тег.
+     *
+     * @param tag Тег для запису
+     * @return Той самий тег для ланцюжка викликів
+     */
     @Override
     public CompoundTag serialize(CompoundTag tag) {
         if (this.tag != null) tag.put("tag", this.tag.copy());
         return tag;
     }
 
+    /**
+     * Повертає існуючий або створює новий тег користувацьких даних.
+     *
+     * @return Тег користувацьких даних
+     */
     public CompoundTag getOrCreateTag() {
         if (this.tag == null) {
             this.tag = new CompoundTag();
@@ -86,6 +133,11 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         return this.tag;
     }
 
+    /**
+     * Відновлює додаткові дані стадії з тега.
+     *
+     * @param tag Джерело даних
+     */
     @Override
     public void deserialize(CompoundTag tag) {
         if (tag.contains("tag", 10)) this.tag = tag.getCompound("tag");
@@ -118,10 +170,28 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         return stageID;
     }
 
+    /**
+     * Повертає потенційні наступні стадії.
+     *
+     * @param living Контекст сутності (може бути {@code null})
+     * @return Список потенційних проривів
+     */
     public abstract List<AbstractStage> getNextBreakthroughs(@Nullable LivingEntity living);
 
+    /**
+     * Повертає список попередніх стадій, з яких можна перейти на поточну.
+     *
+     * @param living Контекст сутності (може бути {@code null})
+     * @return Список попередніх проривів
+     */
     public abstract List<AbstractStage> getPreviousBreakthroughs(@Nullable LivingEntity living);
 
+    /**
+     * Визначає рекомендований наступний прорив для сутності.
+     *
+     * @param living Контекст сутності (може бути {@code null})
+     * @return Стадія-прорив або {@code null}, якщо рекомендація відсутня
+     */
     @Nullable
     public abstract AbstractStage getDefaultBreakthrough(@Nullable LivingEntity living);
 
@@ -130,21 +200,51 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
         return "stage";
     }
 
+    /**
+     * Викликається, коли стадію встановлено як активну.
+     *
+     * @param living Сутність-власник (може бути {@code null})
+     */
     public void onSet(@Nullable LivingEntity living) {
     }
 
+    /**
+     * Викликається під час досягнення стадії вперше.
+     *
+     * @param living Сутність-власник (може бути {@code null})
+     */
     public void onReach(@Nullable LivingEntity living) {
     }
 
+    /**
+     * Викликається, коли стадію починають відслідковувати (наприклад, для прогресу).
+     *
+     * @param living Сутність-власник (може бути {@code null})
+     */
     public void onTrack(@Nullable LivingEntity living) {
     }
 
+    /**
+     * Викликається на кожному тіку, коли стадія активна.
+     *
+     * @param living Сутність-власник (може бути {@code null})
+     */
     public void onTick(@Nullable LivingEntity living) {
     }
 
+    /**
+     * Викликається після успішного прориву на наступну стадію.
+     *
+     * @param living Сутність-власник (може бути {@code null})
+     */
     public void onBreakthrough(@Nullable LivingEntity living) {
     }
 
+    /**
+     * Повертає ефект, який застосовується під час активної стадії.
+     *
+     * @return Обгортка {@link Changeable} з ефектом або порожній об'єкт
+     */
     public Changeable<MobEffectInstance> getEffect() {
         return Changeable.of(null);
     }
@@ -185,6 +285,12 @@ public abstract class AbstractStage implements IResource, INBTSerializable<Compo
     }
 
 
+    /**
+     * Перевіряє, чи належить стадія до певного тегу.
+     *
+     * @param tag Тег стадій
+     * @return {@code true}, якщо стадія входить до тегу
+     */
     public boolean is(TagKey<AbstractStage> tag) {
         return StageRegistry.getRegistrySupplier(this).is(tag);
     }

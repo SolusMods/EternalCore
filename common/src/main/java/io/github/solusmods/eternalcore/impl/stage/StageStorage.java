@@ -8,7 +8,6 @@ import io.github.solusmods.eternalcore.api.storage.AbstractStorage;
 import io.github.solusmods.eternalcore.api.storage.StorageEvents;
 import io.github.solusmods.eternalcore.api.storage.StorageHolder;
 import io.github.solusmods.eternalcore.api.storage.StorageKey;
-import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -24,22 +23,54 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Система зберігання та управління стадіями гравців.
+ * Сховище, що керує поточною стадією та історією досягнутих стадій.
+ * <p>
+ * {@link StageStorage} обов'язково реєструється через {@link #init()} до початку гри. Під час
+ * модифікацій викликається {@link #markDirty()}, що гарантує синхронізацію з клієнтом. Додавання та
+ * встановлення стадій супроводжуються подіями {@link StageEvents}, які можуть скасувати або змінити
+ * результат операції. Часткові синхронізації використовують прапорець <code>resetExistingData</code>,
+ * коли список досягнутих стадій очищено.
+ * </p>
  */
 public class StageStorage extends AbstractStorage implements Stages, IReachedStages {
 
+    /**
+     * Унікальний ідентифікатор цього типу сховища.
+     */
     public static final ResourceLocation ID = EternalCore.create("stage_storage");
+    /**
+     * Ключ для серіалізації поточної стадії.
+     */
     private static final String STAGE_KEY = "stage_key";
+    /**
+     * Ключ для серіалізації набору досягнутих стадій.
+     */
     private static final String REACHED_STAGES_KEY = "reached_stages_key";
-    @Getter
+    /**
+     * Ключ доступу до цього сховища.
+     */
     private static StorageKey<StageStorage> key = null;
+    /**
+     * Стадії, які сутність уже досягла.
+     */
     private final List<AbstractStage> reachedStages = new ArrayList<>();
+    /**
+     * Поточна активна стадія.
+     */
     private AbstractStage stage = null;
 
+    /**
+     * Створює нове сховище стадій для вказаного власника.
+     *
+     * @param holder Власник сховища
+     */
     protected StageStorage(StorageHolder holder) {
         super(holder);
     }
 
+    /**
+     * Реєструє тип сховища у системі EternalCore.
+     */
     public static void init() {
         StorageEvents.REGISTER_ENTITY_STORAGE.register(registry ->
                 key = registry.register(ID,
@@ -47,11 +78,38 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
                         StageStorage::new));
     }
 
+    /**
+     * Повертає ключ доступу до цього сховища.
+     *
+     * @return Ключ сховища, або {@code null}, якщо {@link #init()} ще не викликано
+     */
+    public static StorageKey<StageStorage> getKey() {
+        return key;
+    }
+
+    /**
+     * Повертає усі досягнуті стадії.
+     *
+     * @return Колекція досягнутих стадій
+     */
     @Override
     public Collection<AbstractStage> getReachedStages() {
         return reachedStages;
     }
 
+    /**
+     * Додає стадію до списку досягнутих.
+     * <p>
+     * Викликає подію {@link StageEvents#REACH_STAGE}, яка може змінити повідомлення, телепортацію
+     * або скасувати операцію. Після успішного завершення викликається {@link AbstractStage#onReach(LivingEntity)}.
+     * </p>
+     *
+     * @param stage             Стадія для додавання
+     * @param breakthrough      Чи є проривом
+     * @param teleportToSpawn   Чи телепортувати сутність до точки відродження
+     * @param component         Повідомлення для гравця (може бути {@code null})
+     * @return {@code true}, якщо стадію додано
+     */
     @Override
     public boolean addStage(AbstractStage stage, boolean breakthrough, boolean teleportToSpawn, @Nullable MutableComponent component) {
         if (hasReached(stage)) return false;
@@ -69,11 +127,29 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
         return true;
     }
 
+    /**
+     * Повертає поточну стадію.
+     *
+     * @return Optional з поточною стадією
+     */
     @Override
     public Optional<AbstractStage> getStage() {
         return Optional.ofNullable(stage);
     }
 
+    /**
+     * Встановлює активну стадію.
+     * <p>
+     * Викликає подію {@link StageEvents#SET_STAGE}, що може змінити або скасувати операцію.
+     * При успіху викликається {@link AbstractStage#onSet(LivingEntity)} та відбувається синхронізація.
+     * </p>
+     *
+     * @param stage       Нова стадія
+     * @param advancement Чи пов'язано з просуванням
+     * @param notify      Чи сповіщати гравця
+     * @param component   Повідомлення для гравця (може бути {@code null})
+     * @return {@code true}, якщо стадію встановлено
+     */
     @Override
     public boolean setStage(AbstractStage stage, boolean advancement, boolean notify, @Nullable MutableComponent component) {
         AbstractStage current = this.stage;
@@ -90,6 +166,11 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
         return true;
     }
 
+    /**
+     * Зберігає поточний стан у NBT.
+     *
+     * @param data Тег, у який записуються дані
+     */
     @Override
     public void save(CompoundTag data) {
         if (stage != null) {
@@ -102,6 +183,11 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
         data.put(REACHED_STAGES_KEY, reachedStagesTag);
     }
 
+    /**
+     * Завантажує стан сховища з NBT.
+     *
+     * @param data Тег, з якого читаються дані
+     */
     @Override
     public void load(CompoundTag data) {
         reachedStages.clear();
@@ -125,6 +211,12 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
         }
     }
 
+    /**
+     * Перевіряє, чи стадію вже було досягнуто.
+     *
+     * @param stage Стадія для перевірки
+     * @return {@code true}, якщо стадію вже отримано
+     */
     private boolean hasReached(AbstractStage stage) {
         for (AbstractStage s : reachedStages) {
             if (s.getId().equals(stage.getId())) {
@@ -134,10 +226,20 @@ public class StageStorage extends AbstractStorage implements Stages, IReachedSta
         return false;
     }
 
+    /**
+     * Повертає власника сховища як живу сутність.
+     *
+     * @return Власник сховища
+     */
     protected LivingEntity getOwner() {
         return (LivingEntity) this.holder;
     }
 
+    /**
+     * Повертає читабельне представлення стану сховища.
+     *
+     * @return Рядковий опис стану
+     */
     @Override
     public String toString() {
         return String.format("%s{currentStage={%s}, reachedStages=[%s], owner={%s}}", this.getClass().getSimpleName(), getStage().toString(), getReachedStages().size(), getOwner().toString());
