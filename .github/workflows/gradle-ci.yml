@@ -33,22 +33,3 @@ jobs:
 
       - name: Build and run tests
         run: ./gradlew clean build test --stacktrace
-
-  dependency-submission:
-    name: Dependency Graph Submission
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Submit dependency graph to GitHub
-        uses: gradle/actions/dependency-submission@v4
