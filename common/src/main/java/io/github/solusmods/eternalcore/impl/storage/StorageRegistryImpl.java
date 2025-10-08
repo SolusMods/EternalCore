@@ -38,6 +38,9 @@ public class StorageRegistryImpl<T extends StorageHolder> implements StorageEven
      */
     @Override
     public <S extends AbstractStorage> StorageKey<S> register(ResourceLocation id, Class<S> storageClass, Predicate<T> attachCheck, StorageEvents.StorageFactory<T, S> factory) {
+        if (this.registry.containsKey(id)) {
+            throw new IllegalStateException("Storage with id " + id + " is already registered");
+        }
         this.registry.put(id, Pair.of(attachCheck, factory));
         return new StorageKey<>(id, storageClass);
     }
