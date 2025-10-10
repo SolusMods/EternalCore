@@ -2,6 +2,7 @@ package io.github.solusmods.eternalcore.impl.storage;
 
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
+import io.github.solusmods.eternalcore.EternalCore;
 import io.github.solusmods.eternalcore.api.storage.*;
 import io.github.solusmods.eternalcore.impl.storage.network.s2c.StorageSyncPayload;
 import io.github.solusmods.eternalcore.impl.storage.network.s2c.SyncChunkStoragePayload;
@@ -205,9 +206,30 @@ public final class StorageManager {
     @Nullable
     public static AbstractStorage constructStorageFor(StorageType type, ResourceLocation id, StorageHolder holder) {
         return switch (type) {
-            case ENTITY -> ENTITY_STORAGE_REGISTRY.registry.get(id).getSecond().create((Entity) holder);
-            case CHUNK -> CHUNK_STORAGE_REGISTRY.registry.get(id).getSecond().create((LevelChunk) holder);
-            case WORLD -> LEVEL_STORAGE_REGISTRY.registry.get(id).getSecond().create((Level) holder);
+            case ENTITY -> {
+                var entry = ENTITY_STORAGE_REGISTRY.registry.get(id);
+                if (entry == null) {
+                    EternalCore.LOG.warn("Failed to find entity storage factory for id {}", id);
+                    yield null;
+                }
+                yield entry.getSecond().create((Entity) holder);
+            }
+            case CHUNK -> {
+                var entry = CHUNK_STORAGE_REGISTRY.registry.get(id);
+                if (entry == null) {
+                    EternalCore.LOG.warn("Failed to find chunk storage factory for id {}", id);
+                    yield null;
+                }
+                yield entry.getSecond().create((LevelChunk) holder);
+            }
+            case WORLD -> {
+                var entry = LEVEL_STORAGE_REGISTRY.registry.get(id);
+                if (entry == null) {
+                    EternalCore.LOG.warn("Failed to find world storage factory for id {}", id);
+                    yield null;
+                }
+                yield entry.getSecond().create((Level) holder);
+            }
         };
     }
 
