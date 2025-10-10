@@ -35,6 +35,8 @@ public abstract class ElementType implements INBTSerializable<CompoundTag>, IRes
 
     public abstract ResourceLocation getResource();
 
+    public abstract ResourceLocation getTexture();
+
     public final ResourceLocation creteResource(String name){
         return EternalCore.create(name);
     }
